@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # CORS
     backend_cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
 
+    # Database
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/synapse"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -19,7 +19,6 @@ class GenerateRequest(BaseModel):
         1.0, ge=0.0, le=1.0, description="Sampling temperature (0.0 to 1.0)"
     )
 
-
 class GenerateResponse(BaseModel):
     """Response schema for AI text generation."""
 
@@ -28,7 +27,22 @@ class GenerateResponse(BaseModel):
     usage: UsageInfo
 
 
+class EmbedRequest(BaseModel):
+    """Request schema for batch text embedding."""
+
+    texts: list[str] = Field(..., min_items=1, max_items=20)
+
+
+class EmbedResponse(BaseModel):
+    """Response schema for batch text embedding."""
+
+    embeddings: list[list[float]]
+    model: str
+
+
 class ErrorResponse(BaseModel):
+# ...
+
     """Standard error response schema."""
 
     detail: str

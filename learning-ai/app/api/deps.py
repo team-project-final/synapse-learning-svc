@@ -1,8 +1,10 @@
 from typing import Annotated
 
-from fastapi import Header
+from fastapi import Depends, Header
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.db.session import get_db
 from app.services.claude_service import ClaudeService
 from app.services.openai_service import OpenAIEmbeddingService
 
@@ -10,10 +12,8 @@ from app.services.openai_service import OpenAIEmbeddingService
 async def get_current_user(x_user_id: Annotated[str | None, Header()] = None) -> str:
     """
     Mock dependency for getting the current user from Gateway headers.
-    Step 3 Requirement: Authentication required (JWT Mock).
     """
     if not x_user_id:
-        # Default for local development
         return "mock_user_123"
     return x_user_id
 
