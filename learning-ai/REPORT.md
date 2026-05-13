@@ -39,10 +39,13 @@
 ... (중략) ...
 
 ### Phase 4: Claude API 연동 (Step 2) (2026-05-13)
-- **변경 사항:** Anthropic(Claude) API 호출을 위한 서비스 클래스 및 엔드포인트 구현.
-- **추가된 파일:** `app/services/base.py`, `app/services/anthropic_service.py`, `app/api/v1/endpoints/ai.py`.
-- **수정된 파일:** `app/api/deps.py`, `app/api/v1/api.py`.
-- **기술적 근거:** AI 기능을 독립적인 서비스 레이어로 분리하여 유지보수성을 높이고, FastAPI의 의존성 주입(DI)을 통해 확장 가능한 구조를 확보함.
+... (중략) ...
+
+### Phase 5: Embedding API 연동 (Step 3) (2026-05-13)
+- **변경 사항:** OpenAI Embedding API 호출을 위한 서비스 클래스 및 엔드포인트 구현.
+- **추가된 파일:** `app/services/openai_service.py`.
+- **수정된 파일:** `app/services/base.py`, `app/api/deps.py`, `app/api/v1/endpoints/ai.py`.
+- **기술적 근거:** 텍스트의 의미적 분석 및 검색 기능을 위해 벡터 임베딩 추출 기능을 추가함. 인터페이스화를 통해 향후 다른 임베딩 모델로의 교체를 용이하게 함.
 
 ## 3. 종합 비교 (Before vs After)
 
