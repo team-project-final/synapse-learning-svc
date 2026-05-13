@@ -2,6 +2,9 @@ from typing import Annotated
 
 from fastapi import Header
 
+from app.core.config import settings
+from app.services.anthropic_service import AnthropicService
+
 
 async def get_current_user(x_user_id: Annotated[str | None, Header()] = None) -> str:
     """
@@ -14,3 +17,8 @@ async def get_current_user(x_user_id: Annotated[str | None, Header()] = None) ->
         # Default for local development
         return "mock_user_123"
     return x_user_id
+
+
+def get_anthropic_service() -> AnthropicService:
+    """Dependency for getting an AnthropicService instance."""
+    return AnthropicService(api_key=settings.anthropic_api_key or "")

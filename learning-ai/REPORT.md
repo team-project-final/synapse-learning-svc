@@ -36,9 +36,13 @@
 ... (중략) ...
 
 ### Phase 3.9: 초기 설정 검증 및 테스트 환경 구축 (2026-05-13)
-- **변경 사항:** `pytest`를 활용한 헬스 체크 API 유닛 테스트 추가.
-- **추가된 파일:** `tests/__init__.py`, `tests/test_health.py`.
-- **기술적 근거:** 초기 인프라 설정이 정상적으로 완료되었는지 자동화된 방식으로 검증하고, 향후 개발 시 회귀 테스트(Regression Test) 환경을 마련하기 위함.
+... (중략) ...
+
+### Phase 4: Claude API 연동 (Step 2) (2026-05-13)
+- **변경 사항:** Anthropic(Claude) API 호출을 위한 서비스 클래스 및 엔드포인트 구현.
+- **추가된 파일:** `app/services/base.py`, `app/services/anthropic_service.py`, `app/api/v1/endpoints/ai.py`.
+- **수정된 파일:** `app/api/deps.py`, `app/api/v1/api.py`.
+- **기술적 근거:** AI 기능을 독립적인 서비스 레이어로 분리하여 유지보수성을 높이고, FastAPI의 의존성 주입(DI)을 통해 확장 가능한 구조를 확보함.
 
 ## 3. 종합 비교 (Before vs After)
 
