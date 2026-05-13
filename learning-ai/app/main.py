@@ -3,18 +3,19 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.api import api_router
-from app.core.config import settings
+from app.api.ai import router as ai_router
+from app.api.health import router as health_router
 from app.core.exceptions import global_exception_handler, http_exception_handler
+from app.core.settings import settings
 
 app = FastAPI(
-    title=settings.app_name,
+    title=settings.service_name,
     description="AI-powered learning features for Synapse",
     version=settings.version,
 )
 
 # CORS Setting - Only active in development
-if settings.environment == "development":
+if settings.environment == "development" or settings.environment == "local":
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[str(origin) for origin in settings.backend_cors_origins],
@@ -27,4 +28,6 @@ if settings.environment == "development":
 app.add_exception_handler(Exception, global_exception_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)
 
-app.include_router(api_router)
+# Routers
+app.include_router(health_router)
+app.include_router(ai_router, prefix="/ai")
