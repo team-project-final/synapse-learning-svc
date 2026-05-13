@@ -1,28 +1,18 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
+
+from app.core.settings import settings
+from app.schemas.health import HealthResponse
 
 router = APIRouter()
-
-
-class HealthResponse(BaseModel):
-    """Pydantic model for health check response."""
-
-    service: str
-    version: str
-    status: str
-    environment: str
 
 
 @router.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
     """Liveness probe."""
-    from app.core.config import settings
-
     return HealthResponse(
-        service=settings.app_name,
+        service=settings.service_name,
         version=settings.version,
         status="ok",
-        environment=settings.environment,
     )
 
 
