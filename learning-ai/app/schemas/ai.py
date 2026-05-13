@@ -1,0 +1,35 @@
+from pydantic import BaseModel, Field
+
+
+class UsageInfo(BaseModel):
+    """Token usage information."""
+
+    input_tokens: int
+    output_tokens: int
+
+
+class GenerateRequest(BaseModel):
+    """Request schema for AI text generation."""
+
+    prompt: str = Field(..., min_length=1, description="The prompt for AI generation")
+    max_tokens: int = Field(
+        1024, gt=0, le=4096, description="Maximum number of tokens to generate"
+    )
+    temperature: float = Field(
+        1.0, ge=0.0, le=1.0, description="Sampling temperature (0.0 to 1.0)"
+    )
+
+
+class GenerateResponse(BaseModel):
+    """Response schema for AI text generation."""
+
+    content: str
+    model: str
+    usage: UsageInfo
+
+
+class ErrorResponse(BaseModel):
+    """Standard error response schema."""
+
+    detail: str
+    code: str
