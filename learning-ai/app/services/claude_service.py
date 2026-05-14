@@ -12,7 +12,8 @@ class ClaudeService(BaseAIService):
 
     def __init__(self, api_key: str):
         # Set timeout to 30 seconds as per workflow requirement
-        self.client = AsyncAnthropic(api_key=api_key, timeout=30.0)
+        # Set max_retries to 0 to handle retries manually in generate_claude_text
+        self.client = AsyncAnthropic(api_key=api_key, timeout=30.0, max_retries=0)
 
     async def generate_text(self, prompt: str, **kwargs: Any) -> str:
         """Legacy method for BaseAIService compatibility."""
