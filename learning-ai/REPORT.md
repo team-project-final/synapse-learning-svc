@@ -1,6 +1,6 @@
 # Implementation Report: learning-ai 초기 설정 및 고도화
 
-> 최종 갱신: 2026-05-13 (김나경 가이드 동기화 완료)
+> 최종 갱신: 2026-05-14 (김나경 가이드 동기화 완료)
 
 본 문서는 `learning-ai` 서비스의 초기 부트스트랩 상태에서 현재의 프로덕션 레디(Production-ready) 구조로 변화하는 과정을 기록한 보고서입니다. 본 프로젝트는 **김나경님의 FastAPI Scaffold 워크플로우 가이드**를 100% 준수하여 리팩토링되었습니다.
 
@@ -9,6 +9,30 @@
 - **구조:** 단일 파일 `app/main.py`에 모든 로직이 포함된 단순한 형태.
 
 ## 2. 주요 변경 사항 및 작업 이력
+
+### Phase 1: 환경 설정 및 Configuration Setup (2026-05-11)
+- **변경 사항:** `pydantic-settings`를 활용한 중앙 집중식 설정 관리 체계 구축.
+- **세부 내용:** `app/core/settings.py` 생성, `LEARNING_AI_` prefix 적용, `.env.example` 템플릿 제공.
+
+### Phase 2: 라우터 및 디렉토리 구조 최적화 (2026-05-11)
+- **변경 사항:** 단일 파일 구조에서 기능별 모듈 구조로 리팩토링.
+- **세부 내용:** `app/api/` 경로 하위로 엔드포인트 분리 및 `app/services/` 기능별 모듈화.
+
+### Phase 3 & 3.8: 미들웨어 및 MSA 아키텍처 정렬 (2026-05-12)
+- **변경 사항:** 전역 예외 처리기 도입 및 MSA 게이트웨이 통합을 위한 CORS/인증 정책 조정.
+- **세부 내용:** `app/core/exceptions.py` 구현, 개발 환경 전용 CORS 제한, `X-User-ID` 기반 목킹 인증 의존성 추가.
+
+### Phase 3.9: 초기 검증 및 테스트 환경 구축 (2026-05-12)
+- **변경 사항:** `pytest` 기반의 유닛 테스트 기초 마련.
+- **세부 내용:** `tests/test_health.py` 작성 및 헬스체크 엔드포인트 검증 (통과율 100%).
+
+### Phase 4: AI 서비스 파운데이션 구축 - Claude API (2026-05-13)
+- **변경 사항:** 모델 추상화를 위한 인터페이스 정의 및 Anthropic Claude 연동.
+- **세부 내용:** `BaseAIService` 추상 클래스 구현, `AnthropicService` 및 의존성 주입(DI) 설정, 테스트 엔드포인트 `/api/v1/ai/chat/claude` 추가.
+
+### Phase 5: AI 서비스 통합 - Embedding API & DB (2026-05-13)
+- **변경 사항:** OpenAI 임베딩 연동 및 pgvector 기반 벡터 데이터베이스 저장소 구축.
+- **세부 내용:** `OpenAIEmbeddingService` (배치 처리 지원), SQLAlchemy/Alembic 기반 `embeddings` 테이블 마이그레이션, `EmbeddingRepository` 구현.
 
 ### Phase 7: 목킹 전략(Mocking Strategy) 도입 및 테스트 고도화 (2026-05-14)
 - **변경 사항:** `00-mocking-strategy.md` 규약에 따른 외부 의존성 격리 및 통합 테스트 환경 구축.
