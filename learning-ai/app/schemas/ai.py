@@ -30,7 +30,7 @@ class GenerateResponse(BaseModel):
 class EmbedRequest(BaseModel):
     """Request schema for batch text embedding."""
 
-    texts: list[str] = Field(..., min_items=1, max_items=20)
+    texts: list[str] = Field(..., min_length=1, max_length=20)
 
 
 class EmbedResponse(BaseModel):

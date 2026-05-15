@@ -92,3 +92,30 @@ learning-ai/
 
 ## 5. 향후 계획 (Next Steps)
 - CI/CD 파이프라인 연동 시 Docker Desktop 없이 GitHub Actions 상에서 `testcontainers` 실행 최적화.
+
+## 6. 로컬 실행 가이드 (Local Execution Guide)
+
+본 애플리케이션을 로컬 환경에서 Docker Compose를 통해 실행하려면 다음 단계를 따라야 합니다. AI API 연동을 위한 키 발급 및 환경 변수 설정이 필수적입니다.
+
+### 1. 환경 변수 설정 (.env)
+프로젝트 디렉토리 (`learning-ai/`)에 제공된 `.env.example` 템플릿 파일을 복사하여 `.env` 파일을 생성합니다.
+
+**Windows/Linux/macOS 공통:**
+```bash
+cp .env.example .env
+```
+
+생성된 `.env` 파일을 열고, 각 서비스 플랫폼에서 발급받은 실제 API 키를 기입해야 합니다.
+- `OPENAI_API_KEY`: [OpenAI Platform](https://platform.openai.com/)에서 발급 (텍스트 임베딩에 사용)
+- `ANTHROPIC_API_KEY`: [Anthropic Console](https://console.anthropic.com/)에서 발급 (Claude 텍스트 생성에 사용)
+
+### 2. 서비스 실행
+환경 변수 설정이 완료되면, 터미널에서 다음 명령어를 실행하여 컨테이너를 띄웁니다.
+
+```bash
+docker-compose up -d --build
+```
+
+### 3. 접속 및 테스트
+실행이 완료되면 브라우저를 통해 자동 생성된 API 문서(Swagger UI)에 접속하여 기능 동작을 직접 검증할 수 있습니다.
+- API 문서 URL: `http://localhost:8090/docs`

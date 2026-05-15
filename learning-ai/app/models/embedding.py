@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import Index
@@ -17,7 +17,7 @@ class Embedding(Base):
     source_type: Mapped[str] = mapped_column()
     # 1536 dimensions as per Step 3 requirement
     vector: Mapped[list[float]] = mapped_column(Vector(1536))
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
     __table_args__ = (
         # Optional: Add HNSW index if needed by the workflow
