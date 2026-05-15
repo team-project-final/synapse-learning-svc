@@ -23,6 +23,12 @@
 - **Pytest 업데이트**: 변경된 API 응답 포맷 및 Retry/Fallback 로직에 맞춰 `tests/test_ai.py`의 검증 로직을 전면 수정.
 - **품질 도구**: `tenacity`, `jinja2` 등 누락된 의존성을 `pyproject.toml`에 추가하고 `ruff`, `mypy`를 통한 정적 분석 수행 및 주요 이슈 해결.
 
+### 기술 부채 해결 및 설정 정리 (2026-05-15)
+- **설정 템플릿 정리**: 중복 및 파일명 오류가 있었던 `.env.example` 파일들을 정리하였습니다.
+  - 잘못된 형식의 `learning-ai/.env.example` 삭제.
+  - 파일명에 공백이 포함되어 있던 `learning-ai/ .env.example`을 올바른 이름(`.env.example`)으로 변경.
+  - 최신 `config.py`의 `LEARNING_AI_` 접두사 규칙이 반영된 템플릿을 최종 유지.
+
 ## 3. 초기 상태와의 비교
 
 | 항목 | 초기 상태 | 변경 후 상태 |
