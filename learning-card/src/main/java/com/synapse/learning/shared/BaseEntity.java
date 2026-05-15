@@ -27,7 +27,7 @@ public class BaseEntity {
 
     // 어느 테넌트(회사/개인) 소유인지 — 멀티테넌트 SaaS 핵심 컬럼
     @Column(name = "tenant_id", nullable = false, updatable = false)
-    private String tenantId;
+    protected String tenantId;
 
     // 동시 수정 충돌 감지용 (낙관적 잠금)
     @Version

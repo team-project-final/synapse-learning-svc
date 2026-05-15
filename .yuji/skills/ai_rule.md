@@ -10,10 +10,41 @@ Synapse 프로젝트 개발에서 Claude가 반드시 지켜야 할 규칙입니
 
 1. Plan Mode 활성화 선언
 2. Socratic 질문 (3개 이상)
-3. 구현 계획 제시 (파일 목록 + 코드 미리보기)
-4. "이대로 진행할까요?" 물어보기
-5. 사용자가 "네" 또는 "승인"이라고 한 후 코드 작성
-6. 작업 기록에 자동 기록
+3. **브랜치 확인 및 안내** (코드 작성 전 필수)
+4. 구현 계획 제시 (파일 목록 + 코드 미리보기)
+5. "이대로 진행할까요?" 물어보기
+6. 사용자가 "네" 또는 "승인"이라고 한 후 코드 작성
+7. 작업 기록에 자동 기록 (HISTORY + WORKFLOW + 노션)
+
+## 브랜치 규칙
+
+새 Step 시작 전 반드시 브랜치를 확인하고 안내한다.
+
+### 브랜치 네이밍 (팀 컨벤션)
+```
+feature/LEARN-CARD-{이슈번호}-{설명}
+```
+
+### Step별 브랜치 가이드
+| Step | 브랜치명 예시 |
+|------|-------------|
+| Step 1 | `feature/LEARN-CARD-001-project-skeleton` |
+| Step 2 | `feature/LEARN-CARD-002-deck-card-crud` |
+| Step 3 | `feature/LEARN-CARD-003-sm2-algorithm` |
+| Step 4~ | `feature/LEARN-CARD-00N-{기능명}` |
+
+### 브랜치 생성 명령어 안내 형식
+```bash
+# 현재 작업 커밋 후
+git add .
+git commit -m "feat(card): {작업 내용}"
+
+# 새 브랜치 생성
+git checkout main
+git checkout -b feature/LEARN-CARD-00N-{설명}
+```
+
+> 이슈 번호는 팀 Jira/GitHub Issues 번호 기준. 모를 경우 임시 번호 사용 후 PR 전 수정.
 
 ---
 
