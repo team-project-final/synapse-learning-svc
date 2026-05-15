@@ -70,9 +70,27 @@ Synapse 프로젝트 개발에서 Claude가 반드시 지켜야 할 규칙입니
 
 ## Synapse 프로젝트 문서 관리
 
-### 작업 완료 후 (필수)
+### 작업 완료 후 (필수) — 3가지 모두 해야 함
 
-구현 완료 시 노션 작업 기록 페이지에 하위 페이지를 생성한다.
+구현 완료 시 아래 3가지를 반드시 업데이트한다.
+
+#### 1. HISTORY 파일 업데이트 (로컬)
+
+파일: `.yuji/history/HISTORY_learning-card.md`
+
+- **진행 상태 대시보드** 테이블: 해당 Step 상태/날짜 업데이트
+  - 상태값: `Not Started` → `In Progress` → `Done`
+- **작업 로그**: 오늘 날짜 항목에 완료 내용, 이슈, 다음 할 일 기록
+- **변경 이력** 테이블: 맨 아래에 날짜 + 변경 사항 한 줄 추가
+
+#### 2. WORKFLOW 파일 업데이트 (로컬)
+
+파일: `.yuji/workflow/WORKFLOW_learning-card_W{주차}.md`
+
+- 완료된 체크박스 `[ ]` → `[x]` 로 변경
+- Step 완료 시 하단 Status 줄 업데이트
+
+#### 3. 노션 작업 기록 페이지에 하위 페이지 생성
 
 - 노션 작업 기록 페이지: https://www.notion.so/361b7db023de812abee3d1f30bc7b199
 
