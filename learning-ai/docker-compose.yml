@@ -1,0 +1,11 @@
+services:
+  learning-ai:
+    build: .
+    container_name: learning-ai
+    ports:
+      - "8090:8090"
+    env_file:
+      - .env
+    environment:
+      - ENVIRONMENT=development
+    restart: unless-stopped

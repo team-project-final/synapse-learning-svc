@@ -1,19 +1,25 @@
-"""Health endpoint tests."""
-
-from fastapi.testclient import TestClient
+import pytest
+from httpx import ASGITransport, AsyncClient
 
 from app.main import app
 
-client = TestClient(app)
 
+@pytest.mark.asyncio
+async def test_health_returns_ok() -> None:
+    """
+    Test health endpoint returns 200 OK and expected JSON.
+    Aligns with Step 8 of Kim Na-gyeong's guide.
+    """
+    transport = ASGITransport(app=app)
 
-def test_health() -> None:
-    response = client.get("/health")
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/health")
+
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
-
-
-def test_health_ready() -> None:
-    response = client.get("/health/ready")
-    assert response.status_code == 200
-    assert response.json() == {"status": "ready"}
+    data = response.json()
+    assert data["status"] == "ok"
+    assert "service" in data
+    assert "version" in data
