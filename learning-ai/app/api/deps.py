@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends, Header
 
-from app.core.settings import settings
+from app.core.config import settings
+from app.services.ai_service import AIService
 from app.services.claude_service import ClaudeService
 from app.services.openai_service import OpenAIEmbeddingService
 
@@ -22,3 +23,11 @@ def get_claude_service() -> ClaudeService:
 def get_embedding_service() -> OpenAIEmbeddingService:
     """Dependency for getting an OpenAIEmbeddingService instance."""
     return OpenAIEmbeddingService(api_key=settings.openai_api_key or "")
+
+
+def get_ai_service(
+    claude: ClaudeService = Depends(get_claude_service),
+    openai: OpenAIEmbeddingService = Depends(get_embedding_service),
+) -> AIService:
+    """Dependency for getting an AIService orchestrator."""
+    return AIService(claude=claude, openai=openai)

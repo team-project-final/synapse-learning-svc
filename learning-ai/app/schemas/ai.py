@@ -12,6 +12,7 @@ class GenerateRequest(BaseModel):
     """Request schema for AI text generation."""
 
     prompt: str = Field(..., min_length=1, description="The prompt for AI generation")
+    task: str = Field("default", description="The task category for prompt selection")
     max_tokens: int = Field(
         1024, gt=0, le=4096, description="Maximum number of tokens to generate"
     )

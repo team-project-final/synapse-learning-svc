@@ -19,4 +19,7 @@ class AnthropicService(BaseAIService):
             max_tokens=kwargs.get("max_tokens", 1024),
             messages=[{"role": "user", "content": prompt}],
         )
-        return message.content[0].text
+        content_text = ""
+        if message.content and hasattr(message.content[0], "text"):
+            content_text = getattr(message.content[0], "text")
+        return content_text

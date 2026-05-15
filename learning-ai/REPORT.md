@@ -1,121 +1,39 @@
-# Implementation Report: learning-ai 초기 설정 및 고도화
+# 작업 보고서: learning-ai 규정 준수 및 리팩토링 (2026-05-15)
 
-> 최종 갱신: 2026-05-14 (김나경 가이드 동기화 완료)
+## 1. 개요
+`synapse-learning-svc/learning-ai` 프로젝트의 코드를 최신 프로젝트 규정(`13-python-llm.md`, `공통_개발_규칙.md`)에 맞게 전면 리팩토링하였습니다.
 
-본 문서는 `learning-ai` 서비스의 초기 부트스트랩 상태에서 현재의 프로덕션 레디(Production-ready) 구조로 변화하는 과정을 기록한 보고서입니다. 본 프로젝트는 **김나경님의 FastAPI Scaffold 워크플로우 가이드**를 100% 준수하여 리팩토링되었습니다.
+## 2. 주요 변경 사항
 
-## 1. 초기 상태 (Initial State)
-- **기준 일자:** 2026-05-13 이전 (부트스트랩 초기 커밋 상태)
-- **구조:** 단일 파일 `app/main.py`에 모든 로직이 포함된 단순한 형태.
+### 설정 및 구조 개선 (Phase 1)
+- `app/core/settings.py` -> `app/core/config.py` 파일명 변경 및 관련 임포트 전수 수정.
+- `app/prompts/` 디렉토리를 신설하여 하드코딩된 프롬프트를 `system.txt`, `user.jinja2`로 분리 관리.
 
-## 2. 주요 변경 사항 및 작업 이력
+### LLM 안정성 및 비용 제어 (Phase 2)
+- **Timeout 적용**: 모든 LLM 클라이언트에 `httpx.Timeout(30.0, connect=5.0)` 적용.
+- **Retry 로직**: `tenacity` 라이브러리를 도입하여 `RateLimitError`, `APIConnectionError`, `InternalServerError` 발생 시 지수 백오프(Exponential Backoff) 기반 3회 재시도 구현.
+- **Fallback 구현**: Anthropic 서비스 실패 시 OpenAI(`gpt-4o-mini`)로 자동 전환되는 Fallback 오케스트레이터(`AIService`) 구현.
+- **비용 제어**: `@track_tokens` 데코레이터를 구현하여 토큰 사용량을 로깅하고 일일 사용 한도(500,000 tokens) 초과 시 차단하는 방어 로직 추가.
 
-### Phase 1: 환경 설정 및 Configuration Setup (2026-05-11)
-- **변경 사항:** `pydantic-settings`를 활용한 중앙 집중식 설정 관리 체계 구축.
-- **세부 내용:** `app/core/settings.py` 생성, `LEARNING_AI_` prefix 적용, `.env.example` 템플릿 제공.
+### API 응답 표준화 (Phase 3)
+- **응답 래퍼**: 모든 API 응답을 `{"success": true, "data": ..., "meta": ...}` 표준 포맷으로 감싸도록 수정.
+- **에러 핸들링**: `app/core/exceptions.py`를 전면 수정하여 모든 예외 상황에서 표준 에러 응답(`{"success": false, "error": {...}}`)을 반환하도록 통일.
 
-### Phase 2: 라우터 및 디렉토리 구조 최적화 (2026-05-11)
-- **변경 사항:** 단일 파일 구조에서 기능별 모듈 구조로 리팩토링.
-- **세부 내용:** `app/api/` 경로 하위로 엔드포인트 분리 및 `app/services/` 기능별 모듈화.
+### 테스트 코드 및 품질 관리 (Phase 4)
+- **Pytest 업데이트**: 변경된 API 응답 포맷 및 Retry/Fallback 로직에 맞춰 `tests/test_ai.py`의 검증 로직을 전면 수정.
+- **품질 도구**: `tenacity`, `jinja2` 등 누락된 의존성을 `pyproject.toml`에 추가하고 `ruff`, `mypy`를 통한 정적 분석 수행 및 주요 이슈 해결.
 
-### Phase 3 & 3.8: 미들웨어 및 MSA 아키텍처 정렬 (2026-05-12)
-- **변경 사항:** 전역 예외 처리기 도입 및 MSA 게이트웨이 통합을 위한 CORS/인증 정책 조정.
-- **세부 내용:** `app/core/exceptions.py` 구현, 개발 환경 전용 CORS 제한, `X-User-ID` 기반 목킹 인증 의존성 추가.
+## 3. 초기 상태와의 비교
 
-### Phase 3.9: 초기 검증 및 테스트 환경 구축 (2026-05-12)
-- **변경 사항:** `pytest` 기반의 유닛 테스트 기초 마련.
-- **세부 내용:** `tests/test_health.py` 작성 및 헬스체크 엔드포인트 검증 (통과율 100%).
+| 항목 | 초기 상태 | 변경 후 상태 |
+|---|---|---|
+| 설정 관리 | `settings.py` (비표준) | `config.py` (표준 준수) |
+| 프롬프트 | 코드 내 하드코딩 | `prompts/` 폴더 내 파일로 관리 (Jinja2) |
+| 재시도 로직 | 수동 `for` 루프 | `tenacity` 데코레이터 (선언적) |
+| API 응답 | 원본 데이터 직접 반환 | `ApiResponse` 표준 래퍼 사용 |
+| 에러 처리 | 단순 텍스트/객체 반환 | `ApiErrorResponse` 표준 규격 준수 |
+| 비용 제어 | 추적 기능 없음 | 실시간 토큰 추적 및 일일 한도 제어 |
 
-### Phase 4: AI 서비스 파운데이션 구축 - Claude API (2026-05-13)
-- **변경 사항:** 모델 추상화를 위한 인터페이스 정의 및 Anthropic Claude 연동.
-- **세부 내용:** `BaseAIService` 추상 클래스 구현, `AnthropicService` 및 의존성 주입(DI) 설정, 테스트 엔드포인트 `/api/v1/ai/chat/claude` 추가.
-
-### Phase 5: AI 서비스 통합 - Embedding API & DB (2026-05-13)
-- **변경 사항:** OpenAI 임베딩 연동 및 pgvector 기반 벡터 데이터베이스 저장소 구축.
-- **세부 내용:** `OpenAIEmbeddingService` (배치 처리 지원), SQLAlchemy/Alembic 기반 `embeddings` 테이블 마이그레이션, `EmbeddingRepository` 구현.
-
-### Phase 7: 목킹 전략(Mocking Strategy) 도입 및 테스트 고도화 (2026-05-14)
-- **변경 사항:** `00-mocking-strategy.md` 규약에 따른 외부 의존성 격리 및 통합 테스트 환경 구축.
-- **외부 API 격리 (`respx`):** `unittest.mock` 기반의 객체 모킹을 폐기하고, HTTP 레이어에서 Anthropic API를 가로채는 `respx` 도입. 실제 네트워크 요청/응답 형식을 검증하고 429 에러 재시도 로직을 정밀하게 테스트함.
-- **DB 통합 테스트 (`testcontainers`):** Docker를 활용해 실제 `pgvector` 인스턴스를 띄워 `EmbeddingRepository`를 검증하는 환경 구축.
-- **버그 수정:** Anthropic 클라이언트의 내부 중복 재시도 방지를 위해 `max_retries=0` 설정 및 Windows 환경의 비동기 루프 이슈 대응을 위해 테스트 픽스처 최적화.
-- **기술적 근거:** 인프라 격리 원칙을 준수하여 로컬 개발 환경에 의존하지 않는 독립적이고 신뢰할 수 있는 테스트 자동화 달성.
-
-## 3. 종합 비교 (Before vs After)
-
-| 구분 | 초기 상태 (Skeleton) | 현재 상태 (Current) |
-| :--- | :--- | :--- |
-| **설정 파일** | 없음 | `app/core/settings.py` (규격 준수) |
-| **ENV Prefix** | 없음 | `LEARNING_AI_` 적용 |
-| **API 구조** | `main.py` 내 정의 | `app/api/` 폴더 분리 (Flattened) |
-| **응답 형식** | 기본 `dict` | `HealthResponse` Pydantic 모델 |
-| **컨테이너화** | 없음 | Docker (8090 포트) |
-| **테스트 전략** | 단위 테스트 (Object Mock) | 통합 테스트 (`respx`, `Testcontainers`) |
-
-## 4. 프로젝트 디렉토리 구조도 (Tree)
-
-```text
-learning-ai/
-├── app/
-│   ├── api/
-│   │   ├── health.py  # Health 체크 로직
-│   │   ├── ai.py      # AI 생성 및 임베딩 로직
-│   │   └── deps.py    # 의존성 주입
-│   ├── db/
-│   │   └── session.py # SQLAlchemy 세션 관리
-│   ├── core/
-│   │   ├── settings.py   # pydantic-settings (LEARNING_AI_ prefix)
-│   │   └── exceptions.py # 전역 예외 처리
-│   ├── models/
-│   │   └── embedding.py  # SQLAlchemy (pgvector)
-│   ├── repositories/
-│   │   └── embedding_repository.py
-│   ├── schemas/
-│   │   ├── health.py  # HealthResponse
-│   │   └── ai.py      # AI 관련 DTO
-│   ├── services/
-│   │   ├── base.py
-│   │   ├── claude_service.py
-│   │   └── openai_service.py
-│   └── main.py        # Entry point (Port 8090)
-├── tests/
-│   ├── conftest.py    # Testcontainers 및 DB 픽스처
-│   ├── test_health.py
-│   ├── test_ai.py     # respx 기반 고도화
-│   ├── test_embedding_repository.py # 신규 통합 테스트
-│   └── __init__.py
-├── alembic/           # DB 마이그레이션
-├── Dockerfile
-├── docker-compose.yml
-└── pyproject.toml
-```
-
-## 5. 향후 계획 (Next Steps)
-- CI/CD 파이프라인 연동 시 Docker Desktop 없이 GitHub Actions 상에서 `testcontainers` 실행 최적화.
-
-## 6. 로컬 실행 가이드 (Local Execution Guide)
-
-본 애플리케이션을 로컬 환경에서 Docker Compose를 통해 실행하려면 다음 단계를 따라야 합니다. AI API 연동을 위한 키 발급 및 환경 변수 설정이 필수적입니다.
-
-### 1. 환경 변수 설정 (.env)
-프로젝트 디렉토리 (`learning-ai/`)에 제공된 `.env.example` 템플릿 파일을 복사하여 `.env` 파일을 생성합니다.
-
-**Windows/Linux/macOS 공통:**
-```bash
-cp .env.example .env
-```
-
-생성된 `.env` 파일을 열고, 각 서비스 플랫폼에서 발급받은 실제 API 키를 기입해야 합니다.
-- `OPENAI_API_KEY`: [OpenAI Platform](https://platform.openai.com/)에서 발급 (텍스트 임베딩에 사용)
-- `ANTHROPIC_API_KEY`: [Anthropic Console](https://console.anthropic.com/)에서 발급 (Claude 텍스트 생성에 사용)
-
-### 2. 서비스 실행
-환경 변수 설정이 완료되면, 터미널에서 다음 명령어를 실행하여 컨테이너를 띄웁니다.
-
-```bash
-docker-compose up -d --build
-```
-
-### 3. 접속 및 테스트
-실행이 완료되면 브라우저를 통해 자동 생성된 API 문서(Swagger UI)에 접속하여 기능 동작을 직접 검증할 수 있습니다.
-- API 문서 URL: `http://localhost:8090/docs`
+## 4. 향후 과제
+- Redis 도입 시 `app/core/logging.py`의 `_daily_tokens`를 Redis 기반으로 변경하여 다중 인스턴스 환경 지원 필요.
+- `alembic` 및 `models` 레이어의 Mypy 엄격 타입 체크 보강.

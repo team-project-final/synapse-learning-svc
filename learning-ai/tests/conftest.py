@@ -1,10 +1,10 @@
 import pytest
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from testcontainers.postgres import PostgresContainer
 
 from app.db.session import Base
-from app.models.embedding import Embedding  # noqa: F401 (Ensure model is registered)
+from app.models.note_chunk import NoteChunk  # noqa: F401 (Ensure model is registered)
 
 
 @pytest.fixture

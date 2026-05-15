@@ -6,8 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from alembic import context
 from app.core.config import settings
 from app.db.session import Base
-from app.models.embedding import Embedding  # Import to register model
-from pgvector.sqlalchemy import Vector  # Required for type detection
+from app.models.note_chunk import NoteChunk  # Import to register model
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -62,5 +61,3 @@ if context.is_offline_mode():
 else:
     import asyncio
     asyncio.run(run_migrations_online())
-
-    run_migrations_online()
