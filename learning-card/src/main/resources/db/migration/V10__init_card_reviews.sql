@@ -14,5 +14,5 @@ CREATE TABLE card_reviews
     CONSTRAINT chk_card_reviews_rating CHECK (rating BETWEEN 1 AND 4)
 );
 
-CREATE INDEX idx_card_reviews_card_id ON card_reviews (card_id, reviewed_at DESC);
-CREATE INDEX idx_card_reviews_tenant ON card_reviews (tenant_id, reviewed_at DESC);
+CREATE INDEX idx_reviews_tenant_card_time ON card_reviews(tenant_id, card_id, reviewed_at DESC);
+CREATE INDEX idx_reviews_tenant_time ON card_reviews(tenant_id, reviewed_at DESC);

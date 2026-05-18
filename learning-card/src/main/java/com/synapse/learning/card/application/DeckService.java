@@ -29,7 +29,7 @@ public class DeckService {
     public DeckResponse createDeck(String userId, String tenantId, DeckCreateRequest request) {
         CardDeck deck = CardDeck.builder()
                 .userId(UUID.fromString(userId))
-                .tenantId(tenantId)
+                .tenantId(UUID.fromString(tenantId))
                 .name(request.name())
                 .description(request.description())
                 .color(request.color())

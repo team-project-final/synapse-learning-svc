@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -15,11 +16,11 @@ import java.util.UUID;
 public class CardReview {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @UuidGenerator
+    private UUID id;
 
     @Column(name = "tenant_id", nullable = false)
-    private String tenantId;
+    private UUID tenantId;
 
     @Column(name = "card_id", nullable = false)
     private UUID cardId;
@@ -39,16 +40,16 @@ public class CardReview {
     @Column(name = "new_interval", nullable = false)
     private int newInterval;
 
-    @Column(name = "repetitions", nullable = false)
-    private int repetitions;
+    @Column(name = "time_spent_ms")
+    private Integer timeSpentMs;
 
     @Column(name = "reviewed_at", nullable = false)
     private Instant reviewedAt;
 
     @Builder
-    public CardReview(String tenantId, UUID cardId, int rating,
+    public CardReview(UUID tenantId, UUID cardId, int rating,
             double prevEaseFactor, double newEaseFactor,
-            int prevInterval, int newInterval, int repetitions) {
+            int prevInterval, int newInterval, Integer timeSpentMs) {
         this.tenantId = tenantId;
         this.cardId = cardId;
         this.rating = rating;
@@ -56,7 +57,7 @@ public class CardReview {
         this.newEaseFactor = newEaseFactor;
         this.prevInterval = prevInterval;
         this.newInterval = newInterval;
-        this.repetitions = repetitions;
+        this.timeSpentMs = timeSpentMs;
         this.reviewedAt = Instant.now();
     }
 }

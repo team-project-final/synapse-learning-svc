@@ -4,9 +4,9 @@ import jakarta.validation.constraints.Size;
 
 public record CardUpdateRequest(
 
-        String front,
+        String frontContent,
 
-        String back,
+        String backContent,
 
         @Size(max = 20) String cardType) {
 }

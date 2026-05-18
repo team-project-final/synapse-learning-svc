@@ -8,6 +8,6 @@ public record ReviewSubmitResponse(
         int rating,
         double newEaseFactor,
         int newIntervalDays,
-        int repetitions,
-        Instant nextReviewAt) {
+        int lapses,
+        Instant dueDate) {
 }

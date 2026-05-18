@@ -232,4 +232,16 @@
 - [x] Swagger API 문서 확인
 - [x] RULE Reference → TASK 반영
 
+### 1.11 아키텍처 문서 기준 정렬 (추가 작업)
+
+- [x] SM-2 공식 수정: quality 매핑 제거 → (4-rating) 직접 공식, AGAIN=EF-0.2, interval=0(10분 후)
+- [x] cards 테이블: srs_state JSONB → 개별 SRS 컬럼 (easiness_factor, interval_days, repetitions, lapses, due_date)
+- [x] front/back → front_content/back_content, state → status 컬럼 이름 정렬
+- [x] card_reviews: id BIGSERIAL→UUID, repetitions 제거, time_spent_ms 추가
+- [x] tenant_id: TEXT → UUID 전 테이블 적용 (V13 마이그레이션)
+- [x] BaseEntity tenantId String → UUID, 서비스 레이어 전체 연동
+- [x] ReviewService JSONB 파싱 전면 제거 → 직접 필드 접근으로 단순화
+- [x] Flyway V11~V13 작성 및 pgAdmin 수동 실행 완료
+- [x] Swagger 최종 검증: rating=3, newEaseFactor=2.5, intervalDays=1, lapses=0, dueDate=내일 ✅
+
 **Step 3 Status**: [ ] Not Started / [ ] In Progress / [x] Done (2026-05-18)

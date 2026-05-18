@@ -35,10 +35,10 @@ public class CardService {
 
         FlashCard card = FlashCard.builder()
                 .deckId(UUID.fromString(deckId))
-                .tenantId(tenantId)
+                .tenantId(UUID.fromString(tenantId))
                 .cardType(request.cardType())
-                .front(request.front())
-                .back(request.back())
+                .frontContent(request.frontContent())
+                .backContent(request.backContent())
                 .sourceId(request.sourceId())
                 .bloomLevel(request.bloomLevel())
                 .build();
@@ -72,7 +72,7 @@ public class CardService {
         CardDeck deck = findActiveDeck(deckId);
         validateDeckOwner(deck, userId);
         FlashCard card = findActiveCard(cardId);
-        card.update(request.front(), request.back(), request.cardType());
+        card.update(request.frontContent(), request.backContent(), request.cardType());
         FlashCard saved = flashCardRepository.saveAndFlush(card);
         return cardMapper.toResponse(saved);
     }
