@@ -92,10 +92,11 @@ git checkout -b feature/LEARN-CARD-00N-{설명}
 | `공통_개발_규칙.md` | Git 규칙, 보안 체크리스트, API 응답 포맷 |
 | `mocking/04-learning-svc-mocking.md` | 테스트 픽스처, SM-2 검증 데이터 |
 
-### ⚠️ 문서 간 충돌 사항 (팀장 확인 필요)
+### ✅ 문서 간 충돌 해결 (2026-05-18 팀장 확인)
 
-- **rating vs quality**: TASK 문서는 `rating 1~4` (1=Again~4=Easy), API 명세·ERD는 `quality 0~5` (SM-2 원래 척도)
-- 팀장 확인 전까지 **API 명세 + ERD 기준 `quality 0~5`** 로 구현하고 주석으로 표시
+- **rating 1~4** 기준으로 통일 (1=Again, 2=Hard, 3=Good, 4=Easy)
+- 내부 SM-2 quality 매핑: 1→1, 2→2, 3→4, 4→5
+- API 및 DB 저장값 모두 rating 1~4 기준으로 구현
 
 ---
 
@@ -114,9 +115,9 @@ git checkout -b feature/LEARN-CARD-00N-{설명}
 - **작업 로그**: 오늘 날짜 항목에 완료 내용, 이슈, 다음 할 일 기록
 - **변경 이력** 테이블: 맨 아래에 날짜 + 변경 사항 한 줄 추가
 
-#### 2. WORKFLOW 파일 업데이트 (로컬)
+#### 2. WORKFLOW 파일 업데이트
 
-파일: `.yuji/workflow/WORKFLOW_learning-card_W{주차}.md`
+파일: `project-docs/project-management/workflow/WORKFLOW_learning-card_W{주차}.md`
 
 - 완료된 체크박스 `[ ]` → `[x]` 로 변경
 - Step 완료 시 하단 Status 줄 업데이트
