@@ -1,4 +1,5 @@
 import uuid
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -44,3 +45,31 @@ class NoteChunkRepository:
         for chunk in result.scalars().all():
             await self.session.delete(chunk)
         await self.session.commit()
+
+    async def search_similar(
+        self,
+        tenant_id: uuid.UUID,
+        query_vector: list[float],
+        top_k: int = 10,
+        threshold: float = 0.7,
+    ) -> list[tuple[NoteChunk, float]]:
+        """
+        Search for similar chunks using cosine similarity.
+        Returns a list of tuples (NoteChunk, score).
+        Score is calculated as 1 - cosine_distance.
+        """
+        # Cosine distance operator <=> is mapped to .cosine_distance()
+        distance = NoteChunk.embedding.cosine_distance(query_vector)
+        score = (1 - distance).label("score")
+
+        query = (
+            select(NoteChunk, score)
+            .where(NoteChunk.tenant_id == tenant_id)
+            .where(score >= threshold)
+            .order_by(score.desc())
+            .limit(top_k)
+        )
+
+        result = await self.session.execute(query)
+        # result.all() returns list of Row objects, each containing (NoteChunk, float)
+        return [(row[0], row[1]) for row in result.all()]

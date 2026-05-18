@@ -21,5 +21,5 @@ class AnthropicService(BaseAIService):
         )
         content_text = ""
         if message.content and hasattr(message.content[0], "text"):
-            content_text = getattr(message.content[0], "text")
+            content_text = message.content[0].text
         return content_text

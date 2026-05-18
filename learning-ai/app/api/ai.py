@@ -1,9 +1,18 @@
+import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends
 
 from app.api.deps import get_ai_service, get_current_user, get_embedding_service
-from app.schemas.ai import EmbedRequest, EmbedResponse, GenerateRequest, GenerateResponse
+from app.schemas.ai import (
+    CardGenerateResponse,
+    EmbedRequest,
+    EmbedResponse,
+    GenerateRequest,
+    GenerateResponse,
+    SemanticSearchRequest,
+    SemanticSearchResponse,
+)
 from app.schemas.base import ApiResponse
 from app.services.ai_service import AIService
 from app.services.openai_service import OpenAIEmbeddingService
@@ -11,13 +20,27 @@ from app.services.openai_service import OpenAIEmbeddingService
 router = APIRouter()
 
 
-@router.post("/cards/generate", response_model=ApiResponse[GenerateResponse])
+@router.post("/cards/generate", response_model=ApiResponse[CardGenerateResponse])
+async def generate_flashcards(
+    request: GenerateRequest,
+    current_user: str = Depends(get_current_user),  # noqa: B008
+    service: AIService = Depends(get_ai_service),  # noqa: B008
+) -> ApiResponse[CardGenerateResponse]:
+    """
+    Step 5 Task: POST /ai/cards/generate.
+    Generates a list of flashcards (front/back) from note content.
+    """
+    data = await service.generate_cards(request)
+    return ApiResponse(data=data)
+
+
+@router.post("/generate", response_model=ApiResponse[GenerateResponse])
 async def generate_ai_text(
     request: GenerateRequest,
     current_user: str = Depends(get_current_user),  # noqa: B008
     service: AIService = Depends(get_ai_service),  # noqa: B008
 ) -> ApiResponse[GenerateResponse]:
-    """Step 2 Task: POST /ai/cards/generate"""
+    """Standard text generation endpoint (generic)."""
     data = await service.generate_text_with_fallback(request)
     return ApiResponse(data=data)
 
@@ -33,6 +56,26 @@ async def create_embeddings(
     Supports batch up to 20 texts.
     """
     data = await service.get_embeddings(request.texts)
+    return ApiResponse(data=data)
+
+
+@router.post("/search/semantic", response_model=ApiResponse[SemanticSearchResponse])
+async def semantic_search(
+    request: SemanticSearchRequest,
+    current_user: str = Depends(get_current_user),  # noqa: B008
+    service: AIService = Depends(get_ai_service),  # noqa: B008
+) -> ApiResponse[SemanticSearchResponse]:
+    """
+    Step 4 Task: POST /ai/search/semantic.
+    Performs vector similarity search on note chunks.
+    """
+    try:
+        tenant_id = uuid.UUID(current_user)
+    except ValueError:
+        # Mock tenant for non-UUID user strings
+        tenant_id = uuid.UUID("00000000-0000-0000-0000-000000000000")
+
+    data = await service.semantic_search(tenant_id, request)
     return ApiResponse(data=data)
 
 
