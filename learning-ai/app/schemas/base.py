@@ -1,9 +1,6 @@
 from datetime import datetime
-from typing import Generic, TypeVar
 
 from pydantic import BaseModel, Field
-
-T = TypeVar("T")
 
 
 class ResponseMeta(BaseModel):
@@ -13,7 +10,7 @@ class ResponseMeta(BaseModel):
     request_id: str | None = None
 
 
-class ApiResponse(BaseModel, Generic[T]):
+class ApiResponse[T](BaseModel):
     """Standard success response wrapper."""
 
     success: bool = True
