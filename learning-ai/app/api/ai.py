@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 
 from app.api.deps import get_ai_service, get_current_user, get_embedding_service
 from app.schemas.ai import (
+    CardGenerateResponse,
     EmbedRequest,
     EmbedResponse,
     GenerateRequest,
@@ -19,13 +20,27 @@ from app.services.openai_service import OpenAIEmbeddingService
 router = APIRouter()
 
 
-@router.post("/cards/generate", response_model=ApiResponse[GenerateResponse])
+@router.post("/cards/generate", response_model=ApiResponse[CardGenerateResponse])
+async def generate_flashcards(
+    request: GenerateRequest,
+    current_user: str = Depends(get_current_user),  # noqa: B008
+    service: AIService = Depends(get_ai_service),  # noqa: B008
+) -> ApiResponse[CardGenerateResponse]:
+    """
+    Step 5 Task: POST /ai/cards/generate.
+    Generates a list of flashcards (front/back) from note content.
+    """
+    data = await service.generate_cards(request)
+    return ApiResponse(data=data)
+
+
+@router.post("/generate", response_model=ApiResponse[GenerateResponse])
 async def generate_ai_text(
     request: GenerateRequest,
     current_user: str = Depends(get_current_user),  # noqa: B008
     service: AIService = Depends(get_ai_service),  # noqa: B008
 ) -> ApiResponse[GenerateResponse]:
-    """Step 2 Task: POST /ai/cards/generate"""
+    """Standard text generation endpoint (generic)."""
     data = await service.generate_text_with_fallback(request)
     return ApiResponse(data=data)
 

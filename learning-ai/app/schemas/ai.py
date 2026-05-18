@@ -69,6 +69,21 @@ class SemanticSearchResponse(BaseModel):
     results: list[SemanticSearchResult]
 
 
+class GeneratedCard(BaseModel):
+    """Schema for a single generated flashcard."""
+
+    front: str = Field(..., min_length=1, max_length=200)
+    back: str = Field(..., min_length=1, max_length=500)
+
+
+class CardGenerateResponse(BaseModel):
+    """Response schema for AI flashcard generation."""
+
+    cards: list[GeneratedCard]
+    model: str
+    usage: UsageInfo
+
+
 class ErrorResponse(BaseModel):
     """Standard error response schema."""
 

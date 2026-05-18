@@ -66,7 +66,7 @@ def test_generate_success() -> None:
     )
 
     response = client.post(
-        "/ai/cards/generate",
+        "/ai/generate",
         json={"prompt": "Hi", "max_tokens": 100, "temperature": 0.7},
     )
 
@@ -96,7 +96,7 @@ def test_generate_rate_limit_retry() -> None:
         ),
     ]
 
-    response = client.post("/ai/cards/generate", json={"prompt": "Hi"})
+    response = client.post("/ai/generate", json={"prompt": "Hi"})
 
     assert response.status_code == 200
     assert response.json()["data"]["content"] == "Retry success"
@@ -132,7 +132,7 @@ def test_generate_fallback_to_openai() -> None:
         )
     )
 
-    response = client.post("/ai/cards/generate", json={"prompt": "Hi"})
+    response = client.post("/ai/generate", json={"prompt": "Hi"})
 
     assert response.status_code == 200
     data = response.json()
@@ -186,3 +186,40 @@ def test_semantic_search_success(mock_repo: MagicMock) -> None:
     assert data["data"]["results"][0]["score"] == 0.95
     assert openai_route.called
     assert mock_repo.search_similar.called
+
+
+@respx.mock
+def test_generate_flashcards_success() -> None:
+    """Test successful AI flashcard generation."""
+    # Mock Anthropic API returning JSON
+    anthropic_route = respx.post("https://api.anthropic.com/v1/messages").mock(
+        return_value=Response(
+            200,
+            json={
+                "id": "msg_125",
+                "type": "message",
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": '[{"front": "Q1", "back": "A1"}, {"front": "Q2", "back": "A2"}]',
+                    }
+                ],
+                "model": "claude-3-5-sonnet-20240620",
+                "usage": {"input_tokens": 50, "output_tokens": 30},
+            },
+        )
+    )
+
+    response = client.post(
+        "/ai/cards/generate",
+        json={"prompt": "Some note content about Python"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert len(data["data"]["cards"]) == 2
+    assert data["data"]["cards"][0]["front"] == "Q1"
+    assert data["data"]["cards"][1]["back"] == "A2"
+    assert anthropic_route.called
