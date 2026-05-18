@@ -1,3 +1,5 @@
+import uuid
+
 from pydantic import BaseModel, Field
 
 
@@ -20,6 +22,7 @@ class GenerateRequest(BaseModel):
         1.0, ge=0.0, le=1.0, description="Sampling temperature (0.0 to 1.0)"
     )
 
+
 class GenerateResponse(BaseModel):
     """Response schema for AI text generation."""
 
@@ -41,9 +44,32 @@ class EmbedResponse(BaseModel):
     model: str
 
 
-class ErrorResponse(BaseModel):
-# ...
+class SemanticSearchRequest(BaseModel):
+    """Request schema for semantic search."""
 
+    query: str = Field(..., min_length=1, description="The text to search for")
+    top_k: int = Field(10, ge=1, le=100, description="Number of results to return")
+    threshold: float = Field(
+        0.7, ge=0.0, le=1.0, description="Minimum similarity score threshold"
+    )
+
+
+class SemanticSearchResult(BaseModel):
+    """Schema for a single semantic search result."""
+
+    chunk_id: uuid.UUID
+    note_id: uuid.UUID
+    content: str
+    score: float
+
+
+class SemanticSearchResponse(BaseModel):
+    """Response schema for semantic search."""
+
+    results: list[SemanticSearchResult]
+
+
+class ErrorResponse(BaseModel):
     """Standard error response schema."""
 
     detail: str

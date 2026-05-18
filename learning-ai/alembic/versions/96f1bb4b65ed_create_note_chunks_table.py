@@ -5,18 +5,19 @@ Revises:
 Create Date: 2026-05-15 15:30:00.000000
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects import postgresql
 
+from alembic import op
+
 # revision identifiers, used by Alembic.
 revision: str = '96f1bb4b65ed'
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -39,11 +40,11 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
         sa.PrimaryKeyConstraint('id')
     )
-    
+
     # Indices
     op.create_index('idx_note_chunks_tenant_id', 'note_chunks', ['tenant_id'], unique=False)
     op.create_index('idx_note_chunks_note_id', 'note_chunks', ['note_id'], unique=False)
-    
+
     # HNSW Index for vector search (ERD 5.4)
     # Note: Using op.execute for HNSW with cosine ops as it's cleaner in Alembic
     op.execute(

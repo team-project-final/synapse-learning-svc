@@ -43,3 +43,37 @@
 ## 4. 향후 과제
 - Redis 도입 시 `app/core/logging.py`의 `_daily_tokens`를 Redis 기반으로 변경하여 다중 인스턴스 환경 지원 필요.
 - `alembic` 및 `models` 레이어의 Mypy 엄격 타입 체크 보강.
+
+---
+
+# 작업 보고서: 시맨틱 검색 (Step 4) 구현 (2026-05-18)
+
+## 1. 개요
+`pgvector`를 활용하여 노트 조각(Note Chunks)에 대한 코사인 유사도 기반 시맨틱 검색 기능을 구현하였습니다.
+
+## 2. 주요 변경 사항
+
+### 데이터 모델 및 저장소 (Step 4.1)
+- **Repository 확장**: `NoteChunkRepository`에 `search_similar` 메서드를 추가하였습니다.
+- **pgvector 연동**: SQLAlchemy의 `pgvector` 확장을 사용하여 코사인 유사도 연산자(`<=>`) 기반의 쿼리를 구현하였습니다. 유사도 점수는 `1 - distance`로 계산하여 반환합니다.
+
+### 서비스 레이어 (Step 4.2)
+- **오케스트레이션**: `AIService`에 `semantic_search` 로직을 추가하였습니다.
+- **임베딩 변환**: 사용자의 검색 질의어를 `OpenAIEmbeddingService`를 통해 1536차원 벡터로 변환한 후 저장소에 검색을 요청합니다.
+
+### API 엔드포인트 (Step 4.3)
+- **엔드포인트 신설**: `POST /api/v1/ai/search/semantic`을 추가하여 시맨틱 검색 기능을 노출하였습니다.
+- **DTO 정의**: `SemanticSearchRequest`, `SemanticSearchResponse`, `SemanticSearchResult` 등 Pydantic 모델을 정의하여 입출력 규격을 표준화하였습니다.
+
+### 품질 관리 및 테스트 (Step 4.4)
+- **단위 테스트**: `test_note_chunk_repository.py`에 벡터 검색 정확도 검증 테스트를 추가하였습니다.
+- **통합 테스트**: `test_ai.py`에 API 엔드포인트 호출 및 모킹된 결과 반환 테스트를 추가하였습니다.
+- **정적 분석**: `ruff` 및 `mypy`를 실행하여 코드 스타일과 타입 안정성을 확인하였습니다.
+
+## 3. 기술적 근거
+- **HNSW 인덱스**: `NoteChunk` 모델에 이미 설정된 HNSW 인덱스를 활용하여 대규모 데이터에서도 빠른 검색 성능을 보장합니다.
+- **Tenant 격리**: 검색 쿼리에 `tenant_id` 필터를 강제하여 다중 사용자 환경에서의 데이터 보안을 유지합니다.
+
+## 4. 향후 과제
+- **Step 5**: 노트 내용을 바탕으로 LLM을 이용한 플래시카드 자동 생성 기능 구현 예정.
+- **검색 품질 튜닝**: 검색 결과의 정밀도를 높이기 위해 임베딩 모델의 파라미터나 검색 임계값(Threshold)을 조정하는 실험 필요.

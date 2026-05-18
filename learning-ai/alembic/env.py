@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from alembic import context
 from app.core.config import settings
 from app.db.session import Base
-from app.models.note_chunk import NoteChunk  # Import to register model
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

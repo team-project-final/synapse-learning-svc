@@ -1,8 +1,11 @@
 from typing import Annotated
 
 from fastapi import Depends, Header
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.db.session import get_db
+from app.repositories.note_chunk_repository import NoteChunkRepository
 from app.services.ai_service import AIService
 from app.services.claude_service import ClaudeService
 from app.services.openai_service import OpenAIEmbeddingService
@@ -25,9 +28,15 @@ def get_embedding_service() -> OpenAIEmbeddingService:
     return OpenAIEmbeddingService(api_key=settings.openai_api_key or "")
 
 
+def get_note_chunk_repository(session: AsyncSession = Depends(get_db)) -> NoteChunkRepository:  # noqa: B008
+    """Dependency for getting a NoteChunkRepository instance."""
+    return NoteChunkRepository(session)
+
+
 def get_ai_service(
-    claude: ClaudeService = Depends(get_claude_service),
-    openai: OpenAIEmbeddingService = Depends(get_embedding_service),
+    claude: ClaudeService = Depends(get_claude_service),  # noqa: B008
+    openai: OpenAIEmbeddingService = Depends(get_embedding_service),  # noqa: B008
+    repo: NoteChunkRepository = Depends(get_note_chunk_repository),  # noqa: B008
 ) -> AIService:
     """Dependency for getting an AIService orchestrator."""
-    return AIService(claude=claude, openai=openai)
+    return AIService(claude=claude, openai=openai, repo=repo)
