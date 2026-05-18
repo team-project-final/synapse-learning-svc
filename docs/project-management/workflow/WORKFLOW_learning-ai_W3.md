@@ -1,7 +1,7 @@
 # WORKFLOW: @learning-ai-owner — Week 3
 
-> **Task 문서**: [TASK_learning-ai.md](../task/TASK_learning-ai.md)  
-> **기간**: 2026-05-26 ~ 2026-05-30  
+> **Task 문서**: [TASK_learning-ai.md](../task/TASK_learning-ai.md)
+> **기간**: 2026-05-26 ~ 2026-05-29, 4 영업일
 > **PRD**: [PRD_W3.md](../prd/PRD_W3.md)
 
 ---
@@ -49,7 +49,7 @@
 ### 1.7 Client 구현
 - [ ] NoteApiClient 구현 (knowledge-svc에서 노트 내용 조회)
 - [ ] LlmClient 구현 (OpenAI/Anthropic API 호출, 프롬프트 전송, 응답 파싱)
-- [ ] CardApiClient 구현 (learning-card-svc POST /cards 호출)
+- [ ] CardApiClient 구현 (learning-card 런타임 POST /cards 호출)
 
 ### 1.8 Service + Test
 - [ ] AiCardKafkaConsumer 구현 (note.created 토픽 소비)
@@ -110,7 +110,7 @@
 - [ ] RagQuestionRequest DTO 정의 (question, maxChunks)
 - [ ] RagAnswerResponse DTO 정의 (answer, sources[], cached)
 - [ ] RagSource DTO 정의 (noteId, noteTitle, chunkText, similarity)
-- [ ] SemanticCacheEntry 모델 정의 (questionEmbedding, answer, sources, createdAt)
+- [ ] SemanticCacheEntry 모델 정의 (query_hash, question_embedding, result_data jsonb, hit_count, created_at) — answer/sources는 result_data jsonb 필드로 통합
 - [ ] Output Format → TASK 반영
 
 ### 1.7 Repository / Client 구현
@@ -127,7 +127,7 @@
 - [ ] 테스트 통과 확인
 
 ### 1.9 Controller + Test
-- [ ] POST /ai/ask 엔드포인트 구현 (RAG Q&A)
+- [ ] POST /ai/qa 엔드포인트 구현 (RAG Q&A — `{ "stream": true }` 파라미터 지원, Server-Sent Events 스트리밍 응답)
 - [ ] 응답에 출처 정보 포함 (노트 제목 + 관련도)
 - [ ] 슬라이스 테스트 (@WebMvcTest)
 - [ ] 캐시 히트 시 빠른 응답 확인

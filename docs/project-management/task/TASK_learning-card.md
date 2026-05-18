@@ -1,8 +1,8 @@
 # TASK: @learning-card-owner
 
-> **담당 서비스**: learning-card-svc
+> **담당 서비스**: learning-card 런타임
 > **GitHub Repository**: [synapse-learning-svc](https://github.com/team-project-final/synapse-learning-svc) (`learning-card` 모듈)
-> **주차**: W1 (2026-05-12 ~ 2026-05-16)
+> **주차**: W1 (2026-05-12 ~ 2026-05-15, 4 영업일)
 > **관련 문서**: [SCOPE](../scope/SCOPE_learning-card.md) | [PRD_W1](../prd/PRD_W1.md) | [WORKFLOW](../workflow/WORKFLOW_learning-card_W1.md) | [HISTORY](../history/HISTORY_learning-card.md)
 
 ---
@@ -22,7 +22,7 @@
 | **Duration** | 0.5일 |
 | **RULE Reference** | [18-기술-스택](../../wiki/18-기술-스택.md) · [10-환경-설정](../../wiki/10-환경-설정.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 
 ---
 
@@ -33,15 +33,15 @@
 | **Step Name** | 덱/카드 CRUD API |
 | **Step Goal** | 로그인 사용자가 덱(Deck)을 생성/관리하고, 덱 내 카드(앞면/뒷면)를 생성/조회/수정/삭제할 수 있다. |
 | **Done When** | 덱/카드 CRUD API + 1:N 관계 + 테스트 통과 |
-| **Scope** | **In**: decks 테이블, cards 테이블, CRUD API, 페이지네이션 / **Out**: SM-2 알고리즘, 복습 세션, Kafka 이벤트 |
+| **Scope** | **In**: card_decks 테이블, cards 테이블, CRUD API, 페이지네이션 / **Out**: SM-2 알고리즘, 복습 세션, Kafka 이벤트 |
 | **Input** | Step 1 완료된 프로젝트, ERD 설계, PRD_W1 API 명세 |
-| **Instructions** | 1. `decks` 테이블 스키마 설계 (id, userId, title, description, createdAt, updatedAt)<br>2. `cards` 테이블 스키마 설계 (id, deckId, front, back, createdAt, updatedAt)<br>3. Flyway 마이그레이션 스크립트 작성<br>4. Deck CRUD REST API 구현 (POST/GET/PUT/DELETE)<br>5. Card CRUD REST API 구현 (Deck 하위 리소스)<br>6. 페이지네이션 적용 (Pageable, 기본 20건)<br>7. 통합 테스트 작성 (각 API 엔드포인트별)<br>8. 입력값 검증 (Bean Validation) 적용 |
+| **Instructions** | 1. `card_decks` 테이블 스키마 설계 (id, user_id, tenant_id, name, description, created_at, updated_at)<br>   - 구 `decks` → ERD 기준 `card_decks`<br>   - 구 `userId` → `user_id`, `title` → `name` (snake_case + ERD 기준)<br>   - `tenant_id`: 멀티테넌트 식별 컬럼<br>2. `cards` 테이블 스키마 설계 (id, deck_id, user_id, tenant_id, front_content, back_content, card_type, status, easiness_factor DEFAULT 2.5, interval_days, repetitions, lapses, due_date, source_note_id, created_at, updated_at)<br>   - 구 `deckId` → `deck_id`, `front` → `front_content`, `back` → `back_content` (snake_case + ERD 기준)<br>   - 추가 컬럼: `card_type`, `status`, `easiness_factor DEFAULT 2.5`, `interval_days`, `repetitions`, `lapses`, `due_date`, `source_note_id`<br>3. Flyway 마이그레이션 스크립트 작성<br>4. Deck CRUD REST API 구현 (POST/GET/PUT/DELETE)<br>5. Card CRUD REST API 구현 (Deck 하위 리소스)<br>6. 페이지네이션 적용 (Pageable, 기본 20건)<br>7. 통합 테스트 작성 (각 API 엔드포인트별)<br>8. 입력값 검증 (Bean Validation) 적용 |
 | **Output Format** | API 엔드포인트 목록 + 테스트 결과 + Flyway 마이그레이션 파일 |
-| **Constraints** | - RESTful URL 규칙 준수 (`/api/v1/decks/{deckId}/cards`)<br>- userId는 JWT에서 추출 (인증 필터 연동)<br>- 페이지네이션 최대 100건 제한<br>- soft delete 적용 (deletedAt 컬럼)<br>- PostgreSQL 사용 |
+| **Constraints** | - RESTful URL 규칙 준수 (`/decks/{deckId}/cards` — `/api/v1/` 접두사 제거)<br>- user_id는 JWT에서 추출 (인증 필터 연동)<br>- 페이지네이션 최대 100건 제한<br>- soft delete 적용 (deleted_at 컬럼)<br>- PostgreSQL 사용 |
 | **Duration** | 2일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) · [09-버전-관리-정책](../../wiki/09-버전-관리-정책.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 
 ---
 
@@ -54,17 +54,17 @@
 | **Done When** | SM-2 계산 로직 + 단위 테스트(4개 rating × 경계값) 통과 |
 | **Scope** | **In**: SM-2 알고리즘 로직, rating 입력 처리, interval/EF 계산 / **Out**: 복습 세션 UI, 복습 스케줄링, 통계 집계 |
 | **Input** | SM-2 알고리즘 논문/명세, Step 2 완료된 카드 엔티티, PRD_W1 SRS 요구사항 |
-| **Instructions** | 1. `Sm2Calculator` 도메인 서비스 클래스 생성<br>2. rating enum 정의 (Again=0, Hard=1, Good=2, Easy=3)<br>3. interval 계산 로직 구현 (rating별 분기)<br>4. ease factor 업데이트 로직 구현 (최소 1.3 보장)<br>5. `review_logs` 테이블 설계 및 마이그레이션<br>6. 단위 테스트 작성: 4개 rating × 초기/중간/고EF 경계값<br>7. 통합 테스트: POST `/api/v1/cards/{cardId}/review` 엔드포인트 |
+| **Instructions** | 1. `Sm2Calculator` 도메인 서비스 클래스 생성<br>2. rating enum 정의 (1=Again, 2=Hard, 3=Good, 4=Easy — 1-based, ERD 기준)<br>3. interval 계산 로직 구현 (rating별 분기)<br>4. ease factor 업데이트 로직 구현 (최소 1.3 보장)<br>5. `card_reviews` 테이블 설계 및 마이그레이션 (구 `review_logs` → ERD 기준 `card_reviews`)<br>6. 단위 테스트 작성: 4개 rating × 초기/중간/고EF 경계값<br>7. 통합 테스트: `POST /reviews/sessions/{sessionId}/submit` 엔드포인트 |
 | **Output Format** | SM-2 계산 클래스 + 단위 테스트 결과 + review API 응답 예시 |
 | **Constraints** | - Again → interval = 1 (리셋)<br>- Hard → interval 유지 (변경 없음)<br>- Good → interval × EF<br>- Easy → interval × EF × 2<br>- EF 최솟값: 1.3<br>- 초기 interval: 1일<br>- 부동소수점 연산 시 반올림 처리 |
 | **Duration** | 1.5일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 
 ---
 
-# W2 (2026-05-19 ~ 2026-05-23)
+# W2 (2026-05-18 ~ 2026-05-22, 5 영업일)
 
 ## Step 4: 복습 세션 및 SM-2 스케줄링
 
@@ -75,13 +75,13 @@
 | **Done When** | 복습 세션 시작 API + 오늘 복습 대상 카드 조회 + rating 제출 → SM-2 계산 + 테스트 통과 |
 | **Scope** | **In**: review_sessions 테이블, 복습 큐, rating API / **Out**: Kafka 발행(Step 5) |
 | **Input** | Step 3 완료된 SM-2 알고리즘, 카드 엔티티, PRD_W2 복습 세션 요구사항 |
-| **Instructions** | 1. `review_sessions` 테이블 스키마 설계 (id, userId, startedAt, completedAt, cardCount)<br>2. Flyway 마이그레이션 스크립트 작성<br>3. 복습 세션 시작 API 구현 (POST `/api/v1/review-sessions`)<br>4. 오늘 복습 대상 카드 조회 로직 구현 (nextReviewDate ≤ today)<br>5. 카드 rating 제출 API 구현 (POST `/api/v1/review-sessions/{id}/cards/{cardId}/rate`)<br>6. SM-2 알고리즘 연동하여 다음 복습일 계산 및 저장<br>7. 통합 테스트: 세션 시작 → 카드 조회 → rating → 다음 복습일 검증 |
+| **Instructions** | 1. `review_sessions` 테이블 스키마 설계 (id, user_id, deck_id, tenant_id, total_cards, completed_cards, correct_count, again_count, total_time_ms, status, started_at, completed_at)<br>   - 구 `userId` → `user_id`, `cardCount` → `total_cards` (snake_case + ERD 기준)<br>   - 추가 컬럼: `deck_id`, `completed_cards`, `correct_count`, `again_count`, `total_time_ms`, `status`<br>   - `tenant_id`: 멀티테넌트 식별 컬럼<br>2. Flyway 마이그레이션 스크립트 작성<br>3. 복습 세션 시작 API 구현 (`POST /reviews/sessions` — 구 `/api/v1/review-sessions`)<br>4. 오늘 복습 대상 카드 조회 API 추가 (`GET /reviews/queue`)<br>5. 카드 rating 제출 API 구현 (`POST /reviews/sessions/{sessionId}/submit` — 구 `/api/v1/review-sessions/{id}/cards/{cardId}/rate`, body: `{ "cardId", "rating", "timeSpentMs" }`)<br>5a. 세션 완료 처리 API 추가 (`PUT /reviews/sessions/{sessionId}/complete`)<br>6. SM-2 알고리즘 연동하여 다음 복습일 계산 및 저장<br>7. 통합 테스트: 세션 시작 → 카드 조회 → rating → 다음 복습일 검증 |
 | **Output Format** | review_sessions DDL + 복습 API 엔드포인트 목록 + 테스트 결과 |
-| **Constraints** | - 복습 대상: nextReviewDate ≤ 오늘 날짜인 카드<br>- 세션당 최대 50장 제한<br>- rating 범위: 0(Again) ~ 3(Easy)<br>- SM-2 계산 후 즉시 nextReviewDate 업데이트<br>- PostgreSQL 사용 |
+| **Constraints** | - 복습 대상: due_date ≤ 오늘 날짜인 카드<br>- 세션당 최대 50장 제한<br>- rating 범위: 1(Again) ~ 4(Easy) — 1-based, ERD 기준<br>- SM-2 계산 후 즉시 due_date 업데이트<br>- PostgreSQL 사용 |
 | **Duration** | 2일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 | **Status** | TODO |
 
 ---
@@ -101,7 +101,7 @@
 | **Duration** | 0.5일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) · [14-배포-가이드](../../wiki/14-배포-가이드.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 | **Status** | TODO |
 
 ---
@@ -115,13 +115,13 @@
 | **Done When** | 일별/주별 통계 API + 정답률 계산 + 테스트 통과 |
 | **Scope** | **In**: 복습 로그 기반 통계 집계, 일별/주별 API / **Out**: 대시보드 UI, 스트릭 계산, XP 연동 |
 | **Input** | Step 4-5 완료된 복습 로그 데이터, PRD_W2 통계 요구사항 |
-| **Instructions** | 1. 일별 복습 통계 API 구현 (GET `/api/v1/stats/daily`)<br>2. 주별 복습 통계 API 구현 (GET `/api/v1/stats/weekly`)<br>3. 정답률 계산 로직 구현 (Good+Easy / 전체 rating)<br>4. 날짜 범위 필터 파라미터 지원<br>5. 통계 응답 DTO 설계 (날짜, 복습 수, 정답률)<br>6. 캐싱 적용 (일별 통계는 당일 만료)<br>7. 통합 테스트: 복습 데이터 기반 통계 정확도 검증 |
+| **Instructions** | 1. 복습 통계 개요 API 구현 (`GET /stats/overview` — 구 `/api/v1/stats/daily` + `/api/v1/stats/dashboard` 통합)<br>2. 복습 통계 히트맵 API 구현 (`GET /stats/heatmap` — 구 `/api/v1/stats/weekly`)<br>3. 정답률 계산 로직 구현 (Good+Easy / 전체 rating)<br>4. 날짜 범위 필터 파라미터 지원<br>5. 통계 응답 DTO 설계 (날짜, 복습 수, 정답률)<br>6. 캐싱 적용 (일별 통계는 당일 만료)<br>7. 통합 테스트: 복습 데이터 기반 통계 정확도 검증 |
 | **Output Format** | 통계 API 엔드포인트 + 응답 JSON 예시 + 테스트 결과 |
 | **Constraints** | - 정답률: (Good + Easy 횟수) / 전체 복습 횟수 × 100<br>- 날짜 범위 최대 90일<br>- 빈 날짜는 0으로 채움<br>- 통계 조회 응답 시간 500ms 이내<br>- PostgreSQL 집계 쿼리 사용 |
 | **Duration** | 0.5일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 | **Status** | TODO |
 
 ---
@@ -143,7 +143,7 @@
 | **Duration** | 1.5일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) · [14-배포-가이드](../../wiki/14-배포-가이드.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 | **Status** | TODO |
 
 ---
@@ -157,13 +157,13 @@
 | **Done When** | 대시보드 API + 스트릭 계산 + 종합 통계 응답 + 테스트 통과 |
 | **Scope** | **In**: 스트릭 계산 로직, 종합 대시보드 API, 캐싱 / **Out**: 프론트엔드 대시보드 UI, 게이미피케이션 연동 |
 | **Input** | Step 6 완료된 통계 API, 복습 로그 데이터, PRD_W3 대시보드 요구사항 |
-| **Instructions** | 1. 스트릭 계산 로직 구현 (연속 복습 일수)<br>2. 종합 대시보드 API 구현 (GET `/api/v1/stats/dashboard`)<br>3. 응답 데이터: 오늘 복습 수, 주간 복습 수, 정답률, 현재 스트릭, 최장 스트릭<br>4. 스트릭 데이터 저장 테이블 설계 (user_streaks)<br>5. 복습 완료 시 스트릭 자동 업데이트 로직<br>6. 캐싱 적용 (대시보드 데이터 5분 TTL)<br>7. 통합 테스트: 복습 시나리오별 대시보드 데이터 정확도 검증 |
+| **Instructions** | 1. 스트릭 계산 로직 구현 (연속 복습 일수)<br>2. 종합 통계 개요 API 구현 (`GET /stats/overview` — 구 `/api/v1/stats/dashboard`, Wiki 기준)<br>3. 응답 데이터: 오늘 복습 수, 주간 복습 수, 정답률, 현재 스트릭, 최장 스트릭<br>4. 스트릭 데이터: 별도 `user_streaks` 테이블 없음 — 스트릭은 engagement-svc의 `user_profiles_gamification` 테이블의 `current_streak`, `longest_streak` 컬럼에 위치 (아키텍처). learning-card 런타임은 직접 DB 접근 금지 — card.reviewed Kafka 이벤트 발행을 통해 engagement-svc에 스트릭 갱신 위임<br>5. 복습 완료 시 스트릭 자동 업데이트 로직 (Kafka 이벤트 경유)<br>6. 캐싱 적용 (대시보드 데이터 5분 TTL)<br>7. 통합 테스트: 복습 시나리오별 대시보드 데이터 정확도 검증 |
 | **Output Format** | 대시보드 API 응답 JSON + 스트릭 계산 로직 + 테스트 결과 |
 | **Constraints** | - 스트릭: 연속 복습 일수 (하루라도 빠지면 리셋)<br>- 대시보드 응답 시간 300ms 이내<br>- 캐싱 TTL: 5분<br>- 스트릭은 KST 기준 자정으로 날짜 구분<br>- 복습 0건인 날도 대시보드 표시 |
 | **Duration** | 1.5일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 | **Status** | TODO |
 
 ---
@@ -185,7 +185,7 @@
 | **Duration** | 1.5일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [09-버전-관리-정책](../../wiki/09-버전-관리-정책.md) · [14-배포-가이드](../../wiki/14-배포-가이드.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 | **Status** | TODO |
 
 ---
@@ -205,5 +205,5 @@
 | **Duration** | 1.5일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [09-버전-관리-정책](../../wiki/09-버전-관리-정책.md) |
 | **Assignee** | @learning-card-owner |
-| **Reviewer** | @tech-lead |
+| **Reviewer** | @team-lead |
 | **Status** | TODO |

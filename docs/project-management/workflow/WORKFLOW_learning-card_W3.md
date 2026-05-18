@@ -1,7 +1,7 @@
 # WORKFLOW: @learning-card-owner — Week 3
 
-> **Task 문서**: [TASK_learning-card.md](../task/TASK_learning-card.md)  
-> **기간**: 2026-05-26 ~ 2026-05-30  
+> **Task 문서**: [TASK_learning-card.md](../task/TASK_learning-card.md)
+> **기간**: 2026-05-26 ~ 2026-05-29, 4 영업일
 > **PRD**: [PRD_W3.md](../prd/PRD_W3.md)
 
 ---
@@ -15,13 +15,13 @@
 
 ### 1.2 요구사항 분석
 - [ ] 스케줄러 실행 시간 정의 (매일 오전 8시 KST)
-- [ ] 복습 대상 판정 기준 분석 (SM-2 알고리즘 next_review_date ≤ today)
+- [ ] 복습 대상 판정 기준 분석 (SM-2 알고리즘 due_date ≤ today)
 - [ ] card.review.due 이벤트 스키마 정의 (userId, cardCount, dueDate)
 - [ ] Instructions 초안 → TASK 문서 반영
 
 ### 1.3 Security 1차 검토
 - [ ] 인증 필요 여부: No (내부 스케줄러, API 미노출)
-- [ ] Kafka 토픽 ACL: learning-card-svc만 발행 권한
+- [ ] Kafka 토픽 ACL: learning-card 런타임만 발행 권한
 - [ ] 스케줄러 중복 실행 방지 (ShedLock 등)
 - [ ] 결과 → TASK Constraints 반영
 
@@ -51,7 +51,7 @@
 ### 1.8 Service + Test
 - [ ] ReviewDueScheduler 구현 (@Scheduled cron = "0 0 8 * * *" Asia/Seoul)
 - [ ] ShedLock 설정 (중복 실행 방지, lockAtMostFor=30m)
-- [ ] 복습 대상 사용자 조회 쿼리 (next_review_date ≤ today, GROUP BY user_id)
+- [ ] 복습 대상 사용자 조회 쿼리 (due_date ≤ today, GROUP BY user_id)
 - [ ] 사용자별 card.review.due 이벤트 발행
 - [ ] 통합 테스트 작성 (EmbeddedKafka + 스케줄러 트리거)
 - [ ] 테스트 통과 확인
@@ -81,7 +81,7 @@
 ### 1.2 요구사항 분석
 - [ ] 일별 복습 통계 요건 (복습 수, 정답률)
 - [ ] 주별 복습 통계 요건 (주간 합산, 추세 그래프 데이터)
-- [ ] 스트릭 통합 요건 (engagement-svc user_streaks 연동)
+- [ ] 스트릭 통합 요건 (engagement-svc 연동 — 스트릭 데이터는 `user_profiles_gamification` 테이블 기반이며 Kafka 이벤트를 통해 수신; engagement-svc DB에 직접 접근하지 않음)
 - [ ] Instructions 초안 → TASK 문서 반영
 
 ### 1.3 Security 1차 검토
@@ -113,21 +113,20 @@
 - [ ] ReviewStatRepository 구현 (일별/주별 집계 쿼리)
 - [ ] 일별 통계: GROUP BY date, COUNT(*), AVG(correct)
 - [ ] 주별 통계: 최근 4주 집계
-- [ ] engagement-svc 연동 (REST 또는 Kafka로 스트릭 조회)
+- [ ] engagement-svc 연동 (Kafka 이벤트로 스트릭 수신 — `user_profiles_gamification` 기반 데이터; engagement-svc DB 직접 접근 금지)
 
 ### 1.8 Service + Test
 - [ ] ReviewStatService 구현 (일별 통계 조회)
 - [ ] ReviewStatService 구현 (주별 통계 조회 — 최근 4주)
 - [ ] ReviewDashboardService 구현 (일별 + 주별 + 스트릭 통합)
-- [ ] 스트릭 데이터 연동 (engagement-svc REST 호출 + fallback)
+- [ ] 스트릭 데이터 연동 (engagement-svc Kafka 이벤트 수신 — `user_profiles_gamification` 데이터 기반, DB 직접 접근 금지 + fallback 처리)
 - [ ] Redis 캐싱 적용 (TTL: 5분)
 - [ ] 단위 테스트 작성 (Mockito)
 - [ ] 테스트 통과 확인
 
 ### 1.9 Controller + Test
-- [ ] GET /reviews/stats/daily?from=&to= 엔드포인트 구현
-- [ ] GET /reviews/stats/weekly 엔드포인트 구현 (최근 4주)
-- [ ] GET /reviews/dashboard 엔드포인트 구현 (통합 대시보드)
+- [ ] GET /stats/overview 엔드포인트 구현 (일별 통계 + 종합 대시보드)
+- [ ] GET /stats/heatmap 엔드포인트 구현 (주별 히트맵, 최근 4주)
 - [ ] 슬라이스 테스트 (@WebMvcTest)
 - [ ] 빈 데이터, 기간 필터 테스트
 - [ ] 테스트 통과 확인

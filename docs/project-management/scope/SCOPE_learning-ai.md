@@ -10,7 +10,7 @@
 | 담당 모듈 | ai (Python / FastAPI) |
 | GitHub Repository | [synapse-learning-svc](https://github.com/team-project-final/synapse-learning-svc) (`learning-ai` 모듈) |
 
-## 4주 전체 책임 범위
+## 5주 전체 책임 범위
 
 ### 도메인 경계
 
@@ -32,10 +32,11 @@
 
 | 주차 | 기간 | 핵심 목표 | 산출물 | 의존성 |
 |------|------|-----------|--------|--------|
-| W1 | 05-12~16 | FastAPI 골격 + Claude API + Embedding API | 서비스 골격, /generate API, /embed API | 인프라 (team-lead) |
-| W2 | 05-19~23 | 시맨틱 검색 골격 + AI 카드 생성 골격 | pgvector 조회 API, AI 카드 프로토타입 | note CRUD (knowledge-owner-1 W1) |
-| W3 | 05-26~30 | AI 카드 자동 생성 (note.created 소비) + RAG (시간 허용 시) | Kafka 소비자, 자동 카드 생성, RAG API | Kafka (team-lead W2) |
-| W4 | 06-02~06 | 버그 수정 + 통합 테스트 | 안정화 | 전체 통합 (W3) |
+| W1 | 05-12~15 | FastAPI 골격 + Claude API + Embedding API | 서비스 골격, /generate API, /embed API | 인프라 (team-lead) |
+| W2 | 05-18~22 | 시맨틱 검색 골격 + AI 카드 생성 골격 | pgvector 조회 API, AI 카드 프로토타입 | note CRUD (knowledge-owner-1 W1) |
+| W3 | 05-26~29 | AI 카드 자동 생성 (note.created 소비) + RAG (시간 허용 시) | Kafka 소비자, 자동 카드 생성, RAG API | Kafka (team-lead W2) |
+| W4 | 06-01~05 | 버그 수정 + 통합 테스트 | 안정화 | 전체 통합 (W3) |
+| W5 | 06-08~12 | AI 카드 자동 생성 E2E + 시맨틱 검색 정확도 검증 + P0 버그 수정 | AI E2E 결과, 정확도 리포트, P0 수정 PR | knowledge note events, learning-card API |
 
 ## 협업 인터페이스
 
