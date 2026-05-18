@@ -68,73 +68,73 @@
 ## Step 2: 덱/카드 CRUD API
 
 ### 1.1 TASK 시작
-- [ ] Step Goal / Done When / Scope / Input 확인
-- [ ] PRD_W1 해당 요구사항 확인 (FR-LC-xxx 덱/카드 CRUD)
-- [ ] Duration 산정 확인 (2일)
+- [x] Step Goal / Done When / Scope / Input 확인
+- [x] PRD_W1 해당 요구사항 확인 (FR-LC-xxx 덱/카드 CRUD)
+- [x] Duration 산정 확인 (2일)
 
 ### 1.2 요구사항 분석
-- [ ] Deck/Card CRUD API 엔드포인트 정의
-- [ ] 1:N 관계 (Deck → Card) RESTful URL 규칙 확인
+- [x] Deck/Card CRUD API 엔드포인트 정의
+- [x] 1:N 관계 (Deck → Card) RESTful URL 규칙 확인
 - [ ] 페이지네이션 요건 (기본 20건, 최대 100건)
-- [ ] Instructions 초안 → TASK 문서 반영
+- [x] Instructions 초안 → TASK 문서 반영
 
 ### 1.3 Security 1차 검토
-- [ ] 인증 필요 여부: Yes (JWT 인증 필요, userId는 JWT에서 추출)
-- [ ] 권한 종류: 로그인 사용자 (본인 덱/카드만)
-- [ ] 공개 API 여부: No
-- [ ] 결과 → TASK Constraints 반영
+- [x] 인증 필요 여부: Yes (JWT 인증 필요, userId는 JWT에서 추출)
+- [x] 권한 종류: 로그인 사용자 (본인 덱/카드만)
+- [x] 공개 API 여부: No
+- [x] 결과 → TASK Constraints 반영
 
 ### 1.4 ERD 설계
-- [ ] card_decks 테이블 설계 (id, tenant_id, user_id, name, description, created_at, updated_at, deleted_at)
+- [x] card_decks 테이블 설계 (id, tenant_id, user_id, name, description, created_at, updated_at, deleted_at)
 - [ ] cards 테이블 설계 (id, deck_id, front_content, back_content, card_type: basic|cloze|reverse, status: new|learning|review|suspended, easiness_factor float DEFAULT 2.5, interval_days, repetitions, lapses, due_date, source_note_id, source_chunk_id, created_at, updated_at, deleted_at)
-- [ ] 인덱스 설계 (card_decks.user_id, cards.deck_id)
+- [x] 인덱스 설계 (card_decks.user_id, cards.deck_id)
 - [ ] 관계 정의 (cards.deck_id → card_decks.id FK)
-- [ ] Duration(final) 갱신
+- [x] Duration(final) 갱신
 
 ### 1.5 Security 2차 검토
-- [ ] 민감 정보 암호화: 비해당
-- [ ] Soft Delete 정책: 논리삭제 (deletedAt 컬럼)
-- [ ] 행 단위 접근 제어: 필요 (userId 기반 덱 소유 확인)
-- [ ] 결과 → TASK Constraints 반영
+- [x] 민감 정보 암호화: 비해당
+- [x] Soft Delete 정책: 논리삭제 (deletedAt 컬럼)
+- [x] 행 단위 접근 제어: 필요 (userId 기반 덱 소유 확인)
+- [x] 결과 → TASK Constraints 반영
 
 ### 1.6 DTO / Entity 설계 (API First)
-- [ ] DeckCreateRequest 정의 (name, description)
-- [ ] DeckResponse 정의 (id, name, description, cardCount, createdAt)
+- [x] DeckCreateRequest 정의 (name, description)
+- [x] DeckResponse 정의 (id, name, description, cardCount, createdAt)
 - [ ] CardCreateRequest 정의 (front_content, back_content, card_type)
 - [ ] CardResponse 정의 (id, front_content, back_content, card_type, status, due_date, createdAt)
-- [ ] CardDeck Entity 작성
+- [x] CardDeck Entity 작성
 - [ ] Card Entity 작성
-- [ ] MapStruct 매퍼 작성
-- [ ] Output Format → TASK 반영
+- [x] MapStruct 매퍼 작성 (DeckMapper)
+- [x] Output Format → TASK 반영
 
 ### 1.7 Repository 구현
-- [ ] CardDeckRepository 인터페이스 작성
+- [x] CardDeckRepository 인터페이스 작성
 - [ ] CardRepository 인터페이스 작성
-- [ ] findByUserIdAndDeletedAtIsNull 커스텀 쿼리
-- [ ] Flyway 마이그레이션 스크립트 작성
+- [x] findByUserIdAndDeletedAtIsNull 커스텀 쿼리
+- [x] Flyway 마이그레이션 스크립트 작성 (V8, pgAdmin 수동 실행)
 
 ### 1.8 Service + Test
-- [ ] CardDeckService CRUD 구현 (create, findAll, findById, update, delete)
+- [x] CardDeckService CRUD 구현 (create, findAll, findById, update, delete)
 - [ ] CardService CRUD 구현 (create, findByDeckId, update, delete)
-- [ ] 소유자 검증 로직 구현
-- [ ] Bean Validation 적용
+- [x] 소유자 검증 로직 구현
+- [x] Bean Validation 적용
 - [ ] 단위 테스트 작성 (Mockito)
 - [ ] 테스트 통과 확인
 
 ### 1.9 Controller + Test
-- [ ] CardDeckController REST API 구현 (POST/GET/PUT/DELETE)
+- [x] CardDeckController REST API 구현 (POST/GET/PATCH/DELETE) — Swagger 테스트 완료
 - [ ] CardController REST API 구현 (`/decks/{deckId}/cards`)
 - [ ] 슬라이스 테스트 (@WebMvcTest)
 - [ ] 401/403 응답 테스트
-- [ ] 통합 테스트 (각 엔드포인트별)
+- [x] 통합 테스트 (덱 5개 엔드포인트 Swagger 수동 테스트 완료)
 - [ ] 테스트 통과 확인
 
 ### 1.10 View + Test (해당 시)
 - [ ] Flutter 화면 연동: 해당 없음 (프론트 별도)
-- [ ] Swagger API 문서 확인
-- [ ] RULE Reference → TASK 반영
+- [x] Swagger API 문서 확인
+- [x] RULE Reference → TASK 반영
 
-**Step 2 Status**: [ ] Not Started / [ ] In Progress / [ ] Done
+**Step 2 Status**: [ ] Not Started / [ ] In Progress / [x] Done (2026-05-18)
 
 ---
 

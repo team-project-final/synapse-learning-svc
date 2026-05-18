@@ -57,6 +57,6 @@ public class DeckController {
             @RequestHeader("X-User-Id") String userId,
             @PathVariable String deckId) {
         deckService.deleteDeck(userId, deckId);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.noContent().build();
     }
 }

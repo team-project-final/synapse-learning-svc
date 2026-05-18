@@ -6,6 +6,9 @@ import com.synapse.learning.card.api.DeckUpdateRequest;
 import com.synapse.learning.card.domain.exception.DeckNotFoundException;
 import com.synapse.learning.card.domain.model.CardDeck;
 import com.synapse.learning.card.domain.repository.CardDeckRepository;
+import com.synapse.learning.shared.exception.BusinessException;
+import com.synapse.learning.shared.exception.ErrorCode;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +58,8 @@ public class DeckService {
         CardDeck deck = findActiveDeck(deckId);
         validateOwner(deck, userId);
         deck.update(request.name(), request.description(), request.color());
-        return cardDeckMapper.toResponse(deck);
+        CardDeck saved = cardDeckRepository.saveAndFlush(deck); // flush로 @PreUpdate 즉시 실행 → updatedAt 반영
+        return cardDeckMapper.toResponse(saved);
     }
 
     // 덱 삭제 (Soft Delete)
@@ -75,8 +79,7 @@ public class DeckService {
 
     private void validateOwner(CardDeck deck, String userId) {
         if (!deck.getUserId().equals(UUID.fromString(userId))) {
-            throw new com.synapse.learning.shared.exception.BusinessException(
-                    com.synapse.learning.shared.exception.ErrorCode.DECK_ACCESS_DENIED);
+            throw new BusinessException(ErrorCode.DECK_ACCESS_DENIED);
         }
     }
 }
