@@ -1,7 +1,7 @@
 """create note_chunks table
 
 Revision ID: 96f1bb4b65ed
-Revises: 
+Revises:
 Create Date: 2026-05-15 15:30:00.000000
 
 """
@@ -36,7 +36,10 @@ def upgrade() -> None:
         sa.Column('embedding_version', sa.Integer(), nullable=False, server_default='1'),
         sa.Column('chunk_strategy', sa.String(), nullable=False),
         sa.Column('tokens', sa.Integer(), nullable=True),
-        sa.Column('metadata', postgresql.JSON(astext_type=sa.Text()), nullable=False, server_default='{}'),
+        sa.Column(
+            'metadata', postgresql.JSON(astext_type=sa.Text()),
+            nullable=False, server_default='{}',
+        ),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
         sa.PrimaryKeyConstraint('id')
     )
