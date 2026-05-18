@@ -23,9 +23,6 @@ jobs:
           filters: |
             java:
               - 'learning-card/**'
-              - 'build.gradle.kts'
-              - 'settings.gradle.kts'
-              - 'gradle/**'
             python:
               - 'learning-ai/**'
 
@@ -33,6 +30,9 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.java == 'true'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: learning-card
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -40,8 +40,12 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build & Test (Java)
-        run: ./gradlew build
+      - name: Grant execute permission
+        run: chmod +x gradlew
+      - name: Build & Test
+        run: ./gradlew build --no-daemon
+      - name: Modulith verify
+        run: ./gradlew test --tests '*ModuleStructureTest' --no-daemon
 
   build-python:
     needs: detect-changes

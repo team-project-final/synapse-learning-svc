@@ -2,7 +2,7 @@ import functools
 import logging
 from collections.abc import Callable
 from datetime import date
-from typing import Any, TypeVar
+from typing import Any
 
 from app.schemas.ai import GenerateResponse
 
@@ -12,16 +12,11 @@ logger = logging.getLogger("llm.cost")
 _daily_tokens: dict[str, int] = {}
 DAILY_LIMIT = 500_000
 
-T = TypeVar("T", bound=Callable[..., Any])
-
-
 class TokenLimitExceededError(Exception):
     """Raised when daily token limit is exceeded."""
 
     pass
-
-
-def track_tokens(func: T) -> T:
+def track_tokens[T: Callable[..., Any]](func: T) -> T:
     """Decorator to track token usage and enforce daily limits."""
 
     @functools.wraps(func)
