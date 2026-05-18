@@ -91,4 +91,14 @@ public class FlashCard extends BaseEntity {
     public void softDelete() {
         this.deletedAt = Instant.now();
     }
+
+    public void updateSrsState(String srsState, Instant nextReviewAt, int repetitions) {
+        this.srsState = srsState;
+        this.nextReviewAt = nextReviewAt;
+        if (repetitions == 0) {
+            this.state = "learning";
+        } else {
+            this.state = "review";
+        }
+    }
 }

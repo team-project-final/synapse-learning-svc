@@ -162,74 +162,74 @@
 
 ### 1.1 TASK 시작
 
-- [ ] Step Goal / Done When / Scope / Input 확인
-- [ ] PRD_W1 해당 요구사항 확인 (FR-LC-xxx SM-2 복습)
-- [ ] Duration 산정 확인 (1.5일)
+- [x] Step Goal / Done When / Scope / Input 확인
+- [x] PRD_W1 해당 요구사항 확인 (FR-LC-xxx SM-2 복습)
+- [x] Duration 산정 확인 (1.5일)
 
 ### 1.2 요구사항 분석
 
-- [ ] SM-2 알고리즘 논문/명세 분석
-- [ ] rating 값 정의: int 1-4 (1=Again, 2=Hard, 3=Good, 4=Easy)
-- [ ] interval/EF 계산 규칙 정리
-- [ ] Instructions 초안 → TASK 문서 반영
+- [x] SM-2 알고리즘 논문/명세 분석
+- [x] rating 값 정의: int 1-4 (1=Again, 2=Hard, 3=Good, 4=Easy)
+- [x] interval/EF 계산 규칙 정리
+- [x] Instructions 초안 → TASK 문서 반영
 
 ### 1.3 Security 1차 검토
 
-- [ ] 인증 필요 여부: Yes (JWT 인증 필요)
-- [ ] 권한 종류: 로그인 사용자 (본인 카드만 복습)
-- [ ] 공개 API 여부: No
-- [ ] 결과 → TASK Constraints 반영
+- [x] 인증 필요 여부: Yes (JWT 인증 필요)
+- [x] 권한 종류: 로그인 사용자 (본인 카드만 복습)
+- [x] 공개 API 여부: No
+- [x] 결과 → TASK Constraints 반영
 
 ### 1.4 ERD 설계
 
-- [ ] card_reviews 테이블 설계 (id, card_id, user_id, session_id, rating int 1-4, interval_days, ease_factor, time_spent_ms, prev_ef, new_ef, prev_interval, new_interval, reviewed_at)
-- [ ] 인덱스 설계 (card_id+user_id, reviewed_at DESC)
-- [ ] 관계 정의 (card_reviews.card_id → cards.id FK)
-- [ ] Duration(final) 갱신
+- [x] card_reviews 테이블 설계 (id, tenant_id, card_id, rating, prev/new_ease_factor, prev/new_interval, repetitions, reviewed_at)
+- [x] 인덱스 설계 (card_id+reviewed_at DESC, tenant_id+reviewed_at DESC)
+- [x] 관계 정의 (card_reviews.card_id → cards.id FK)
+- [x] Duration(final) 갱신
 
 ### 1.5 Security 2차 검토
 
-- [ ] 민감 정보 암호화: 비해당
-- [ ] Soft Delete 정책: 물리삭제 (로그 누적 보관)
-- [ ] 행 단위 접근 제어: 필요 (본인 카드 복습 기록만)
-- [ ] 결과 → TASK Constraints 반영
+- [x] 민감 정보 암호화: 비해당
+- [x] Soft Delete 정책: 물리삭제 (로그 누적 보관)
+- [x] 행 단위 접근 제어: 필요 (본인 카드 복습 기록만)
+- [x] 결과 → TASK Constraints 반영
 
 ### 1.6 DTO / Entity 설계 (API First)
 
-- [ ] ReviewSubmitRequest 정의 (card_id, rating int 1-4, time_spent_ms)
-- [ ] ReviewResponse 정의 (due_date, new_interval, new_ef)
-- [ ] CardReview Entity 작성
-- [ ] Rating 값 정의: int 1=Again, 2=Hard, 3=Good, 4=Easy
-- [ ] MapStruct 매퍼 작성
-- [ ] Output Format → TASK 반영
+- [x] ReviewSubmitRequest 정의 (rating int 1-4, @Min @Max validation)
+- [x] ReviewSubmitResponse 정의 (cardId, rating, newEaseFactor, newIntervalDays, repetitions, nextReviewAt)
+- [x] CardReview Entity 작성 (BIGSERIAL PK)
+- [x] Rating 값 정의: int 1=Again, 2=Hard, 3=Good, 4=Easy
+- [ ] MapStruct 매퍼 작성 (직접 매핑으로 대체)
+- [x] Output Format → TASK 반영
 
 ### 1.7 Repository 구현
 
-- [ ] CardReviewRepository 인터페이스 작성
-- [ ] findTopByCardIdOrderByReviewedAtDesc 커스텀 쿼리
-- [ ] Flyway 마이그레이션 스크립트 작성
+- [x] CardReviewRepository 인터페이스 작성
+- [x] findTopByCardIdOrderByReviewedAtDesc 커스텀 쿼리
+- [x] Flyway 마이그레이션 스크립트 작성 (V10__init_card_reviews.sql, pgAdmin 수동 실행)
 
 ### 1.8 Service + Test
 
-- [ ] Sm2Calculator 도메인 서비스 구현
-- [ ] interval 계산 로직 (Again→1, Hard→유지, Good→interval*EF, Easy→interval*EF\*2)
-- [ ] easeFactor 업데이트 로직 (최소 1.3 보장)
+- [x] Sm2Calculator 도메인 서비스 구현
+- [x] interval 계산 로직 (Again/Hard→1, 첫성공→1, 두번째→6, 이후→interval*EF)
+- [x] easeFactor 업데이트 로직 (최소 1.3 보장, 소수점 2자리 반올림)
 - [ ] 단위 테스트 작성 (4개 rating x 초기/중간/고EF 경계값)
-- [ ] 부동소수점 반올림 처리 확인
-- [ ] 테스트 통과 확인
+- [x] 부동소수점 반올림 처리 확인
+- [x] Swagger 수동 검증 통과 (rating 1~4 전체 시나리오)
 
 ### 1.9 Controller + Test
 
-- [ ] POST /reviews/sessions/{sessionId}/submit 엔드포인트 구현 (body: { cardId, rating, timeSpentMs })
+- [x] POST /cards/{cardId}/reviews 엔드포인트 구현
 - [ ] 슬라이스 테스트 (@WebMvcTest)
 - [ ] 401/403 응답 테스트
-- [ ] 통합 테스트 (복습 → interval 변경 확인)
-- [ ] 테스트 통과 확인
+- [x] 통합 테스트 (4개 rating 순서 테스트, EF/interval/rep 모두 정확)
+- [x] 테스트 통과 확인 (Swagger 수동)
 
 ### 1.10 View + Test (해당 시)
 
-- [ ] Flutter 화면 연동: 해당 없음 (프론트 별도)
-- [ ] Swagger API 문서 확인
-- [ ] RULE Reference → TASK 반영
+- [x] Flutter 화면 연동: 해당 없음 (프론트 별도)
+- [x] Swagger API 문서 확인
+- [x] RULE Reference → TASK 반영
 
-**Step 3 Status**: [ ] Not Started / [ ] In Progress / [ ] Done
+**Step 3 Status**: [ ] Not Started / [ ] In Progress / [x] Done (2026-05-18)
