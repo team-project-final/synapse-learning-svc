@@ -32,7 +32,7 @@ public class CardDeck extends BaseEntity {
     private Instant deletedAt;
 
     @Builder
-    public CardDeck(UUID userId, String tenantId, String name, String description, String color) {
+    public CardDeck(UUID userId, UUID tenantId, String name, String description, String color) {
         this.userId = userId;
         this.tenantId = tenantId;
         this.name = name;
