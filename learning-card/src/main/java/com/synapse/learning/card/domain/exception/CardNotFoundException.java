@@ -1,7 +1,7 @@
 package com.synapse.learning.card.domain.exception;
 
-import com.synapse.learning.shared.exception.BusinessException;
-import com.synapse.learning.shared.exception.ErrorCode;
+import com.synapse.learning.global.exception.BusinessException;
+import com.synapse.learning.global.exception.ErrorCode;
 
 public class CardNotFoundException extends BusinessException {
 
