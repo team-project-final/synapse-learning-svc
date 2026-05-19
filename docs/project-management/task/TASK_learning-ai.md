@@ -162,7 +162,7 @@
 | **Done When** | E2E 테스트 시나리오 전체 통과 + CI 연동 + 테스트 리포트 산출 |
 | **Scope** | **In**: E2E 테스트 시나리오 작성, CI 연동, 테스트 리포트 / **Out**: 프로덕션 배포, 모니터링 |
 | **Input** | Step 6 완료된 자동 카드 생성 파이프라인, CI 파이프라인 설정, E2E 테스트 전략 |
-| **Instructions** | 1. E2E 테스트 시나리오 정의 (노트 생성 → Kafka 이벤트 → AI 카드 생성 → learning-card 저장)<br>2. 정상 플로우 E2E 테스트 작성<br>3. LLM 응답 실패 시 재시도 E2E 테스트<br>4. DLQ 전달 시나리오 테스트<br>5. CI 파이프라인에 E2E 테스트 단계 추가<br>6. 테스트 리포트 자동 생성 설정<br>7. 성능 테스트: 이벤트 수신 → 카드 저장 완료 시간 측정 |
+| **Instructions** | 1. E2E 테스트 시나디오 정의 (노트 생성 → Kafka 이벤트 → AI 카드 생성 → learning-card 저장)<br>2. 정상 플로우 E2E 테스트 작성<br>3. LLM 응답 실패 시 재시도 E2E 테스트<br>4. DLQ 전달 시나리오 테스트<br>5. CI 파이프라인에 E2E 테스트 단계 추가<br>6. 테스트 리포트 자동 생성 설정<br>7. 성능 테스트: 이벤트 수신 → 카드 저장 완료 시간 측정 |
 | **Output Format** | E2E 테스트 코드 + CI 파이프라인 설정 + 테스트 리포트 |
 | **Constraints** | - E2E 테스트 실행 시간 5분 이내<br>- CI에서 E2E 실패 시 빌드 FAIL<br>- Testcontainers로 Kafka/PostgreSQL 구동<br>- LLM 호출은 mock 처리 (비용/시간 절약) |
 | **Duration** | 1.5일 |

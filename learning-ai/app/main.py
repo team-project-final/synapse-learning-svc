@@ -1,12 +1,17 @@
 """Learning AI FastAPI application entry point."""
 
 from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.ai import router as ai_router
 from app.api.health import router as health_router
 from app.core.config import settings
-from app.core.exceptions import global_exception_handler, http_exception_handler
+from app.core.exceptions import (
+    global_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+)
 
 app = FastAPI(
     title=settings.service_name,
@@ -27,6 +32,7 @@ if settings.environment == "development" or settings.environment == "local":
 # Exception Handlers
 app.add_exception_handler(Exception, global_exception_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)  # type: ignore
+app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore
 
 # Routers
 app.include_router(health_router)
