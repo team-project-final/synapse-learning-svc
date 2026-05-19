@@ -6,10 +6,14 @@ import com.synapse.learning.card.api.DeckUpdateRequest;
 import com.synapse.learning.card.domain.exception.DeckNotFoundException;
 import com.synapse.learning.card.domain.model.CardDeck;
 import com.synapse.learning.card.domain.repository.CardDeckRepository;
+import com.synapse.learning.shared.PageResponse;
 import com.synapse.learning.shared.exception.BusinessException;
 import com.synapse.learning.shared.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,12 +42,11 @@ public class DeckService {
     }
 
     // 내 덱 목록 조회
-    public List<DeckResponse> getMyDecks(String userId) {
-        return cardDeckRepository
-                .findAllByUserIdAndDeletedAtIsNull(UUID.fromString(userId))
-                .stream()
-                .map(cardDeckMapper::toResponse)
-                .toList();
+    public PageResponse<DeckResponse> getMyDecks(String userId, Pageable pageable) {
+        Page<DeckResponse> page = cardDeckRepository
+                .findAllByUserIdAndDeletedAtIsNull(UUID.fromString(userId), pageable)
+                .map(cardDeckMapper::toResponse);
+        return PageResponse.from(page);
     }
 
     // 덱 상세 조회

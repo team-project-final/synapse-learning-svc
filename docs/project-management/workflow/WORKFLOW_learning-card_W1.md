@@ -87,7 +87,7 @@
 
 - [x] Deck/Card CRUD API 엔드포인트 정의
 - [x] 1:N 관계 (Deck → Card) RESTful URL 규칙 확인
-- [ ] 페이지네이션 요건 (기본 20건, 최대 100건)
+- [x] 페이지네이션 요건 (기본 20건, 최대 100건) — PageResponse<T> 도입, GET /decks + GET /decks/{id}/cards 적용 (2026-05-19)
 - [x] Instructions 초안 → TASK 문서 반영
 
 ### 1.3 Security 1차 검토
@@ -136,15 +136,15 @@
 - [x] CardService CRUD 구현 (create, findByDeckId, update, delete)
 - [x] 소유자 검증 로직 구현
 - [x] Bean Validation 적용
-- [ ] 단위 테스트 작성 (Mockito) — 추후 진행
-- [x] 테스트 통과 확인 (Swagger 수동)
+- [x] 단위 테스트 작성 (Mockito) — CardServiceTest, DeckServiceTest 작성 완료 ✅
+- [x] 테스트 통과 확인 (Swagger 수동 + 단위 테스트)
 
 ### 1.9 Controller + Test
 
-- [x] CardDeckController REST API 구현 (POST/GET/PUT/DELETE)
+- [x] CardDeckController REST API 구현 (POST/GET/PATCH/DELETE)
 - [x] CardController REST API 구현 (`/decks/{deckId}/cards`)
-- [ ] 슬라이스 테스트 (@WebMvcTest) — 추후 진행
-- [ ] 401/403 응답 테스트 — 추후 진행
+- [x] 슬라이스 테스트 — @WebMvcTest 미지원(Spring Boot 4) → @SpringBootTest(MOCK) 방식으로 DeckControllerTest(5개), CardControllerTest(5개) 작성 (2026-05-19)
+- [x] 403 응답 테스트 — 소유자 아님 시나리오 (DECK_ACCESS_DENIED) 검증 완료 / 401은 JWT 미구현으로 추후 진행
 - [x] 통합 테스트 (각 엔드포인트별)
 - [x] 테스트 통과 확인 (Swagger 수동)
 
@@ -214,15 +214,15 @@
 - [x] Sm2Calculator 도메인 서비스 구현
 - [x] interval 계산 로직 (Again/Hard→1, 첫성공→1, 두번째→6, 이후→interval*EF)
 - [x] easeFactor 업데이트 로직 (최소 1.3 보장, 소수점 2자리 반올림)
-- [ ] 단위 테스트 작성 (4개 rating x 초기/중간/고EF 경계값) — 추후 진행
+- [x] 단위 테스트 작성 (4개 rating x 초기/중간/고EF 경계값) — Sm2CalculatorTest, ReviewServiceTest 작성 완료 ✅
 - [x] 부동소수점 반올림 처리 확인
 - [x] Swagger 수동 검증 통과 (rating 1~4 전체 시나리오)
 
 ### 1.9 Controller + Test
 
-- [x] POST /cards/{cardId}/reviews 엔드포인트 구현
-- [ ] 슬라이스 테스트 (@WebMvcTest) — 추후 진행
-- [ ] 401/403 응답 테스트 — 추후 진행
+- [x] POST /cards/{cardId}/reviews 엔드포인트 구현 (ReviewController → ReviewSessionController로 대체)
+- [x] 슬라이스 테스트 — @SpringBootTest(MOCK) 방식으로 ReviewSessionControllerTest에 submitReview(200) + 403 테스트 추가 (2026-05-19)
+- [x] 403 응답 테스트 — 세션 접근 불가 시나리오 검증 완료 / 401은 JWT 미구현으로 추후 진행
 - [x] 통합 테스트 (4개 rating 순서 테스트, EF/interval/rep 모두 정확)
 - [x] 테스트 통과 확인 (Swagger 수동)
 

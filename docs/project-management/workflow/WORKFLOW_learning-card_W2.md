@@ -9,78 +9,78 @@
 ## Step 4: SRS 복습 세션 완성 — 오늘 복습 카드 큐 + rating → SM-2 → 다음 복습일
 
 ### 4.1 TASK 시작
-- [ ] Step Goal / Done When / Scope / Input 확인
-- [ ] PRD_W2 해당 요구사항 확인 (SRS 복습 세션)
-- [ ] Duration 산정 확인
+- [x] Step Goal / Done When / Scope / Input 확인
+- [x] PRD_W2 해당 요구사항 확인 (SRS 복습 세션)
+- [x] Duration 산정 확인
 
 ### 4.2 요구사항 분석
-- [ ] 오늘 복습 대상 카드 큐 조회 로직 정의 (due_date <= today)
-- [ ] 복습 세션 생성/완료 플로우 정의
-- [ ] rating 제출 → SM-2 → 다음 복습일 계산 플로우 확인
-- [ ] 세션 내 카드 순서 정책 (오래된 순 / 랜덤)
-- [ ] Instructions 초안 → TASK 문서 반영
+- [x] 오늘 복습 대상 카드 큐 조회 로직 정의 (due_date <= today)
+- [x] 복습 세션 생성/완료 플로우 정의
+- [x] rating 제출 → SM-2 → 다음 복습일 계산 플로우 확인
+- [x] 세션 내 카드 순서 정책 (due_date ASC 오래된 순)
+- [x] Instructions 초안 → TASK 문서 반영
 
 ### 4.3 Security 1차 검토
-- [ ] 인증 필요 여부: Yes (JWT 인증 필요)
-- [ ] 권한 종류: 로그인 사용자 (본인 카드만 복습)
-- [ ] 공개 API 여부: No
-- [ ] 결과 → TASK Constraints 반영
+- [x] 인증 필요 여부: Yes (JWT 인증 필요)
+- [x] 권한 종류: 로그인 사용자 (본인 카드만 복습)
+- [x] 공개 API 여부: No
+- [x] 결과 → TASK Constraints 반영
 
 ### 4.4 ERD 설계
-- [ ] review_sessions 테이블 설계 (id, user_id, deck_id, started_at, ended_at, total_cards, completed_cards, correct_count, again_count, total_time_ms bigint, status: in_progress|completed|abandoned, created_at)
-- [ ] cards 테이블 갱신 확인 (due_date, interval_days, easiness_factor 컬럼)
-- [ ] 인덱스 설계 (review_sessions.user_id, cards.user_id+due_date)
-- [ ] 관계 정의 (review_sessions.user_id → users.id)
-- [ ] Duration(final) 갱신
+- [x] review_sessions 테이블 설계 (id UUID, tenant_id, user_id, deck_id, status: in_progress|completed|abandoned, started_at, completed_at, total_cards, reviewed_cards)
+- [x] cards 테이블 갱신 확인 (due_date, interval_days, easiness_factor 컬럼)
+- [x] 인덱스 설계 (tenant_id+user_id+started_at DESC, deck_id+status)
+- [x] 관계 정의 (review_sessions.deck_id → card_decks.id FK)
+- [x] Duration(final) 갱신
 
 ### 4.5 Security 2차 검토
-- [ ] 세션 데이터 접근 제어 (본인 세션만)
-- [ ] Soft Delete 정책: 물리삭제 없음 (세션 이력 보관)
-- [ ] 행 단위 접근 제어: 필요 (userId 기반)
-- [ ] 결과 → TASK Constraints 반영
+- [x] 세션 데이터 접근 제어 (본인 세션만 — tenantId 기반)
+- [x] Soft Delete 정책: 물리삭제 없음 (세션 이력 보관)
+- [x] 행 단위 접근 제어: 필요 (tenantId 기반)
+- [x] 결과 → TASK Constraints 반영
 
 ### 4.6 DTO / Entity 설계 (API First)
-- [ ] ReviewSessionResponse 정의 (id, total_cards, completed_cards, correct_count, again_count, total_time_ms, started_at, ended_at, status)
-- [ ] ReviewQueueResponse 정의 (cards[], totalCount)
-- [ ] ReviewCardResponse 정의 (cardId, front, back, deckTitle)
-- [ ] ReviewSubmitRequest 정의 (cardId, rating, timeSpentMs)
-- [ ] ReviewSession Entity 작성
-- [ ] MapStruct 매퍼 작성
-- [ ] Output Format → TASK 반영
+- [x] ReviewSessionResponse 정의 (sessionId, deckId, status, totalCards, reviewedCards, startedAt, completedAt)
+- [x] ReviewCardResponse 정의 (cardId, cardType, frontContent, backContent, bloomLevel, repetitions, easinessFactor, dueDate)
+- [x] ReviewSessionSubmitRequest 정의 (cardId, rating, timeSpentMs)
+- [x] ReviewSessionStartRequest 정의 (deckId)
+- [x] ReviewSession Entity 작성
+- [x] MapStruct 매퍼 작성 — N/A (직접 매핑)
+- [x] Output Format → TASK 반영
 
 ### 4.7 Repository 구현
-- [ ] ReviewSessionRepository 인터페이스 작성
-- [ ] findByUserIdOrderByStartedAtDesc 커스텀 쿼리
-- [ ] findDueCards 쿼리 (due_date <= today AND user_id = ?)
-- [ ] Flyway 마이그레이션 스크립트 작성
+- [x] ReviewSessionRepository 인터페이스 작성
+- [x] findByIdAndTenantId 쿼리
+- [x] findDueCards 쿼리 (due_date <= now AND status IN ('new','learning','review','relearning'), max 50)
+- [x] Flyway 마이그레이션 스크립트 작성 (V14__init_review_sessions.sql, V15__add_session_id_to_reviews.sql)
 
 ### 4.8 Service + Test
-- [ ] ReviewSessionService 구현 (startSession, submitReview, completeSession, getQueue)
-- [ ] 오늘 복습 카드 큐 조회 서비스 (due cards)
-- [ ] 세션 시작 로직 (totalCards 스냅샷)
-- [ ] rating 제출 → SM-2 호출 → due_date 갱신
-- [ ] 세션 완료 로직 (ended_at + completed_cards + status: completed 갱신)
-- [ ] Bean Validation 적용
-- [ ] 단위 테스트 작성 (Mockito)
-- [ ] 통합 테스트 (세션 시작 → 복습 → 완료 플로우)
-- [ ] 테스트 통과 확인
+- [x] ReviewSessionService 구현 (startSession, getReviewQueue, submitReview, completeSession)
+- [x] 오늘 복습 카드 큐 조회 서비스 (due cards, max 50)
+- [x] 세션 시작 로직 (totalCards 스냅샷)
+- [x] rating 제출 → SM-2 호출 → due_date 갱신 → reviewedCards 증가
+- [x] 세션 완료 로직 (completedAt + status: completed 갱신)
+- [x] Bean Validation 적용
+- [x] 단위 테스트 작성 (Mockito) — ReviewSessionServiceTest 5개 작성 및 통과 ✅ (2026-05-19)
+- [x] 통합 테스트 (세션 시작 → 복습 → 완료 플로우 Swagger 수동 검증 ✅)
+- [x] 테스트 통과 확인 (Swagger 수동)
 
 ### 4.9 Controller + Test
-- [ ] POST /reviews/sessions 엔드포인트 구현 (세션 시작)
-- [ ] GET /reviews/queue 엔드포인트 구현 (카드 큐 — 별도 최상위 엔드포인트)
-- [ ] POST /reviews/sessions/{sessionId}/submit 엔드포인트 구현 (rating 제출)
-- [ ] PUT /reviews/sessions/{sessionId}/complete 엔드포인트 구현 (세션 완료)
-- [ ] 슬라이스 테스트 (@WebMvcTest)
-- [ ] 401/403 응답 테스트
-- [ ] 통합 테스트 (전체 복습 플로우)
-- [ ] 테스트 통과 확인
+- [x] POST /reviews/sessions 엔드포인트 구현 (세션 시작)
+- [x] GET /reviews/queue 엔드포인트 구현 (카드 큐 — 별도 최상위 엔드포인트)
+- [x] POST /reviews/sessions/{sessionId}/submit 엔드포인트 구현 (rating 제출)
+- [x] PUT /reviews/sessions/{sessionId}/complete 엔드포인트 구현 (세션 완료)
+- [x] 슬라이스 테스트 — @SpringBootTest(MOCK) + webAppContextSetup 방식으로 ReviewSessionControllerTest(5개) 작성 ✅ (2026-05-19)
+- [x] 403 응답 테스트 — submitReview 접근 불가 시나리오 검증 완료 / 401은 API Gateway 영역 (JWT 검증 후 X-User-Id 헤더 주입) — 이 서비스 범위 아님
+- [x] 통합 테스트 (전체 복습 플로우 Swagger 수동 검증 ✅)
+- [x] 테스트 통과 확인 (Swagger 수동)
 
 ### 4.10 View + Test (해당 시)
-- [ ] Flutter 화면 연동: 해당 없음 (프론트 별도)
-- [ ] Swagger API 문서 확인
-- [ ] RULE Reference → TASK 반영
+- [x] Flutter 화면 연동: 해당 없음 (프론트 별도)
+- [x] Swagger API 문서 확인 (4개 엔드포인트 전체 동작 확인 ✅)
+- [x] RULE Reference → TASK 반영
 
-**Step 4 Status**: [ ] Not Started / [ ] In Progress / [ ] Done
+**Step 4 Status**: [ ] Not Started / [ ] In Progress / [x] Done (2026-05-19)
 
 ---
 

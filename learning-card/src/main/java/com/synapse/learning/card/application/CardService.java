@@ -9,13 +9,16 @@ import com.synapse.learning.card.domain.repository.FlashCardRepository;
 import com.synapse.learning.card.domain.repository.CardDeckRepository;
 import com.synapse.learning.card.domain.exception.DeckNotFoundException;
 import com.synapse.learning.card.domain.model.CardDeck;
+import com.synapse.learning.shared.PageResponse;
 import com.synapse.learning.shared.exception.BusinessException;
 import com.synapse.learning.shared.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -47,15 +50,14 @@ public class CardService {
     }
 
     // 카드 목록 조회
-    public List<CardResponse> getCards(String userId, String deckId) {
+    // 카드 목록 조회
+    public PageResponse<CardResponse> getCards(String userId, String deckId, Pageable pageable) {
         CardDeck deck = findActiveDeck(deckId);
         validateDeckOwner(deck, userId);
-
-        return flashCardRepository
-                .findAllByDeckIdAndDeletedAtIsNull(UUID.fromString(deckId))
-                .stream()
-                .map(cardMapper::toResponse)
-                .toList();
+        Page<CardResponse> page = flashCardRepository
+                .findAllByDeckIdAndDeletedAtIsNull(UUID.fromString(deckId), pageable)
+                .map(cardMapper::toResponse);
+        return PageResponse.from(page);
     }
 
     // 카드 상세 조회
