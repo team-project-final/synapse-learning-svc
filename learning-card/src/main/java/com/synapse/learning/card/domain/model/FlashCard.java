@@ -1,6 +1,6 @@
 package com.synapse.learning.card.domain.model;
 
-import com.synapse.learning.shared.BaseEntity;
+import com.synapse.learning.global.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
