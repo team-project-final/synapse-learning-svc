@@ -65,6 +65,7 @@
 ### 4.9 Controller + Test
 - [x] POST /ai/embeddings 엔드포인트 구현 (임베딩 생성)
 - [x] POST /ai/search/semantic 엔드포인트 구현 (시맨틱 검색)
+- [x] **W2 공통 아키텍처 규정 준수 (ErrorCode L_ 접두사 적용)**
 - [x] 401/403 응답 테스트
 - [x] 통합 테스트 (임베딩 저장 → 시맨틱 검색 → 결과 검증)
 - [x] 테스트 통과 확인
