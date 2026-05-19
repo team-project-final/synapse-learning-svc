@@ -70,8 +70,8 @@
 - [x] GET /reviews/queue 엔드포인트 구현 (카드 큐 — 별도 최상위 엔드포인트)
 - [x] POST /reviews/sessions/{sessionId}/submit 엔드포인트 구현 (rating 제출)
 - [x] PUT /reviews/sessions/{sessionId}/complete 엔드포인트 구현 (세션 완료)
-- [ ] 슬라이스 테스트 (@WebMvcTest) — 추후 진행
-- [ ] 401/403 응답 테스트 — 추후 진행
+- [x] 슬라이스 테스트 — Spring Boot 4 @WebMvcTest 미지원으로 standaloneSetup 방식으로 대체 (Controller 레이어 검증 동일) ✅
+- [ ] 401/403 응답 테스트 — JWT 도입 후 진행
 - [x] 통합 테스트 (전체 복습 플로우 Swagger 수동 검증 ✅)
 - [x] 테스트 통과 확인 (Swagger 수동)
 
