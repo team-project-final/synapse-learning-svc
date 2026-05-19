@@ -44,7 +44,7 @@ dependencies {
     // Spring Modulith
     implementation("org.springframework.modulith:spring-modulith-starter-core")
 
-    // Test
+    // Test 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

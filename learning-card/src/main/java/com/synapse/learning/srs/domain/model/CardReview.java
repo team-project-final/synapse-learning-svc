@@ -43,13 +43,16 @@ public class CardReview {
     @Column(name = "time_spent_ms")
     private Integer timeSpentMs;
 
+    @Column(name = "session_id")
+    private UUID sessionId;
+
     @Column(name = "reviewed_at", nullable = false)
     private Instant reviewedAt;
 
     @Builder
     public CardReview(UUID tenantId, UUID cardId, int rating,
             double prevEaseFactor, double newEaseFactor,
-            int prevInterval, int newInterval, Integer timeSpentMs) {
+            int prevInterval, int newInterval, Integer timeSpentMs, UUID sessionId) {
         this.tenantId = tenantId;
         this.cardId = cardId;
         this.rating = rating;
@@ -58,6 +61,7 @@ public class CardReview {
         this.prevInterval = prevInterval;
         this.newInterval = newInterval;
         this.timeSpentMs = timeSpentMs;
+        this.sessionId = sessionId;
         this.reviewedAt = Instant.now();
     }
 }
