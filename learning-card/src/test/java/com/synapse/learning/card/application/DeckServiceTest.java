@@ -14,6 +14,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.synapse.learning.shared.PageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -78,15 +84,17 @@ class DeckServiceTest {
     void getMyDecks_success() {
         CardDeck deck = mockDeck();
         DeckResponse response = mockResponse();
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<CardDeck> pageResult = new PageImpl<>(List.of(deck), pageable, 1);
 
-        given(cardDeckRepository.findAllByUserIdAndDeletedAtIsNull(USER_ID))
-                .willReturn(List.of(deck));
+        given(cardDeckRepository.findAllByUserIdAndDeletedAtIsNull(USER_ID, pageable))
+                .willReturn(pageResult);
         given(cardDeckMapper.toResponse(deck)).willReturn(response);
 
-        List<DeckResponse> result = deckService.getMyDecks(USER_ID.toString());
+        PageResponse<DeckResponse> result = deckService.getMyDecks(USER_ID.toString(), pageable);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).name()).isEqualTo("테스트 덱");
+        assertThat(result.content()).hasSize(1);
+        assertThat(result.content().get(0).name()).isEqualTo("테스트 덱");
     }
 
     // ── updateDeck ───────────────────────────────────

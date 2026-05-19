@@ -110,7 +110,11 @@
   - 삭제: ReviewController (세션 기반으로 대체)
   - API 검증: POST /reviews/sessions ✅ / GET /reviews/queue ✅ / POST /reviews/sessions/{id}/submit ✅ / PUT /reviews/sessions/{id}/complete ✅
 - **이슈**: UUID string too large — Swagger X-Tenant-Id 헤더 잘못된 복사 → .trim() 방어 처리 추가
-- **다음**: Step 4 PR (feature/LEARN-CARD-004-review-session → dev) → Step 5 Kafka 이벤트 연동
+- **완료**: Step2~4 전체 단위 테스트 작성 완료
+  - Sm2CalculatorTest (11개), ReviewServiceTest (3개), ReviewSessionServiceTest (5개)
+  - ReviewSessionControllerTest (3개), CardServiceTest (6개), DeckServiceTest (6개)
+  - 전체 34개 테스트 통과 ✅
+- **다음**: Step 5 Kafka 이벤트 연동
 
 #### 2026-05-20 (화)
 - **완료**:
@@ -206,6 +210,7 @@
 
 | 날짜 | 변경 사항 |
 |------|-----------|
+| 2026-05-19 | 단위 테스트 완료 — Step2~4 전체 34개 테스트 작성 및 통과 (Sm2Calculator, ReviewService, ReviewSessionService, ReviewSessionController, CardService, DeckService) |
 | 2026-05-19 | Step4 Done — 복습 세션 관리 구현 (ReviewSession, ReviewSessionService, ReviewSessionController, V14~V15 SQL) 및 4개 엔드포인트 Swagger 검증 완료 |
 | 2026-05-18 | Step3 아키텍처 정렬 완료 — cards JSONB→개별컬럼, card_reviews UUID+time_spent_ms, tenant_id UUID, SM-2 공식 수정, Flyway V11~V13 |
 | 2026-05-18 | Step3 Done — SM-2 알고리즘 구현 (Sm2Calculator, ReviewService, ReviewController, V10 SQL) 및 rating 1~4 Swagger 검증 완료 |

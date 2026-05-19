@@ -17,6 +17,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.synapse.learning.shared.PageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -119,15 +125,17 @@ class CardServiceTest {
     void getCards_success() {
         FlashCard card = mockCard();
         CardResponse response = mockResponse();
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<FlashCard> pageResult = new PageImpl<>(List.of(card), pageable, 1);
 
         given(cardDeckRepository.findByIdAndDeletedAtIsNull(DECK_ID)).willReturn(Optional.of(mockDeck()));
-        given(flashCardRepository.findAllByDeckIdAndDeletedAtIsNull(DECK_ID)).willReturn(List.of(card));
+        given(flashCardRepository.findAllByDeckIdAndDeletedAtIsNull(DECK_ID, pageable)).willReturn(pageResult);
         given(cardMapper.toResponse(card)).willReturn(response);
 
-        List<CardResponse> result = cardService.getCards(USER_ID.toString(), DECK_ID.toString());
+        PageResponse<CardResponse> result = cardService.getCards(USER_ID.toString(), DECK_ID.toString(), pageable);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).frontContent()).isEqualTo("스택이란?");
+        assertThat(result.content()).hasSize(1);
+        assertThat(result.content().get(0).frontContent()).isEqualTo("스택이란?");
     }
 
     // ── updateCard ───────────────────────────────────

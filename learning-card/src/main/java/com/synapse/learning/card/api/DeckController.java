@@ -1,9 +1,14 @@
 package com.synapse.learning.card.api;
 
 import com.synapse.learning.shared.ApiResponse;
+import com.synapse.learning.shared.PageResponse;
 import com.synapse.learning.card.application.DeckService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +35,14 @@ public class DeckController {
 
     // 내 덱 목록 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DeckResponse>>> getMyDecks(
-            @RequestHeader("X-User-Id") String userId) {
-        return ResponseEntity.ok(ApiResponse.success(deckService.getMyDecks(userId)));
+    public ResponseEntity<ApiResponse<PageResponse<DeckResponse>>> getMyDecks(
+            @RequestHeader("X-User-Id") String userId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Pageable capped = PageRequest.of(
+                pageable.getPageNumber(),
+                Math.min(pageable.getPageSize(), 100),
+                pageable.getSort());
+        return ResponseEntity.ok(ApiResponse.success(deckService.getMyDecks(userId, capped)));
     }
 
     // 덱 상세 조회

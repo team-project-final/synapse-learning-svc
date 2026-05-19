@@ -3,6 +3,8 @@ package com.synapse.learning.srs.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.synapse.learning.srs.application.ReviewSessionService;
 import com.synapse.learning.srs.api.*;
+import com.synapse.learning.shared.exception.BusinessException;
+import com.synapse.learning.shared.exception.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -93,5 +96,42 @@ class ReviewSessionControllerTest {
                 .header("X-Tenant-Id", TENANT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.status").value("completed"));
+    }
+
+    @Test
+    @DisplayName("POST /reviews/sessions/{id}/submit — rating 제출 200")
+    void submitReview_returns200() throws Exception {
+        UUID cardId = UUID.randomUUID();
+        ReviewSubmitResponse response = new ReviewSubmitResponse(
+                cardId, 3, 2.5, 1, 0, Instant.now());
+
+        given(reviewSessionService.submitReview(any(), any(), eq(SESSION_ID), any()))
+                .willReturn(response);
+
+        mockMvc.perform(post("/reviews/sessions/{sessionId}/submit", SESSION_ID)
+                        .header("X-User-Id", USER_ID)
+                        .header("X-Tenant-Id", TENANT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new ReviewSessionSubmitRequest(cardId, 3, 3000))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.rating").value(3))
+                .andExpect(jsonPath("$.data.newEaseFactor").value(2.5))
+                .andExpect(jsonPath("$.data.newIntervalDays").value(1));
+    }
+
+    @Test
+    @DisplayName("POST /reviews/sessions/{id}/submit — 세션 없음 403")
+    void submitReview_sessionNotFound_returns403() throws Exception {
+        willThrow(new BusinessException(ErrorCode.DECK_ACCESS_DENIED))
+                .given(reviewSessionService).submitReview(any(), any(), any(), any());
+
+        mockMvc.perform(post("/reviews/sessions/{sessionId}/submit", SESSION_ID)
+                        .header("X-User-Id", USER_ID)
+                        .header("X-Tenant-Id", TENANT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new ReviewSessionSubmitRequest(UUID.randomUUID(), 3, 1000))))
+                .andExpect(status().isForbidden());
     }
 }

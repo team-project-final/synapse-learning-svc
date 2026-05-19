@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +15,7 @@ import java.time.Instant;
 
 public interface FlashCardRepository extends JpaRepository<FlashCard, UUID> {
 
-    List<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId);
+    Page<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId, Pageable pageable);
 
     Optional<FlashCard> findByIdAndDeletedAtIsNull(UUID id);
 

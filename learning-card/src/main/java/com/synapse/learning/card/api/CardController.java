@@ -2,8 +2,14 @@ package com.synapse.learning.card.api;
 
 import com.synapse.learning.card.application.CardService;
 import com.synapse.learning.shared.ApiResponse;
+import com.synapse.learning.shared.PageResponse;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,10 +34,15 @@ public class CardController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CardResponse>>> getCards(
+    public ResponseEntity<ApiResponse<PageResponse<CardResponse>>> getCards(
             @RequestHeader("X-User-Id") String userId,
-            @PathVariable String deckId) {
-        return ResponseEntity.ok(ApiResponse.success(cardService.getCards(userId, deckId)));
+            @PathVariable String deckId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Pageable capped = PageRequest.of(
+                pageable.getPageNumber(),
+                Math.min(pageable.getPageSize(), 100),
+                pageable.getSort());
+        return ResponseEntity.ok(ApiResponse.success(cardService.getCards(userId, deckId, capped)));
     }
 
     @GetMapping("/{cardId}")

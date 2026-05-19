@@ -61,7 +61,7 @@
 - [x] rating 제출 → SM-2 호출 → due_date 갱신 → reviewedCards 증가
 - [x] 세션 완료 로직 (completedAt + status: completed 갱신)
 - [x] Bean Validation 적용
-- [ ] 단위 테스트 작성 (Mockito) — 추후 진행
+- [x] 단위 테스트 작성 (Mockito) — ReviewSessionServiceTest 5개 작성 및 통과 ✅ (2026-05-19)
 - [x] 통합 테스트 (세션 시작 → 복습 → 완료 플로우 Swagger 수동 검증 ✅)
 - [x] 테스트 통과 확인 (Swagger 수동)
 
@@ -70,8 +70,8 @@
 - [x] GET /reviews/queue 엔드포인트 구현 (카드 큐 — 별도 최상위 엔드포인트)
 - [x] POST /reviews/sessions/{sessionId}/submit 엔드포인트 구현 (rating 제출)
 - [x] PUT /reviews/sessions/{sessionId}/complete 엔드포인트 구현 (세션 완료)
-- [x] 슬라이스 테스트 — Spring Boot 4 @WebMvcTest 미지원으로 standaloneSetup 방식으로 대체 (Controller 레이어 검증 동일) ✅
-- [ ] 401/403 응답 테스트 — JWT 도입 후 진행
+- [x] 슬라이스 테스트 — @SpringBootTest(MOCK) + webAppContextSetup 방식으로 ReviewSessionControllerTest(5개) 작성 ✅ (2026-05-19)
+- [x] 403 응답 테스트 — submitReview 접근 불가 시나리오 검증 완료 / 401은 API Gateway 영역 (JWT 검증 후 X-User-Id 헤더 주입) — 이 서비스 범위 아님
 - [x] 통합 테스트 (전체 복습 플로우 Swagger 수동 검증 ✅)
 - [x] 테스트 통과 확인 (Swagger 수동)
 
