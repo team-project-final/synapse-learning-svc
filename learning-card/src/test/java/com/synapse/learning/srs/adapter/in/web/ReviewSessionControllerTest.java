@@ -79,10 +79,11 @@ class ReviewSessionControllerTest {
                 new ReviewCardResponse(UUID.randomUUID(), "qa",
                         "스택이란?", "LIFO", null, 0, 2.5, Instant.now()));
 
-        given(reviewSessionUseCase.getReviewQueue(any(), eq(DECK_ID))).willReturn(cards);
+        given(reviewSessionUseCase.getReviewQueue(any(), any(), eq(DECK_ID))).willReturn(cards);
 
         mockMvc.perform(get("/reviews/queue")
                         .header("X-Tenant-Id", TENANT_ID)
+                        .header("X-User-Id", USER_ID)
                         .param("deckId", DECK_ID.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].frontContent").value("스택이란?"));

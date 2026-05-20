@@ -13,7 +13,7 @@ public interface ReviewSessionUseCase {
 
     ReviewSessionResponse startSession(String tenantId, String userId, ReviewSessionStartRequest request);
 
-    List<ReviewCardResponse> getReviewQueue(String tenantId, UUID deckId);
+    List<ReviewCardResponse> getReviewQueue(String tenantId, String userId, UUID deckId);
 
     ReviewSubmitResponse submitReview(String tenantId, String userId, UUID sessionId, ReviewSessionSubmitRequest request);
 

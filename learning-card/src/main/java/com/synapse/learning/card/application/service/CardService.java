@@ -64,6 +64,7 @@ public class CardService implements CardUseCase {
         CardDeck deck = findActiveDeck(deckId);
         validateDeckOwner(deck, userId);
         FlashCard card = findActiveCard(cardId);
+        validateCardInDeck(card, deckId);
         return cardMapper.toResponse(card);
     }
 
@@ -73,6 +74,7 @@ public class CardService implements CardUseCase {
         CardDeck deck = findActiveDeck(deckId);
         validateDeckOwner(deck, userId);
         FlashCard card = findActiveCard(cardId);
+        validateCardInDeck(card, deckId);
         card.update(request.frontContent(), request.backContent(), request.cardType());
         FlashCard saved = flashCardPort.saveAndFlush(card);
         return cardMapper.toResponse(saved);
@@ -84,6 +86,7 @@ public class CardService implements CardUseCase {
         CardDeck deck = findActiveDeck(deckId);
         validateDeckOwner(deck, userId);
         FlashCard card = findActiveCard(cardId);
+        validateCardInDeck(card, deckId);
         card.softDelete();
     }
 
@@ -104,5 +107,11 @@ public class CardService implements CardUseCase {
         return flashCardPort
                 .findByIdAndDeletedAtIsNull(UUID.fromString(cardId))
                 .orElseThrow(() -> new CardNotFoundException(cardId));
+    }
+
+    private void validateCardInDeck(FlashCard card, String deckId) {
+        if (!card.getDeckId().equals(UUID.fromString(deckId))) {
+            throw new BusinessException(ErrorCode.CARD_ACCESS_DENIED);
+        }
     }
 }

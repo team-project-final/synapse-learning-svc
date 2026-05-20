@@ -4,6 +4,7 @@ import com.synapse.learning.card.application.port.out.FlashCardPort;
 import com.synapse.learning.card.domain.model.FlashCard;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitRequest;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitResponse;
+import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
 import com.synapse.learning.srs.application.port.out.CardReviewPort;
 import com.synapse.learning.srs.domain.Sm2Calculator;
 import com.synapse.learning.srs.domain.Sm2Result;
@@ -21,6 +22,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -33,6 +35,8 @@ class ReviewServiceTest {
     CardReviewPort cardReviewPort;
     @Mock
     Sm2Calculator sm2Calculator;
+    @Mock
+    CardReviewedEventPort eventPublisher;
 
     @InjectMocks
     ReviewService reviewService;
@@ -64,6 +68,7 @@ class ReviewServiceTest {
         assertThat(response.lapses()).isEqualTo(0);
         verify(flashCardPort).saveAndFlush(any());
         verify(cardReviewPort).save(any(CardReview.class));
+        verify(eventPublisher).publish(eq(USER_ID.toString()), eq(CARD_ID.toString()), any(), eq(3));
     }
 
     @Test
@@ -75,7 +80,7 @@ class ReviewServiceTest {
                 .build();
 
         given(flashCardPort.findByIdAndDeletedAtIsNull(CARD_ID)).willReturn(Optional.of(card));
-        given(sm2Calculator.calculate(1, 2.5, 0, 0)).willReturn(new Sm2Result(2.3, 0, 0));
+        given(sm2Calculator.calculate(1, 2.5, 0, 0)).willReturn(new Sm2Result(2.3, 1, 0));
         given(flashCardPort.saveAndFlush(any())).willReturn(card);
         given(cardReviewPort.save(any())).willReturn(null);
 
@@ -84,7 +89,7 @@ class ReviewServiceTest {
                 new ReviewSubmitRequest(1, 500), null);
 
         assertThat(response.lapses()).isEqualTo(1);
-        assertThat(response.newIntervalDays()).isEqualTo(0);
+        assertThat(response.newIntervalDays()).isEqualTo(1);
     }
 
     @Test

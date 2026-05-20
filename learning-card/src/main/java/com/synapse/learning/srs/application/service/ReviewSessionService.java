@@ -1,7 +1,12 @@
 package com.synapse.learning.srs.application.service;
 
 import com.synapse.learning.card.application.port.out.FlashCardPort;
+import com.synapse.learning.card.application.port.out.CardDeckPort;
+import com.synapse.learning.card.domain.exception.DeckNotFoundException;
+import com.synapse.learning.card.domain.model.CardDeck;
 import com.synapse.learning.card.domain.model.FlashCard;
+import com.synapse.learning.global.exception.BusinessException;
+import com.synapse.learning.global.exception.ErrorCode;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewCardResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSessionResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSessionStartRequest;
@@ -27,14 +32,16 @@ public class ReviewSessionService implements ReviewSessionUseCase {
 
     private final ReviewSessionPort reviewSessionPort;
     private final FlashCardPort flashCardPort;
+    private final CardDeckPort cardDeckPort;
     private final ReviewService reviewService;
 
     @Override
     @Transactional
     public ReviewSessionResponse startSession(String tenantId, String userId,
             ReviewSessionStartRequest request) {
+        validateDeckAccess(request.deckId(), userId, tenantId);
         List<FlashCard> dueCards = flashCardPort.findDueCards(
-                request.deckId(), Instant.now(), PageRequest.of(0, 50));
+                UUID.fromString(tenantId), request.deckId(), Instant.now(), PageRequest.of(0, 50));
 
         ReviewSession session = ReviewSession.builder()
                 .tenantId(UUID.fromString(tenantId))
@@ -48,9 +55,10 @@ public class ReviewSessionService implements ReviewSessionUseCase {
     }
 
     @Override
-    public List<ReviewCardResponse> getReviewQueue(String tenantId, UUID deckId) {
+    public List<ReviewCardResponse> getReviewQueue(String tenantId, String userId, UUID deckId) {
+        validateDeckAccess(deckId, userId, tenantId);
         List<FlashCard> cards = flashCardPort.findDueCards(
-                deckId, Instant.now(), PageRequest.of(0, 50));
+                UUID.fromString(tenantId), deckId, Instant.now(), PageRequest.of(0, 50));
 
         return cards.stream()
                 .map(c -> new ReviewCardResponse(
@@ -72,6 +80,9 @@ public class ReviewSessionService implements ReviewSessionUseCase {
         ReviewSession session = reviewSessionPort
                 .findByIdAndTenantId(sessionId, UUID.fromString(tenantId))
                 .orElseThrow(() -> new IllegalArgumentException("Session not found: " + sessionId));
+        if (!session.getUserId().equals(UUID.fromString(userId))) {
+            throw new BusinessException(ErrorCode.DECK_ACCESS_DENIED);
+        }
 
         ReviewSubmitRequest submitRequest = new ReviewSubmitRequest(
                 request.rating(), request.timeSpentMs());
@@ -103,5 +114,14 @@ public class ReviewSessionService implements ReviewSessionUseCase {
                 session.getReviewedCards(),
                 session.getStartedAt(),
                 session.getCompletedAt());
+    }
+
+    private void validateDeckAccess(UUID deckId, String userId, String tenantId) {
+        CardDeck deck = cardDeckPort.findByIdAndDeletedAtIsNull(deckId)
+                .orElseThrow(() -> new DeckNotFoundException(deckId.toString()));
+        if (!deck.getTenantId().equals(UUID.fromString(tenantId))
+                || !deck.getUserId().equals(UUID.fromString(userId))) {
+            throw new BusinessException(ErrorCode.DECK_ACCESS_DENIED);
+        }
     }
 }

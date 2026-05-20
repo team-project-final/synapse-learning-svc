@@ -44,8 +44,9 @@ public class DeckController {
 
     @GetMapping("/{deckId}")
     public ResponseEntity<ApiResponse<DeckResponse>> getDeck(
+            @RequestHeader("X-User-Id") String userId,
             @PathVariable String deckId) {
-        return ResponseEntity.ok(ApiResponse.success(deckUseCase.getDeck(deckId)));
+        return ResponseEntity.ok(ApiResponse.success(deckUseCase.getDeck(userId, deckId)));
     }
 
     @PatchMapping("/{deckId}")

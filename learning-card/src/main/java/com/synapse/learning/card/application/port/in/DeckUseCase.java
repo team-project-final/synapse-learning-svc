@@ -12,7 +12,7 @@ public interface DeckUseCase {
 
     PageResponse<DeckResponse> getMyDecks(String userId, Pageable pageable);
 
-    DeckResponse getDeck(String deckId);
+    DeckResponse getDeck(String userId, String deckId);
 
     DeckResponse updateDeck(String userId, String deckId, DeckUpdateRequest request);
 

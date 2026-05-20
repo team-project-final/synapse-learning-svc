@@ -19,5 +19,5 @@ public interface FlashCardPort {
 
     Page<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId, Pageable pageable);
 
-    List<FlashCard> findDueCards(UUID deckId, Instant now, Pageable pageable);
+    List<FlashCard> findDueCards(UUID tenantId, UUID deckId, Instant now, Pageable pageable);
 }
