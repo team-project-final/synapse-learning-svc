@@ -1,28 +1,27 @@
-# ── Stage 1: Build ───────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jdk-alpine AS builder
-
+# Stage 1: Build
+FROM eclipse-temurin:21-jdk-jammy AS builder
 WORKDIR /app
 
-# Gradle wrapper 먼저 복사 (의존성 캐시 레이어)
-COPY gradlew ./
-COPY gradle ./gradle
-COPY build.gradle.kts settings.gradle.kts ./
-RUN chmod +x gradlew && ./gradlew dependencies --no-daemon || true
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle.kts .
+COPY settings.gradle.kts .
 
-# 소스 복사 및 빌드
-COPY src ./src
-RUN ./gradlew bootJar --no-daemon -x test
+RUN chmod +x gradlew && ./gradlew dependencies --no-daemon
 
-# ── Stage 2: Runtime ─────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jre-alpine
+COPY src src
+RUN ./gradlew clean bootJar --no-daemon
 
+# Stage 2: Runtime
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# 보안: 비루트 사용자
-RUN addgroup -S synapse && adduser -S synapse -G synapse
-USER synapse
+RUN addgroup --system app && adduser --system --ingroup app app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
+
+RUN chown app:app app.jar
+USER app
 
 EXPOSE 8084
 
