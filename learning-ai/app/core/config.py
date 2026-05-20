@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/synapse"
 
+    # 외부 서비스 URL
+    learning_card_service_url: str = "http://localhost:8082"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_prefix="LEARNING_AI_",
