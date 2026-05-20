@@ -1,3 +1,0 @@
-package com.synapse.learning.card.application;
-// Moved to com.synapse.learning.card.application.service.CardService
-public final class CardService { private CardService() {} }
