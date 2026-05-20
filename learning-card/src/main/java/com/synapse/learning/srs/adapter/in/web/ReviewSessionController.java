@@ -36,9 +36,10 @@ public class ReviewSessionController {
     @GetMapping("/queue")
     public ResponseEntity<ApiResponse<List<ReviewCardResponse>>> getReviewQueue(
             @RequestHeader("X-Tenant-Id") String tenantId,
+            @RequestHeader("X-User-Id") String userId,
             @RequestParam UUID deckId) {
         return ResponseEntity.ok(ApiResponse.success(
-                reviewSessionUseCase.getReviewQueue(tenantId, deckId)));
+                reviewSessionUseCase.getReviewQueue(tenantId, userId, deckId)));
     }
 
     // 카드 rating 제출

@@ -148,7 +148,7 @@ class DeckServiceTest {
     void getDeck_notFound_throwsException() {
         given(cardDeckPort.findByIdAndDeletedAtIsNull(DECK_ID)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> deckService.getDeck(DECK_ID.toString()))
+        assertThatThrownBy(() -> deckService.getDeck(USER_ID.toString(), DECK_ID.toString()))
                 .isInstanceOf(DeckNotFoundException.class);
     }
 }

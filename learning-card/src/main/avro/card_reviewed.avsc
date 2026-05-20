@@ -1,0 +1,46 @@
+{
+  "namespace": "com.synapse.learning.event",
+  "type": "record",
+  "name": "CardReviewed",
+  "doc": "복습 완료 이벤트 — rating 제출 직후 발행",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "string",
+      "default": "",
+      "doc": "복습한 사용자 UUID (파티션 키)"
+    },
+    {
+      "name": "cardId",
+      "type": "string",
+      "default": "",
+      "doc": "복습한 카드 UUID"
+    },
+    {
+      "name": "deckId",
+      "type": "string",
+      "default": "",
+      "doc": "카드가 속한 덱 UUID"
+    },
+    {
+      "name": "rating",
+      "type": {
+        "type": "enum",
+        "name": "Rating",
+        "symbols": ["AGAIN", "HARD", "GOOD", "EASY"],
+        "default": "GOOD"
+      },
+      "default": "GOOD",
+      "doc": "복습 평가 (1=AGAIN, 2=HARD, 3=GOOD, 4=EASY)"
+    },
+    {
+      "name": "reviewedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "default": 0,
+      "doc": "복습 완료 시각 (epoch millis)"
+    }
+  ]
+}

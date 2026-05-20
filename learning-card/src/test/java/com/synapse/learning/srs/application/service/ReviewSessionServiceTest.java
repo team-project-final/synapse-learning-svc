@@ -1,6 +1,8 @@
 package com.synapse.learning.srs.application.service;
 
+import com.synapse.learning.card.application.port.out.CardDeckPort;
 import com.synapse.learning.card.application.port.out.FlashCardPort;
+import com.synapse.learning.card.domain.model.CardDeck;
 import com.synapse.learning.card.domain.model.FlashCard;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewCardResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSessionResponse;
@@ -34,6 +36,8 @@ class ReviewSessionServiceTest {
     @Mock
     FlashCardPort flashCardPort;
     @Mock
+    CardDeckPort cardDeckPort;
+    @Mock
     ReviewService reviewService;
 
     @InjectMocks
@@ -52,7 +56,8 @@ class ReviewSessionServiceTest {
         FlashCard card2 = FlashCard.builder().deckId(DECK_ID).tenantId(TENANT_ID)
                 .cardType("qa").frontContent("Q2").backContent("A2").build();
 
-        given(flashCardPort.findDueCards(eq(DECK_ID), any(), any(Pageable.class)))
+        given(cardDeckPort.findByIdAndDeletedAtIsNull(DECK_ID)).willReturn(Optional.of(mockDeck()));
+        given(flashCardPort.findDueCards(eq(TENANT_ID), eq(DECK_ID), any(), any(Pageable.class)))
                 .willReturn(List.of(card1, card2));
         given(reviewSessionPort.save(any())).willAnswer(i -> i.getArgument(0));
 
@@ -72,11 +77,12 @@ class ReviewSessionServiceTest {
         FlashCard card = FlashCard.builder().deckId(DECK_ID).tenantId(TENANT_ID)
                 .cardType("qa").frontContent("스택이란?").backContent("LIFO").build();
 
-        given(flashCardPort.findDueCards(eq(DECK_ID), any(), any(Pageable.class)))
+        given(cardDeckPort.findByIdAndDeletedAtIsNull(DECK_ID)).willReturn(Optional.of(mockDeck()));
+        given(flashCardPort.findDueCards(eq(TENANT_ID), eq(DECK_ID), any(), any(Pageable.class)))
                 .willReturn(List.of(card));
 
         List<ReviewCardResponse> queue = reviewSessionService.getReviewQueue(
-                TENANT_ID.toString(), DECK_ID);
+                TENANT_ID.toString(), USER_ID.toString(), DECK_ID);
 
         assertThat(queue).hasSize(1);
         assertThat(queue.get(0).frontContent()).isEqualTo("스택이란?");
@@ -86,11 +92,12 @@ class ReviewSessionServiceTest {
     @Test
     @DisplayName("due 카드가 없으면 빈 큐가 반환된다")
     void getReviewQueue_empty_returnsEmptyList() {
-        given(flashCardPort.findDueCards(eq(DECK_ID), any(), any(Pageable.class)))
+        given(cardDeckPort.findByIdAndDeletedAtIsNull(DECK_ID)).willReturn(Optional.of(mockDeck()));
+        given(flashCardPort.findDueCards(eq(TENANT_ID), eq(DECK_ID), any(), any(Pageable.class)))
                 .willReturn(List.of());
 
         List<ReviewCardResponse> queue = reviewSessionService.getReviewQueue(
-                TENANT_ID.toString(), DECK_ID);
+                TENANT_ID.toString(), USER_ID.toString(), DECK_ID);
 
         assertThat(queue).isEmpty();
     }
@@ -122,5 +129,13 @@ class ReviewSessionServiceTest {
                 TENANT_ID.toString(), SESSION_ID))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Session not found");
+    }
+
+    private CardDeck mockDeck() {
+        return CardDeck.builder()
+                .tenantId(TENANT_ID)
+                .userId(USER_ID)
+                .name("테스트 덱")
+                .build();
     }
 }

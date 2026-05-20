@@ -18,12 +18,14 @@ public interface FlashCardJpaRepository extends JpaRepository<FlashCard, UUID> {
 
     Optional<FlashCard> findByIdAndDeletedAtIsNull(UUID id);
 
-    @Query("SELECT c FROM FlashCard c WHERE c.deckId = :deckId " +
+    @Query("SELECT c FROM FlashCard c WHERE c.tenantId = :tenantId " +
+            "AND c.deckId = :deckId " +
             "AND c.deletedAt IS NULL " +
             "AND c.dueDate <= :now " +
             "AND c.status IN ('new','learning','review','relearning') " +
             "ORDER BY c.dueDate ASC")
-    List<FlashCard> findDueCards(@Param("deckId") UUID deckId,
+    List<FlashCard> findDueCards(@Param("tenantId") UUID tenantId,
+            @Param("deckId") UUID deckId,
             @Param("now") Instant now,
             Pageable pageable);
 }

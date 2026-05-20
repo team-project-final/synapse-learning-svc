@@ -18,11 +18,11 @@ class Sm2CalculatorTest {
     // ── AGAIN (rating=1) ─────────────────────────────
 
     @Test
-    @DisplayName("AGAIN: interval=0, repetitions=0, EF 감소")
+    @DisplayName("AGAIN: interval=1, repetitions=0, EF 감소")
     void again_resetsIntervalAndRepetitions() {
         Sm2Result result = sm2Calculator.calculate(1, 2.5, 10, 3);
 
-        assertThat(result.intervalDays()).isEqualTo(0);
+        assertThat(result.intervalDays()).isEqualTo(1);
         assertThat(result.repetitions()).isEqualTo(0);
         assertThat(result.easeFactor()).isEqualTo(2.3);
     }
@@ -38,12 +38,12 @@ class Sm2CalculatorTest {
     // ── HARD (rating=2) ──────────────────────────────
 
     @Test
-    @DisplayName("HARD: 첫 번째 성공 → interval=1, repetitions=1")
-    void hard_firstRepetition() {
-        Sm2Result result = sm2Calculator.calculate(2, 2.5, 0, 0);
+    @DisplayName("HARD: 기존 interval 유지, 최소 1일")
+    void hard_keepsInterval() {
+        Sm2Result result = sm2Calculator.calculate(2, 2.5, 7, 3);
 
-        assertThat(result.repetitions()).isEqualTo(1);
-        assertThat(result.intervalDays()).isEqualTo(1);
+        assertThat(result.repetitions()).isEqualTo(4);
+        assertThat(result.intervalDays()).isEqualTo(7);
     }
 
     @Test
@@ -66,17 +66,8 @@ class Sm2CalculatorTest {
     }
 
     @Test
-    @DisplayName("GOOD: 두 번째 성공 → interval=6, repetitions=2")
-    void good_secondRepetition() {
-        Sm2Result result = sm2Calculator.calculate(3, 2.5, 1, 1);
-
-        assertThat(result.repetitions()).isEqualTo(2);
-        assertThat(result.intervalDays()).isEqualTo(6);
-    }
-
-    @Test
-    @DisplayName("GOOD: 세 번째 이후 → interval = prevInterval * EF")
-    void good_thirdRepetitionAndBeyond() {
+    @DisplayName("GOOD: interval = prevInterval * EF")
+    void good_multipliesIntervalByEaseFactor() {
         Sm2Result result = sm2Calculator.calculate(3, 2.5, 6, 2);
 
         assertThat(result.repetitions()).isEqualTo(3);
@@ -108,6 +99,14 @@ class Sm2CalculatorTest {
         Sm2Result result = sm2Calculator.calculate(4, 2.5, 0, 0);
 
         assertThat(result.easeFactor()).isEqualTo(2.6);
+    }
+
+    @Test
+    @DisplayName("EASY: interval = prevInterval * EF * 2")
+    void easy_multipliesIntervalByEaseFactorAndBonus() {
+        Sm2Result result = sm2Calculator.calculate(4, 2.5, 6, 2);
+
+        assertThat(result.intervalDays()).isEqualTo(31); // 6 * 2.6 * 2 = 31.2
     }
 
     // ── EF 최솟값 경계 ────────────────────────────────

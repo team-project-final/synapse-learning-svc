@@ -39,7 +39,7 @@ public class FlashCardPersistenceAdapter implements FlashCardPort {
     }
 
     @Override
-    public List<FlashCard> findDueCards(UUID deckId, Instant now, Pageable pageable) {
-        return jpaRepository.findDueCards(deckId, now, pageable);
+    public List<FlashCard> findDueCards(UUID tenantId, UUID deckId, Instant now, Pageable pageable) {
+        return jpaRepository.findDueCards(tenantId, deckId, now, pageable);
     }
 }

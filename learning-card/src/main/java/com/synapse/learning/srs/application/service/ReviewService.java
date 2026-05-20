@@ -5,6 +5,7 @@ import com.synapse.learning.card.domain.exception.CardNotFoundException;
 import com.synapse.learning.card.domain.model.FlashCard;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitRequest;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitResponse;
+import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
 import com.synapse.learning.srs.application.port.out.CardReviewPort;
 import com.synapse.learning.srs.domain.Sm2Calculator;
 import com.synapse.learning.srs.domain.Sm2Result;
@@ -12,6 +13,8 @@ import com.synapse.learning.srs.domain.model.CardReview;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -25,6 +28,7 @@ public class ReviewService {
     private final FlashCardPort flashCardPort;
     private final CardReviewPort cardReviewPort;
     private final Sm2Calculator sm2Calculator;
+    private final CardReviewedEventPort eventPublisher;
 
     @Transactional
     public ReviewSubmitResponse submitReview(String userId, String tenantId,
@@ -44,10 +48,7 @@ public class ReviewService {
         Sm2Result result = sm2Calculator.calculate(
                 request.rating(), prevEF, prevInterval, card.getRepetitions());
 
-        // dueDate 계산 (interval=0 → 10분 후, 그 외 → N일 후)
-        Instant dueDate = result.intervalDays() == 0
-                ? Instant.now().plus(10, ChronoUnit.MINUTES)
-                : Instant.now().plus(result.intervalDays(), ChronoUnit.DAYS);
+        Instant dueDate = Instant.now().plus(result.intervalDays(), ChronoUnit.DAYS);
 
         // lapses: Again(1)이면 +1
         int newLapses = (request.rating() == 1) ? prevLapses + 1 : prevLapses;
@@ -70,12 +71,29 @@ public class ReviewService {
                 .sessionId(sessionId)
                 .build());
 
-        return new ReviewSubmitResponse(
+        ReviewSubmitResponse response = new ReviewSubmitResponse(
                 UUID.fromString(cardId),
                 request.rating(),
                 result.easeFactor(),
                 result.intervalDays(),
                 newLapses,
                 dueDate);
+
+        publishAfterCommit(userId, cardId, card.getDeckId().toString(), request.rating());
+
+        return response;
+    }
+
+    private void publishAfterCommit(String userId, String cardId, String deckId, int rating) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            eventPublisher.publish(userId, cardId, deckId, rating);
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                eventPublisher.publish(userId, cardId, deckId, rating);
+            }
+        });
     }
 }

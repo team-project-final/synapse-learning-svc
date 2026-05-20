@@ -48,8 +48,9 @@ public class DeckService implements DeckUseCase {
     }
 
     @Override
-    public DeckResponse getDeck(String deckId) {
+    public DeckResponse getDeck(String userId, String deckId) {
         CardDeck deck = findActiveDeck(deckId);
+        validateOwner(deck, userId);
         return cardDeckMapper.toResponse(deck);
     }
 
