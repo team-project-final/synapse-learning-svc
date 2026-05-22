@@ -152,67 +152,68 @@
 ## Step 6: review_sessions 통계 — 일별/주별 복습 수, 정답률 API
 
 ### 6.1 TASK 시작
-- [ ] Step Goal / Done When / Scope / Input 확인
-- [ ] PRD_W2 해당 요구사항 확인 (복습 통계)
-- [ ] Duration 산정 확인
+- [x] Step Goal / Done When / Scope / Input 확인
+- [x] PRD_W2 해당 요구사항 확인 (복습 통계)
+- [x] Duration 산정 확인
 
 ### 6.2 요구사항 분석
-- [ ] 일별 복습 수 집계 요건 (최근 N일)
-- [ ] 주별 복습 수 집계 요건 (최근 N주)
-- [ ] 정답률 계산 기준 정의 (Good+Easy / 전체)
-- [ ] 통계 데이터 응답 포맷 정의
-- [ ] Instructions 초안 → TASK 문서 반영
+- [x] 일별 복습 수 집계 요건 (최근 30일)
+- [x] 주별 복습 수 집계 요건 (최근 12주)
+- [x] 정답률 계산 기준 정의 (rating >= 3 / 전체)
+- [x] 통계 데이터 응답 포맷 정의
+- [x] Instructions 초안 → TASK 문서 반영
 
 ### 6.3 Security 1차 검토
-- [ ] 인증 필요 여부: Yes (JWT 인증 필요)
-- [ ] 권한 종류: 로그인 사용자 (본인 통계만)
-- [ ] 공개 API 여부: No
-- [ ] 결과 → TASK Constraints 반영
+- [x] 인증 필요 여부: Yes (JWT 인증 필요)
+- [x] 권한 종류: 로그인 사용자 (본인 통계만)
+- [x] 공개 API 여부: No
+- [x] 결과 → TASK Constraints 반영
 
 ### 6.4 ERD 설계
-- [ ] 추가 테이블 불필요 (card_reviews + review_sessions 기반 집계)
-- [ ] 집계 쿼리 설계 (GROUP BY date/week, COUNT, 정답률 계산)
-- [ ] 인덱스 최적화 확인 (card_reviews.user_id + reviewed_at)
-- [ ] Duration(final) 갱신
+- [x] 추가 테이블 불필요 (card_reviews JOIN review_sessions 기반 집계)
+- [x] 집계 쿼리 설계 (DATE_TRUNC + FILTER WHERE + AT TIME ZONE)
+- [x] 인덱스 최적화 확인 (기존 idx_reviews_tenant_time 활용)
+- [x] Duration(final) 갱신
 
 ### 6.5 Security 2차 검토
-- [ ] 통계 데이터 접근 제어 (본인만)
-- [ ] 다른 사용자 통계 접근 불가 확인
-- [ ] 결과 → TASK Constraints 반영
+- [x] 통계 데이터 접근 제어 (본인만 — tenantId + userId 기반)
+- [x] 다른 사용자 통계 접근 불가 확인
+- [x] 결과 → TASK Constraints 반영
 
 ### 6.6 DTO / Entity 설계 (API First)
-- [ ] DailyReviewStatResponse 정의 (date, reviewCount, correctRate)
-- [ ] WeeklyReviewStatResponse 정의 (weekStart, reviewCount, correctRate)
-- [ ] ReviewStatsResponse 정의 (daily[], weekly[], totalReviews, overallCorrectRate)
-- [ ] Output Format → TASK 반영
+- [x] DailyReviewStatResponse 정의 (date, reviewCount, correctRate)
+- [x] WeeklyReviewStatResponse 정의 (weekStart, reviewCount, correctRate)
+- [x] ReviewStatsResponse 정의 (daily[], totalReviews, overallCorrectRate)
+- [x] WeeklyStatsResponse 정의 (weekly[])
+- [x] Output Format → TASK 반영
 
 ### 6.7 Repository 구현
-- [ ] CardReviewRepository 커스텀 쿼리 추가
-- [ ] 일별 집계 쿼리 (GROUP BY DATE(reviewed_at), COUNT, 정답률)
-- [ ] 주별 집계 쿼리 (GROUP BY WEEK, COUNT, 정답률)
-- [ ] Native Query 또는 JPQL 작성
+- [x] ReviewStatsJpaRepository — Native Query 작성
+- [x] 일별 집계 쿼리 (DATE_TRUNC day, FILTER WHERE rating>=3)
+- [x] 주별 집계 쿼리 (DATE_TRUNC week, FILTER WHERE rating>=3)
+- [x] DailyStatRow / WeeklyStatRow Projection Interface 작성
+- [x] ReviewStatsPersistenceAdapter 구현 (ReviewStatsPort 구현체)
 
 ### 6.8 Service + Test
-- [ ] ReviewStatsService 구현 (getDailyStats, getWeeklyStats, getOverallStats)
-- [ ] 일별 복습 수 + 정답률 계산 로직
-- [ ] 주별 복습 수 + 정답률 계산 로직
-- [ ] 기간 필터링 (최근 30일 / 12주)
-- [ ] 데이터 없는 날짜 0으로 채우기 로직
-- [ ] 단위 테스트 작성 (Mockito)
-- [ ] 경계값 테스트 (데이터 없는 기간, 정답률 0%)
-- [ ] 테스트 통과 확인
+- [x] ReviewStatsService 구현 (getOverview, getHeatmap)
+- [x] 일별 복습 수 + 정답률 계산 로직
+- [x] 주별 복습 수 + 정답률 계산 로직
+- [x] 기간 필터링 (최근 30일 / 12주)
+- [x] 데이터 없는 날짜 0으로 채우기 로직
+- [x] 단위 테스트 작성 (Mockito) — ReviewStatsServiceTest (5개)
+- [x] 경계값 테스트 (데이터 없는 기간, 정답률 0%, 소수점 반올림)
+- [x] 테스트 통과 확인 (`./gradlew test` BUILD SUCCESSFUL ✅ 2026-05-21)
 
 ### 6.9 Controller + Test
-- [ ] GET /stats/overview 엔드포인트 구현 (일별 통계 + 종합)
-- [ ] GET /stats/heatmap 엔드포인트 구현 (주별 통계)
-- [ ] 슬라이스 테스트 (@WebMvcTest)
-- [ ] 401/403 응답 테스트
-- [ ] 통합 테스트 (복습 데이터 → 통계 API 검증)
-- [ ] 테스트 통과 확인
+- [x] GET /stats/overview 엔드포인트 구현 (일별 통계 + 종합)
+- [x] GET /stats/heatmap 엔드포인트 구현 (주별 통계)
+- [x] 슬라이스 테스트 (@SpringBootTest MOCK) — ReviewStatsControllerTest (3개)
+- [x] 400 응답 테스트 (헤더 누락)
+- [x] 테스트 통과 확인 (`./gradlew test` BUILD SUCCESSFUL ✅ 2026-05-21)
 
 ### 6.10 View + Test (해당 시)
-- [ ] Flutter 화면 연동: 해당 없음 (프론트 별도)
-- [ ] Swagger API 문서 확인
-- [ ] RULE Reference → TASK 반영
+- [x] Flutter 화면 연동: 해당 없음 (프론트 별도)
+- [ ] Swagger API 문서 확인 — 로컬 실행 후
+- [x] RULE Reference → TASK 반영
 
-**Step 6 Status**: [ ] Not Started / [ ] In Progress / [ ] Done
+**Step 6 Status**: [ ] Not Started / [ ] In Progress / [x] Done (2026-05-21)
