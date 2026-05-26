@@ -51,6 +51,10 @@ dependencies {
     implementation("org.apache.avro:avro:1.12.0")
     implementation("io.confluent:kafka-avro-serializer:7.7.0")
 
+    // ShedLock — 스케줄러 중복 실행 방지
+    implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0")
+
     // Test - Kafka
     testImplementation("org.springframework.kafka:spring-kafka-test")
 
@@ -70,3 +74,4 @@ dependencyManagement {
         mavenBom("org.springframework.modulith:spring-modulith-bom:1.3.0")
     }
 }
+
