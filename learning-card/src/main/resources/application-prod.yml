@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      properties:
+        schema.registry.url: ${SPRING_KAFKA_SCHEMA_REGISTRY_URL}
+
+synapse:
+  jwt:
+    public-key: ${JWT_PUBLIC_KEY}
+    issuer: ${JWT_ISSUER:synapse-auth}
+
+logging:
+  level:
+    root: INFO
