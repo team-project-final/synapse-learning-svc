@@ -2,20 +2,24 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse, StreamingResponse
+from starlette.responses import Response
 
-from app.api.deps import get_ai_service, get_current_user, get_embedding_service
+from app.api.deps import get_ai_service, get_current_user, get_embedding_service, get_rag_service
 from app.schemas.ai import (
     CardGenerateResponse,
     EmbedRequest,
     EmbedResponse,
     GenerateRequest,
     GenerateResponse,
+    QaRequest,
     SemanticSearchRequest,
     SemanticSearchResponse,
 )
 from app.schemas.base import ApiResponse
 from app.services.ai_service import AIService
 from app.services.openai_service import OpenAIEmbeddingService
+from app.services.rag_service import RagService
 
 router = APIRouter()
 
@@ -77,6 +81,32 @@ async def semantic_search(
 
     data = await service.semantic_search(tenant_id, request)
     return ApiResponse(data=data)
+
+
+@router.post("/qa")
+async def qa(
+    request: QaRequest,
+    current_user: str = Depends(get_current_user),  # noqa: B008
+    rag: RagService = Depends(get_rag_service),  # noqa: B008
+) -> Response:
+    """
+    Step 7 Task: POST /ai/qa.
+    RAG Q&A: 시맨틱 캐시 → pgvector 검색 → LLM 답변 생성.
+    stream=true 시 SSE(text/event-stream)로 스트리밍 반환.
+    """
+    try:
+        tenant_id = uuid.UUID(current_user)
+    except ValueError:
+        tenant_id = uuid.UUID("00000000-0000-0000-0000-000000000000")
+
+    if request.stream:
+        return StreamingResponse(
+            rag.answer_stream(question=request.question, tenant_id=tenant_id),
+            media_type="text/event-stream",
+        )
+
+    result = await rag.answer(question=request.question, tenant_id=tenant_id)
+    return JSONResponse(content=ApiResponse(data=result).model_dump(mode="json"))
 
 
 # Legacy endpoint for compatibility

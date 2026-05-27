@@ -57,10 +57,11 @@
 
 ### 2.7 @learning-ai-owner — AI 카드 자동 생성 안정화 + 시맨틱 캐시
 
-| ID | 유저 스토리 | 수용 기준 | 우선순위 |
-|----|------------|-----------|----------|
-| FR-LA-201 | 노트 생성 시 AI가 자동으로 플래시카드를 생성한다 (W2 구현분 안정화) | note.created Kafka 소비 → LLM → Card 생성 → learning-card API 호출 + 에러 처리 | P0 |
-| FR-LA-202 | 시맨틱 캐시로 중복 요청이 최적화된다 | 코사인 유사도 > 0.95 → 캐시 히트 → API 비용 절감 | P1 |
+| ID | 유저 스토리 | 수용 기준 | 우선순위 | 상태 |
+|----|------------|-----------|----------|------|
+| FR-LA-201 | 노트 생성 시 AI가 자동으로 플래시카드를 생성한다 (W2 구현분 안정화) | note.created Kafka 소비 → LLM → Card 생성 → learning-card API 호출 + 에러 처리 | P0 | ✅ 완료 (2026-05-27) |
+| FR-LA-202 | 시맨틱 캐시로 중복 요청이 최적화된다 | 코사인 유사도 > 0.95 → 캐시 히트 → API 비용 절감 | P1 | ✅ 완료 (2026-05-27) |
+| FR-LA-203 | 사용자가 노트 기반 Q&A로 AI에게 질문할 수 있다 | POST /ai/qa → RAG 답변 + 출처 반환, stream=true 시 SSE 스트리밍 | P2 | ✅ 완료 (2026-05-27) |
 
 ### 2.8 Frontend (전체 협업)
 
@@ -95,7 +96,7 @@
 - [ ] gamification.level.up / gamification.badge.earned / card.review.due / note.created 발행 동작
 - [ ] gamification 완성 (배지·레벨·스트릭·리더보드)
 - [ ] 검색 RRF (BM25 + 시맨틱) 동작 + 정확도 측정 리포트
-- [ ] AI 카드 자동 생성 (note.created → LLM → Card) 안정 동작 + 시맨틱 캐시 작동
+- [x] AI 카드 자동 생성 (note.created → LLM → Card) 안정 동작 + 시맨틱 캐시 작동 (learning-ai W3 완료)
 
 ## 6. 리스크 & 대안
 
