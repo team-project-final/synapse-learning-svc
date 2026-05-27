@@ -195,6 +195,74 @@ tests/test_kafka_consumer.py::test_handle_message_pipeline_failure_sends_to_dlq 
 ```
 
 ## 5. 향후 과제
-- Step 7 (P2): RAG Q&A (`POST /ai/qa`, SSE 스트리밍) + 시맨틱 캐시 (Redis, 코사인 유사도 > 0.95)
 - idempotency를 Redis 기반으로 전환 시 다중 인스턴스 환경 지원 가능
+
+---
+
+# 작업 보고서: RAG Q&A (Step 7) 구현 (2026-05-27)
+
+## 1. 개요
+pgvector 시맨틱 검색 + Redis 시맨틱 캐시 + Claude LLM을 결합한 RAG Q&A 기능을 구현하였습니다. SSE 스트리밍과 비스트리밍 모드를 모두 지원합니다.
+
+## 2. 주요 변경 사항
+
+### 신규 파일
+
+| 파일 | 내용 |
+|---|---|
+| `app/prompts/qa/system.txt` | Q&A 시스템 프롬프트 |
+| `app/prompts/qa/user.jinja2` | Q&A 사용자 프롬프트 (context + question) |
+| `app/services/rag_service.py` | `RagService` — 캐시·검색·LLM·캐싱 파이프라인 |
+
+### 수정 파일
+
+| 파일 | 변경 내용 |
+|---|---|
+| `pyproject.toml` | `redis[hiredis]>=5.0.0` 추가, mypy override 추가 |
+| `app/core/config.py` | `redis_url` 추가 |
+| `app/schemas/ai.py` | `QaRequest`, `QaSource`, `QaResponse` 추가 |
+| `app/services/claude_service.py` | `generate_qa`, `stream_qa` 메서드 추가 |
+| `app/api/deps.py` | `get_redis_client`, `get_rag_service` 추가 |
+| `app/api/ai.py` | `POST /ai/qa` 엔드포인트 추가 |
+
+## 3. 핵심 설계 결정
+
+### RAG Q&A 흐름
+```
+POST /ai/qa
+  → OpenAI 임베딩 (1536차원)
+  → Redis 시맨틱 캐시 확인 (코사인 유사도 > 0.95 → LLM 호출 스킵)
+  → pgvector top-K=5 검색 (threshold=0.7)
+  → 컨텍스트 구성 (최대 12000자 ≈ 3000 토큰)
+  → Claude 답변 생성 (비스트리밍 or SSE 스트리밍)
+  → Redis 캐싱 (TTL 1시간, 최대 100항목)
+  → QaResponse 반환
+```
+
+### 시맨틱 캐시
+- **저장소**: Redis (`rag_cache:{tenant_id}` 키)
+- **캐시 구조**: JSON list `[{embedding, answer, sources}]`
+- **유사도 계산**: numpy 코사인 유사도 (인메모리)
+- **히트 조건**: 코사인 유사도 ≥ 0.95
+- **캐시 만료**: TTL 3600초, 최대 100항목 (FIFO 제거)
+
+### SSE 스트리밍
+- `stream: true` 파라미터로 활성화
+- 캐시 히트 시: 전체 답변을 단일 SSE 이벤트로 반환
+- 캐시 미스 시: Claude `messages.stream` API로 청크 단위 yield
+- 마지막 이벤트: `data: [DONE]`
+
+### 설계 선택 근거
+- **ClaudeService에 `generate_qa`/`stream_qa` 추가**: 기존 `generate_claude_text`를 변경하지 않아 테스트 무결성 유지
+- **유사도 계산 위치 (앱 인메모리)**: Redis Vector Search 없이 W3 범위 내 구현; 항목 100개 제한으로 성능 영향 최소화
+- **캐시 격리 단위 (tenant_id)**: pgvector 검색과 동일한 격리 경계 사용
+
+## 4. 테스트 결과
+```
+전체 12 passed (기존 테스트 모두 통과, Step 7 별도 테스트 미작성)
+```
+
+## 5. 향후 과제
+- Kafka Consumer idempotency를 Redis 기반으로 전환 시 다중 인스턴스 지원
+- RAG 캐시 항목 증가 시 Redis Vector Search(RediSearch) 도입 검토
 

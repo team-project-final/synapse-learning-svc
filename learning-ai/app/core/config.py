@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     kafka_note_created_topic: str = "note.created.v1"
     kafka_dlq_topic: str = "note.created.dlq"
 
+    # Redis
+    redis_url: str = "redis://localhost:6379/0"
+
     # 외부 서비스 URL
     note_service_url: str = "http://localhost:8081"
     learning_card_service_url: str = "http://localhost:8082"
