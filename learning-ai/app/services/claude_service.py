@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from typing import Any
 
 import httpx
@@ -65,3 +66,33 @@ class ClaudeService(BaseAIService):
                 output_tokens=message.usage.output_tokens,
             ),
         )
+
+    async def generate_qa(self, *, context: str, question: str) -> str:
+        """RAG Q&A 비스트리밍 답변 생성."""
+        system_prompt = load_system_prompt("qa")
+        user_message = render_user_prompt("qa", context=context, question=question)
+        message = await self.client.messages.create(
+            model="claude-3-5-sonnet-20240620",
+            max_tokens=1024,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_message}],
+        )
+        content = ""
+        if message.content and hasattr(message.content[0], "text"):
+            content = message.content[0].text
+        return content
+
+    async def stream_qa(
+        self, *, context: str, question: str
+    ) -> AsyncGenerator[str, None]:
+        """RAG Q&A SSE 스트리밍 답변 생성."""
+        system_prompt = load_system_prompt("qa")
+        user_message = render_user_prompt("qa", context=context, question=question)
+        async with self.client.messages.stream(
+            model="claude-3-5-sonnet-20240620",
+            max_tokens=1024,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_message}],
+        ) as stream:
+            async for text in stream.text_stream:
+                yield text

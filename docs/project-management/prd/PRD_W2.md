@@ -62,11 +62,11 @@
 
 ### 2.7 @learning-ai-owner — 시맨틱 검색 + AI 카드 골격
 
-| ID | 유저 스토리 | 수용 기준 | 우선순위 |
-|----|------------|-----------|----------|
-| FR-LA-101 | 시스템이 노트 텍스트를 벡터로 변환하여 pgvector에 저장한다 | 노트 → Embedding API → 1536차원 벡터 → pgvector 저장 | P0 |
-| FR-LA-102 | 사용자가 시맨틱 검색으로 유사한 노트를 찾을 수 있다 | POST /ai/search/semantic (body: query 텍스트) → 코사인 유사도 상위 N개 | P0 |
-| FR-LA-103 | 시스템이 노트 내용으로 플래시카드를 자동 생성할 수 있다 | POST /ai/cards/generate → LLM → 앞면/뒷면 카드 목록 반환 | P1 |
+| ID | 유저 스토리 | 수용 기준 | 우선순위 | 상태 |
+|----|------------|-----------|----------|------|
+| FR-LA-101 | 시스템이 노트 텍스트를 벡터로 변환하여 pgvector에 저장한다 | 노트 → Embedding API → 1536차원 벡터 → pgvector 저장 | P0 | ✅ 완료 (2026-05-18) |
+| FR-LA-102 | 사용자가 시맨틱 검색으로 유사한 노트를 찾을 수 있다 | POST /ai/search/semantic (body: query 텍스트) → 코사인 유사도 상위 N개 | P0 | ✅ 완료 (2026-05-18) |
+| FR-LA-103 | 시스템이 노트 내용으로 플래시카드를 자동 생성할 수 있다 | POST /ai/cards/generate → LLM → 앞면/뒷면 카드 목록 반환 | P1 | ✅ 완료 (2026-05-18) |
 
 ### 2.8 Frontend (전체 협업)
 
@@ -101,7 +101,7 @@
 - [ ] 복습 세션 완전 동작 (카드 → 난이도 → SM-2 → 다음 복습일)
 - [ ] 덱 공유 → 복사 플로우 동작 (community → learning-card internal API)
 - [ ] 그래프 시각화 기본 동작
-- [ ] 검색(키워드 BM25 + 시맨틱 pgvector) 동작
+- [ ] 검색(키워드 BM25 + 시맨틱 pgvector) 동작 — learning-ai 시맨틱 검색 ✅ 2026-05-18
 - [ ] Schema Registry에 모든 v1 Avro 스키마 등록 + 호환성 검증 통과
 
 ## 6. 리스크 & 대안

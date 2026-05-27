@@ -18,7 +18,18 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/synapse"
 
+    # Kafka
+    kafka_enabled: bool = True
+    kafka_bootstrap_servers: str = "localhost:9092"
+    kafka_consumer_group_id: str = "learning-ai-card-generator"
+    kafka_note_created_topic: str = "note.created.v1"
+    kafka_dlq_topic: str = "note.created.dlq"
+
+    # Redis
+    redis_url: str = "redis://localhost:6379/0"
+
     # 외부 서비스 URL
+    note_service_url: str = "http://localhost:8081"
     learning_card_service_url: str = "http://localhost:8082"
 
     model_config = SettingsConfigDict(

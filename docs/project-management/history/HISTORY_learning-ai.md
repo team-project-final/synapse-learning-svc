@@ -30,10 +30,10 @@
 
 | Step | 내용 | 상태 | 시작일 | 완료일 | 비고 |
 |------|------|------|--------|--------|------|
-| Step 6 | note.created Kafka 이벤트 소비 | Not Started | — | — | |
-| Step 7 | RAG 기반 질문 답변 (P2) | Not Started | — | — | |
+| Step 6 | note.created Kafka 이벤트 소비 | DONE | 2026-05-27 | 2026-05-27 | AiCardKafkaConsumer, NoteApiClient |
+| Step 7 | RAG 기반 질문 답변 (P2) | DONE | 2026-05-27 | 2026-05-27 | RagService, Redis 시맨틱 캐시 |
 
-**W3 진행률**: 0/2 Steps 완료
+**W3 진행률**: 2/2 Steps 완료 (100%)
 
 ### W4 (2026-06-02 ~ 06-06)
 
@@ -76,16 +76,28 @@
 ### W3 (2026-05-26 ~ 05-30)
 
 #### 2026-05-26 (월)
-- **완료**:
-- **진행 중**:
-- **이슈**:
-- **다음**:
+- **완료**: 없음 (부처님오신날 — 공휴일)
 
 #### 2026-05-27 (화)
 - **완료**:
-- **진행 중**:
-- **이슈**:
-- **다음**:
+  - **Step 6**: `note.created.v1` Kafka Consumer 구현 완료
+    - `app/kafka/schemas.py`: `NoteCreatedEvent` DTO (event_id, note_id, user_id, tenant_id, deck_id)
+    - `app/kafka/consumer.py`: `AiCardKafkaConsumer` — 재시도 3회(2s→4s→8s), DLQ(`note.created.dlq`), idempotency(인메모리 set), 60초 타임아웃
+    - `app/clients/note_client.py`: `NoteApiClient` — knowledge-svc 노트 내용 조회
+    - `app/main.py`: lifespan으로 Kafka Consumer 시작/종료 연결 (`kafka_enabled` 플래그 지원)
+    - `app/core/config.py`: Kafka 설정 5개 + `note_service_url` 추가
+    - `tests/test_kafka_consumer.py`: 단위 테스트 4개 (happy path, 중복 skip, 스키마 오류 DLQ, 파이프라인 실패 DLQ)
+  - **Step 7**: RAG Q&A 구현 완료
+    - `app/services/rag_service.py`: `RagService` — 임베딩 → Redis 캐시 확인 → pgvector top-K=5 검색 → Claude LLM → 캐싱
+    - `app/services/claude_service.py`: `generate_qa` / `stream_qa` 메서드 추가
+    - `app/schemas/ai.py`: `QaRequest`, `QaSource`, `QaResponse` 추가
+    - `app/prompts/qa/`: Q&A 시스템·사용자 프롬프트 파일 추가
+    - `app/api/ai.py`: `POST /ai/qa` 엔드포인트 추가 (stream=true 시 SSE)
+    - `app/api/deps.py`: `get_redis_client`, `get_rag_service` 의존성 추가
+    - `app/core/config.py`: `redis_url` 추가
+    - Redis 시맨틱 캐시: `rag_cache:{tenant_id}`, 코사인 유사도 ≥ 0.95, TTL 3600s, 최대 100항목
+- **브랜치**: `feature/LEARN-AI-W3-kafka-consumer` (2커밋 push 완료)
+- **다음**: PR 작성 → dev 머지
 
 #### 2026-05-28 (수)
 - **완료**:
@@ -143,6 +155,7 @@
 
 | 날짜 | 변경 사항 |
 |------|-----------|
+| 2026-05-27 | W3 Step 6·7 완료 반영 (대시보드 + 작업 로그) |
 | 2026-05-19 | HISTORY 문서 Step 분류 오류 수정 (Step 6을 W2에서 W3로 이동) |
 | 2026-05-11 | W2/W3/W4 대시보드 및 로그 템플릿 추가 |
 | 2026-05-11 | 초기 템플릿 생성 |

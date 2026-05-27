@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends, Header
+from redis.asyncio import Redis  # type: ignore[import-untyped]
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -9,6 +10,7 @@ from app.repositories.note_chunk_repository import NoteChunkRepository
 from app.services.ai_service import AIService
 from app.services.claude_service import ClaudeService
 from app.services.openai_service import OpenAIEmbeddingService
+from app.services.rag_service import RagService
 
 
 async def get_current_user(x_user_id: Annotated[str | None, Header()] = None) -> str:
@@ -40,3 +42,17 @@ def get_ai_service(
 ) -> AIService:
     """Dependency for getting an AIService orchestrator."""
     return AIService(claude=claude, openai=openai, repo=repo)
+
+
+def get_redis_client() -> Redis:  # type: ignore[type-arg]
+    """Dependency for getting a Redis client."""
+    return Redis.from_url(settings.redis_url, decode_responses=True)
+
+
+def get_rag_service(
+    ai_service: AIService = Depends(get_ai_service),  # noqa: B008
+    repo: NoteChunkRepository = Depends(get_note_chunk_repository),  # noqa: B008
+    redis: Redis = Depends(get_redis_client),  # type: ignore[type-arg]  # noqa: B008
+) -> RagService:
+    """Dependency for getting a RagService instance."""
+    return RagService(ai_service=ai_service, repo=repo, redis_client=redis)

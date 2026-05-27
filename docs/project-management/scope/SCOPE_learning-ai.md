@@ -49,8 +49,12 @@
 
 ## 성공 기준
 
-- [ ] FastAPI 서비스 Docker 실행 + Health OK
-- [ ] Claude API 호출 → 텍스트 생성 동작
-- [ ] Embedding API → 벡터 변환 + pgvector 저장
-- [ ] 시맨틱 검색 (유사도 기반 노트 검색)
-- [ ] AI 카드 자동 생성 (노트 → LLM → 카드)
+- [x] FastAPI 서비스 Docker 실행 + Health OK (W1 완료)
+- [x] Claude API 호출 → 텍스트 생성 동작 (W1 완료)
+- [x] Embedding API → 벡터 변환 + pgvector 저장 (W1 완료)
+- [x] 시맨틱 검색 (유사도 기반 노트 검색) (W2 완료)
+- [x] AI 카드 자동 생성 (노트 → LLM → 카드) (W2 완료)
+- [x] note.created Kafka 이벤트 소비 → AI 카드 자동 생성 → learning-card API 저장 (W3 완료)
+- [x] RAG Q&A (`POST /ai/qa`, SSE 스트리밍, Redis 시맨틱 캐시) (W3 완료)
+- [ ] AI 카드 자동 생성 E2E 테스트 (W4)
+- [ ] 시맨틱 검색 정확도 검증 + P0 버그 수정 (W4)
