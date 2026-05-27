@@ -22,8 +22,14 @@ MOCK_CARDS = [
         front="파이썬 GIL이란?",
         back="한 번에 하나의 스레드만 Python 바이트코드를 실행하도록 제한하는 락",
     ),
-    GeneratedCard(front="async/await의 목적은?", back="I/O 바운드 작업에서 블로킹 없이 동시성 처리"),
-    GeneratedCard(front="list vs generator?", back="list는 즉시 평가, generator는 지연 평가·메모리 절약"),
+    GeneratedCard(
+        front="async/await의 목적은?",
+        back="I/O 바운드 작업에서 블로킹 없이 동시성 처리",
+    ),
+    GeneratedCard(
+        front="list vs generator?",
+        back="list는 즉시 평가, generator는 지연 평가·메모리 절약",
+    ),
 ]
 
 
