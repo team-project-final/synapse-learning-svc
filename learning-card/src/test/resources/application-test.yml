@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:learning;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+synapse:
+  jwt:
+    public-key: ${JWT_PUBLIC_KEY:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAspYublqbb7MHpuJ6d0SUkDTl63/92T74N+dg3Mibzrqz5U8KGZtz8v6sdzbMTaDPmxlDkBLkFaszU3Ym9PvSFoym55dIRzTZKpjLPMFyURgfd6nXfBPoAlzIb00cGYje6eQE1U1OAWoje7XffjZtTsbN3VtEOa6eNbRW2uv95IXkJDtcG/koeLiNb42BF28rhpAYmGE24iQxfARRqh7IZ3E6giWmuXIDsEaWJCKt/UlUbmKpUSAfnwriWxE78lALXHQSmFWl2WZ9ruXzUBWpQZJPEGO4RxX2898HxA7Jv5V7VqmGvEqB3ZYXs2wyaeXpFjfv/iWPC/+83PMyRi6VtQIDAQAB}
+    issuer: synapse-auth
