@@ -130,3 +130,71 @@ LLM(Claude/OpenAI)을 활용하여 사용자의 노트 내용으로부터 학습
 ## 4. 향후 과제
 - W3: Kafka 이벤트 통신 도입을 통한 도메인 간 결합도 해소 예정.
 
+---
+
+# 작업 보고서: Kafka Consumer (Step 6) 구현 (2026-05-27)
+
+## 1. 개요
+`note.created.v1` Kafka 이벤트를 소비하여 AI 카드를 자동 생성하고 learning-card API에 저장하는 비동기 파이프라인을 구현하였습니다.
+
+## 2. 주요 변경 사항
+
+### 신규 파일
+
+| 파일 | 내용 |
+|---|---|
+| `app/kafka/__init__.py` | Kafka 모듈 패키지 |
+| `app/kafka/schemas.py` | `NoteCreatedEvent` DTO (event_id, note_id, user_id, tenant_id, deck_id) |
+| `app/kafka/consumer.py` | `AiCardKafkaConsumer` — 이벤트 소비 + 재시도 + DLQ + idempotency |
+| `app/clients/note_client.py` | `NoteApiClient` — knowledge-svc에서 노트 내용 조회 |
+| `tests/test_kafka_consumer.py` | Consumer 단위 테스트 4개 |
+
+### 수정 파일
+
+| 파일 | 변경 내용 |
+|---|---|
+| `pyproject.toml` | `aiokafka>=0.11.0` 추가, mypy override 추가 |
+| `app/core/config.py` | Kafka 설정 5개(`kafka_enabled`, `kafka_bootstrap_servers` 등) + `note_service_url` 추가 |
+| `app/main.py` | `@asynccontextmanager` lifespan 추가 → 앱 시작/종료 시 Kafka Consumer 연결 |
+
+## 3. 핵심 설계 결정
+
+### Consumer 동작 흐름
+```
+메시지 수신
+  → NoteCreatedEvent 스키마 검증 (실패 시 즉시 DLQ)
+  → event_id 중복 확인 (이미 처리 시 skip)
+  → _process_with_retry (최대 3회, 2s→4s→8s 지수 백오프, 60초 타임아웃)
+      → NoteApiClient.get_note_content
+      → AiCardPipelineService.generate_and_save (LLM → 카드 저장)
+  → 성공 시 event_id를 _processed set에 추가
+  → 실패 시 DLQ 전송
+  → 오프셋 커밋 (always)
+```
+
+### 주요 제약 준수
+- Consumer group: `learning-ai-card-generator`
+- 재시도: 3회 (2s, 4s, 8s) — tenacity `AsyncRetrying`
+- DLQ 토픽: `note.created.dlq`
+- 이벤트 처리 타임아웃: 60초 (`asyncio.wait_for`)
+- 오프셋 커밋: 수동(`enable_auto_commit=False`), 처리 완료 또는 DLQ 전송 후
+
+### 설계 선택 근거
+- **idempotency 인메모리**: Redis는 Step 7 범위이므로 W3에서는 프로세스 로컬 `set` 사용
+- **note 조회 위치**: Consumer 클로저에서 처리 — `AiCardPipelineService` 기존 인터페이스(`note_content` 직접 수신) 유지하여 기존 테스트 무결성 보장
+- **kafka_enabled flag**: Kafka 없는 로컬/테스트 환경에서 `LEARNING_AI_KAFKA_ENABLED=false`로 앱 기동 가능
+
+## 4. 테스트 결과
+```
+tests/test_kafka_consumer.py::test_handle_message_happy_path        PASSED
+tests/test_kafka_consumer.py::test_handle_message_duplicate_skipped PASSED
+tests/test_kafka_consumer.py::test_handle_message_invalid_schema_sends_to_dlq PASSED
+tests/test_kafka_consumer.py::test_handle_message_pipeline_failure_sends_to_dlq PASSED
+
+전체 12 passed (기존 테스트 모두 통과)
+```
+
+## 5. 향후 과제
+- Step 7 (P2): RAG Q&A (`POST /ai/qa`, SSE 스트리밍) + 시맨틱 캐시 (Redis, 코사인 유사도 > 0.95)
+- idempotency를 Redis 기반으로 전환 시 다중 인스턴스 환경 지원 가능
+
