@@ -1,6 +1,6 @@
 package com.synapse.learning.card.domain.model;
 
-import com.synapse.learning.shared.BaseEntity;
+import com.synapse.learning.global.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -32,7 +32,7 @@ public class CardDeck extends BaseEntity {
     private Instant deletedAt;
 
     @Builder
-    public CardDeck(UUID userId, String tenantId, String name, String description, String color) {
+    public CardDeck(UUID userId, UUID tenantId, String name, String description, String color) {
         this.userId = userId;
         this.tenantId = tenantId;
         this.name = name;

@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
 }
 
 group = "com.synapse"
@@ -15,6 +16,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://packages.confluent.io/maven/") }
 }
 
 dependencies {
@@ -44,8 +46,21 @@ dependencies {
     // Spring Modulith
     implementation("org.springframework.modulith:spring-modulith-starter-core")
 
-    // Test
+    // Kafka + Avro
+    implementation("org.springframework.kafka:spring-kafka")
+    implementation("org.apache.avro:avro:1.12.0")
+    implementation("io.confluent:kafka-avro-serializer:7.7.0")
+
+    // ShedLock — 스케줄러 중복 실행 방지
+    implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0")
+
+    // Test - Kafka
+    testImplementation("org.springframework.kafka:spring-kafka-test")
+
+    // Test 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -59,3 +74,4 @@ dependencyManagement {
         mavenBom("org.springframework.modulith:spring-modulith-bom:1.3.0")
     }
 }
+

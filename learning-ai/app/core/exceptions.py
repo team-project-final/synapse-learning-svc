@@ -1,4 +1,5 @@
 from fastapi import HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.schemas.base import ApiErrorDetail, ApiErrorResponse
@@ -9,7 +10,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
     error_response = ApiErrorResponse(
         success=False,
         error=ApiErrorDetail(
-            code="INTERNAL_ERROR",
+            code="L_INTERNAL_ERROR",
             message="An unexpected error occurred.",
             details=[str(exc)],
         ),
@@ -25,11 +26,29 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
     error_response = ApiErrorResponse(
         success=False,
         error=ApiErrorDetail(
-            code="HTTP_ERROR",
+            code="L_HTTP_ERROR",
             message=str(exc.detail),
         ),
     )
     return JSONResponse(
         status_code=exc.status_code,
+        content=error_response.model_dump(mode="json"),
+    )
+
+
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Returns RequestValidationError in a consistent standard format."""
+    error_response = ApiErrorResponse(
+        success=False,
+        error=ApiErrorDetail(
+            code="L_VALIDATION_FAILED",
+            message="입력값 검증에 실패했습니다.",
+            details=[str(err) for err in exc.errors()],
+        ),
+    )
+    return JSONResponse(
+        status_code=400,
         content=error_response.model_dump(mode="json"),
     )

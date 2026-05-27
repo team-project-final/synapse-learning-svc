@@ -84,6 +84,30 @@ class CardGenerateResponse(BaseModel):
     usage: UsageInfo
 
 
+class QaRequest(BaseModel):
+    """Request schema for RAG Q&A."""
+
+    question: str = Field(..., min_length=1, max_length=500)
+    stream: bool = False
+
+
+class QaSource(BaseModel):
+    """A single source chunk referenced in a Q&A answer."""
+
+    chunk_id: uuid.UUID
+    note_id: uuid.UUID
+    content: str
+    score: float
+
+
+class QaResponse(BaseModel):
+    """Response schema for RAG Q&A."""
+
+    answer: str
+    sources: list[QaSource]
+    from_cache: bool
+
+
 class ErrorResponse(BaseModel):
     """Standard error response schema."""
 

@@ -1,0 +1,15 @@
+services:
+  learning-card:
+    build: .
+    container_name: learning-card
+    ports:
+      - "8084:8084"
+    environment:
+      # 컨테이너 안에서는 localhost → host.docker.internal 로 DB 접근
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/synapse_learning
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      SPRING_FLYWAY_ENABLED: "false"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

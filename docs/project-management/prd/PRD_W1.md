@@ -67,11 +67,11 @@
 
 ### 2.7 @learning-ai-owner — AI Service
 
-| ID | 유저 스토리 | 수용 기준 | 우선순위 |
-|----|------------|-----------|----------|
-| FR-LA-001 | learning-ai 서비스가 Health endpoint로 상태를 확인할 수 있다 | GET /health → 200 OK + Dockerfile 빌드 성공 | P0 |
-| FR-LA-002 | 서비스가 Claude API를 호출하여 텍스트를 생성할 수 있다 | POST /ai/cards/generate → Claude 응답 반환 + 에러 핸들링 | P0 |
-| FR-LA-003 | 서비스가 텍스트를 벡터(1536차원)로 변환할 수 있다 | POST /ai/embeddings → 벡터 반환 + pgvector 저장 준비 | P1 |
+| ID | 유저 스토리 | 수용 기준 | 우선순위 | 상태 |
+|----|------------|-----------|----------|------|
+| FR-LA-001 | learning-ai 서비스가 Health endpoint로 상태를 확인할 수 있다 | GET /health → 200 OK + Dockerfile 빌드 성공 | P0 | ✅ 완료 (2026-05-15) |
+| FR-LA-002 | 서비스가 Claude API를 호출하여 텍스트를 생성할 수 있다 | POST /ai/cards/generate → Claude 응답 반환 + 에러 핸들링 | P0 | ✅ 완료 (2026-05-15) |
+| FR-LA-003 | 서비스가 텍스트를 벡터(1536차원)로 변환할 수 있다 | POST /ai/embeddings → 벡터 반환 + pgvector 저장 준비 | P1 | ✅ 완료 (2026-05-15) |
 
 ### 2.8 Frontend (전체 협업)
 
@@ -103,7 +103,7 @@
 ## 5. 성공 기준 체크리스트
 
 - [ ] Docker Compose로 4개 서비스 + Schema Registry 로컬 실행
-- [ ] 각 서비스 골격 동작 (Hello World + Health endpoint)
+- [ ] 각 서비스 골격 동작 (Hello World + Health endpoint) — learning-ai ✅ 2026-05-15
 - [ ] Spring Modulith 모듈 검증 (`ApplicationModules.verify()`) 통과
 - [ ] auth 모듈: 회원가입/로그인/JWT 발급 동작
 - [ ] note·card·community 모듈: 기본 CRUD API 동작
