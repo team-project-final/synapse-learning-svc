@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import json
 import logging
 from typing import Any, Protocol
@@ -50,10 +51,8 @@ class AiCardKafkaConsumer:
     async def stop(self) -> None:
         if self._task:
             self._task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._task
-            except asyncio.CancelledError:
-                pass
         if self._consumer:
             await self._consumer.stop()
         if self._producer:

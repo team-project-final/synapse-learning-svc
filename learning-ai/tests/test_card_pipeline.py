@@ -1,6 +1,7 @@
 import json
 from unittest.mock import AsyncMock, MagicMock
 
+import httpx
 import pytest
 import respx
 from httpx import Response
@@ -17,7 +18,10 @@ NOTE_ID = "note-aaaabbbb-4444"
 CARD_BASE_URL = "http://localhost:8082"
 
 MOCK_CARDS = [
-    GeneratedCard(front="파이썬 GIL이란?", back="한 번에 하나의 스레드만 Python 바이트코드를 실행하도록 제한하는 락"),
+    GeneratedCard(
+        front="파이썬 GIL이란?",
+        back="한 번에 하나의 스레드만 Python 바이트코드를 실행하도록 제한하는 락",
+    ),
     GeneratedCard(front="async/await의 목적은?", back="I/O 바운드 작업에서 블로킹 없이 동시성 처리"),
     GeneratedCard(front="list vs generator?", back="list는 즉시 평가, generator는 지연 평가·메모리 절약"),
 ]
@@ -120,7 +124,7 @@ async def test_generate_and_save_api_failure(
         return_value=Response(503, json={"message": "Service Unavailable"})
     )
 
-    with pytest.raises(Exception):
+    with pytest.raises(httpx.HTTPStatusError):
         await pipeline.generate_and_save(
             note_content="노트 내용",
             deck_id=DECK_ID,
