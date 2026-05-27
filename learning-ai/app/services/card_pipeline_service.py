@@ -22,7 +22,9 @@ class AiCardPipelineService:
         note_id: str | None = None,
     ) -> list[str]:
         """노트 내용 → 카드 생성 → learning-card API 저장 파이프라인."""
-        request = GenerateRequest(prompt=note_content, task="card_generation")
+        request = GenerateRequest(
+            prompt=note_content, task="card_generation", max_tokens=1024, temperature=1.0
+        )
         card_response = await self._ai.generate_cards(request)
         logger.info("Generated %d cards for note %s", len(card_response.cards), note_id)
 

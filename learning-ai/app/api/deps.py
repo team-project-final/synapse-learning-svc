@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends, Header
-from redis.asyncio import Redis  # type: ignore[import-untyped]
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -44,7 +44,7 @@ def get_ai_service(
     return AIService(claude=claude, openai=openai, repo=repo)
 
 
-def get_redis_client() -> Redis:  # type: ignore[type-arg]
+def get_redis_client() -> Redis:
     """Dependency for getting a Redis client."""
     return Redis.from_url(settings.redis_url, decode_responses=True)
 
@@ -52,7 +52,7 @@ def get_redis_client() -> Redis:  # type: ignore[type-arg]
 def get_rag_service(
     ai_service: AIService = Depends(get_ai_service),  # noqa: B008
     repo: NoteChunkRepository = Depends(get_note_chunk_repository),  # noqa: B008
-    redis: Redis = Depends(get_redis_client),  # type: ignore[type-arg]  # noqa: B008
+    redis: Redis = Depends(get_redis_client),  # noqa: B008
 ) -> RagService:
     """Dependency for getting a RagService instance."""
     return RagService(ai_service=ai_service, repo=repo, redis_client=redis)

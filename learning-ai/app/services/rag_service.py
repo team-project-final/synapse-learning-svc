@@ -5,7 +5,7 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 import numpy as np
-from redis.asyncio import Redis  # type: ignore[import-untyped]
+from redis.asyncio import Redis
 
 from app.models.note_chunk import NoteChunk
 from app.repositories.note_chunk_repository import NoteChunkRepository
@@ -25,7 +25,7 @@ class RagService:
         self,
         ai_service: AIService,
         repo: NoteChunkRepository,
-        redis_client: Redis,  # type: ignore[type-arg]
+        redis_client: Redis,
     ) -> None:
         self._ai = ai_service
         self._repo = repo
