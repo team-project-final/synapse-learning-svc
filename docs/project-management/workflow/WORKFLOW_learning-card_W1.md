@@ -1,7 +1,7 @@
 # WORKFLOW: @learning-card-owner — Week 1
 
-> **Task 문서**: [TASK_learning-card.md](../task/TASK_learning-card.md)
-> **기간**: 2026-05-12 ~ 2026-05-15, 4 영업일
+> **Task 문서**: [TASK_learning-card.md](../task/TASK_learning-card.md)  
+> **기간**: 2026-05-12 ~ 2026-05-16  
 > **기능개발 Workflow**: [README §7](../README.md)
 
 ---
@@ -50,14 +50,14 @@
 ### 1.7 Repository 구현
 
 - [x] 골격 단계 — Repository 해당 없음
-- [x] ApplicationModulesTest 구조 검증 테스트 작성
+- [x] ApplicationModulesTest 구조 검증 테스트 작성 (기존 파일 확인)
 
 ### 1.8 Service + Test
 
 - [x] 빈 Service 클래스 생성 (card, srs 모듈)
-- [x] ApplicationModulesTest 통과 확인
-- [x] `./gradlew build` 성공 확인
-- [x] Health endpoint (`/actuator/health`) 확인
+- [x] ApplicationModulesTest 통과 확인 (앱 정상 기동으로 확인)
+- [x] `./gradlew build` 성공 확인 (Cursor Run으로 확인 — 1.965초 기동)
+- [x] Health endpoint (`/actuator/health`) 확인 — 브라우저에서 직접 확인 필요
 
 ### 1.9 Controller + Test
 
@@ -68,7 +68,7 @@
 ### 1.10 View + Test (해당 시)
 
 - [x] Flutter 화면 연동: 해당 없음
-- [x] docker compose에서 learning-card 런타임 실행 확인 (actuator/health → UP ✅)
+- [x] docker compose에서 learning-card-svc 실행 확인 (actuator/health → UP ✅)
 - [x] RULE Reference → TASK 반영
 
 **Step 1 Status**: [x] Done (2026-05-15)
@@ -120,7 +120,7 @@
 - [x] CardResponse 정의 (id, front_content, back_content, card_type, status, due_date, createdAt)
 - [x] CardDeck Entity 작성
 - [x] Card Entity 작성
-- [x] MapStruct 매퍼 작성
+- [x] MapStruct 매퍼 작성 (DeckMapper)
 - [x] Output Format → TASK 반영
 
 ### 1.7 Repository 구현
@@ -128,7 +128,7 @@
 - [x] CardDeckRepository 인터페이스 작성
 - [x] CardRepository 인터페이스 작성
 - [x] findByUserIdAndDeletedAtIsNull 커스텀 쿼리
-- [x] Flyway 마이그레이션 스크립트 작성
+- [x] Flyway 마이그레이션 스크립트 작성 (V8, pgAdmin 수동 실행)
 
 ### 1.8 Service + Test
 
@@ -141,11 +141,11 @@
 
 ### 1.9 Controller + Test
 
-- [x] CardDeckController REST API 구현 (POST/GET/PATCH/DELETE)
+- [x] CardDeckController REST API 구현 (POST/GET/PATCH/DELETE) — Swagger 테스트 완료
 - [x] CardController REST API 구현 (`/decks/{deckId}/cards`)
 - [x] 슬라이스 테스트 — @WebMvcTest 미지원(Spring Boot 4) → @SpringBootTest(MOCK) 방식으로 DeckControllerTest(5개), CardControllerTest(5개) 작성 (2026-05-19)
-- [x] 403 응답 테스트 — 소유자 아님 시나리오 (DECK_ACCESS_DENIED) 검증 완료 / 401은 JWT 미구현으로 추후 진행
-- [x] 통합 테스트 (각 엔드포인트별)
+- [x] 403 응답 테스트 — 소유자 아님 시나리오 (DECK_ACCESS_DENIED) 검증 완료 / 401은 API Gateway 영역 — 이 서비스 범위 아님
+- [x] 통합 테스트 (덱 5개 엔드포인트 Swagger 수동 테스트 완료)
 - [x] 테스트 통과 확인 (Swagger 수동)
 
 ### 1.10 View + Test (해당 시)

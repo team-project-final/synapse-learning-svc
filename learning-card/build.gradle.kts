@@ -59,6 +59,9 @@ dependencies {
     implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0")
 
+    // Redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
     // Test - Kafka
     testImplementation("org.springframework.kafka:spring-kafka-test")
 

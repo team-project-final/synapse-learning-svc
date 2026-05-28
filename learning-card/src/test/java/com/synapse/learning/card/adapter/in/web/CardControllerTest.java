@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -26,10 +27,13 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@ActiveProfiles("test")
 class CardControllerTest {
 
     @Autowired
@@ -42,13 +46,15 @@ class CardControllerTest {
     MockMvc mockMvc;
 
     private static final String TENANT_ID = "00000000-0000-0000-0000-000000000099";
-    private static final String USER_ID   = "00000000-0000-0000-0000-000000000001";
-    private static final UUID   DECK_ID   = UUID.randomUUID();
-    private static final UUID   CARD_ID   = UUID.randomUUID();
+    private static final String USER_ID = "00000000-0000-0000-0000-000000000001";
+    private static final UUID DECK_ID = UUID.randomUUID();
+    private static final UUID CARD_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
     }
 
     private CardResponse mockResponse() {
@@ -64,11 +70,12 @@ class CardControllerTest {
         given(cardUseCase.createCard(any(), any(), any(), any())).willReturn(mockResponse());
 
         mockMvc.perform(post("/decks/{deckId}/cards", DECK_ID)
-                        .header("X-User-Id", USER_ID)
-                        .header("X-Tenant-Id", TENANT_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new CardCreateRequest("스택이란?", "LIFO", "qa", null, null))))
+                .with(jwt())
+                .header("X-User-Id", USER_ID)
+                .header("X-Tenant-Id", TENANT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(
+                        new CardCreateRequest("스택이란?", "LIFO", "qa", null, null))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.frontContent").value("스택이란?"));
     }
@@ -80,11 +87,12 @@ class CardControllerTest {
                 .given(cardUseCase).createCard(any(), any(), any(), any());
 
         mockMvc.perform(post("/decks/{deckId}/cards", DECK_ID)
-                        .header("X-User-Id", USER_ID)
-                        .header("X-Tenant-Id", TENANT_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new CardCreateRequest("Q", "A", "qa", null, null))))
+                .with(jwt())
+                .header("X-User-Id", USER_ID)
+                .header("X-Tenant-Id", TENANT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(
+                        new CardCreateRequest("Q", "A", "qa", null, null))))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error.code").value("DECK_ACCESS_DENIED"));
     }
@@ -99,7 +107,8 @@ class CardControllerTest {
         given(cardUseCase.getCards(any(), any(), any())).willReturn(page);
 
         mockMvc.perform(get("/decks/{deckId}/cards", DECK_ID)
-                        .header("X-User-Id", USER_ID))
+                .with(jwt())
+                .header("X-User-Id", USER_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content[0].frontContent").value("스택이란?"))
                 .andExpect(jsonPath("$.data.totalElements").value(1));
@@ -113,10 +122,11 @@ class CardControllerTest {
         given(cardUseCase.updateCard(any(), any(), any(), any())).willReturn(mockResponse());
 
         mockMvc.perform(patch("/decks/{deckId}/cards/{cardId}", DECK_ID, CARD_ID)
-                        .header("X-User-Id", USER_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new CardUpdateRequest("수정된 질문", "수정된 답", "qa"))))
+                .with(jwt())
+                .header("X-User-Id", USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(
+                        new CardUpdateRequest("수정된 질문", "수정된 답", "qa"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.frontContent").value("스택이란?"));
     }
@@ -127,7 +137,8 @@ class CardControllerTest {
     @DisplayName("DELETE /decks/{deckId}/cards/{cardId} — 카드 삭제 204")
     void deleteCard_returns204() throws Exception {
         mockMvc.perform(delete("/decks/{deckId}/cards/{cardId}", DECK_ID, CARD_ID)
-                        .header("X-User-Id", USER_ID))
+                .with(jwt())
+                .header("X-User-Id", USER_ID))
                 .andExpect(status().isNoContent());
     }
 }

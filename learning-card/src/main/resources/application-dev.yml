@@ -8,6 +8,10 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: none
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 synapse:
   jwt:
