@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import json
 import logging
 from typing import Any, Protocol
@@ -21,8 +22,8 @@ class EventHandlerFn(Protocol):
 class AiCardKafkaConsumer:
     def __init__(self, pipeline_fn: EventHandlerFn) -> None:
         self._pipeline_fn = pipeline_fn
-        self._consumer: AIOKafkaConsumer | None = None  # type: ignore[type-arg]
-        self._producer: AIOKafkaProducer | None = None  # type: ignore[type-arg]
+        self._consumer: AIOKafkaConsumer | None = None
+        self._producer: AIOKafkaProducer | None = None
         self._processed: set[str] = set()
         self._task: asyncio.Task[None] | None = None
 
@@ -50,10 +51,8 @@ class AiCardKafkaConsumer:
     async def stop(self) -> None:
         if self._task:
             self._task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._task
-            except asyncio.CancelledError:
-                pass
         if self._consumer:
             await self._consumer.stop()
         if self._producer:

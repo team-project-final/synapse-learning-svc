@@ -1,0 +1,17 @@
+# dev-smoke 인프라: learning 앱 부팅에 필요한 postgres만 제공.
+# Kafka producer 빈은 지연 연결이라 부팅/헬스체크에 broker가 불필요하며,
+# Kafka/Avro 심화 검증은 @EmbeddedKafka 통합 테스트(build job)가 담당한다.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: synapse_learning
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d synapse_learning"]
+      interval: 5s
+      timeout: 5s
+      retries: 15

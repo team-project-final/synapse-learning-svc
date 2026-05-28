@@ -25,10 +25,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    // Security (JWT Resource Server)
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+
     // JPA + PostgreSQL + Flyway
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("org.postgresql:postgresql")
-    implementation("org.flywaydb:flyway-core")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-database-postgresql")
 
     // MapStruct (Entity ↔ DTO 변환)
@@ -51,18 +55,25 @@ dependencies {
     implementation("org.apache.avro:avro:1.12.0")
     implementation("io.confluent:kafka-avro-serializer:7.7.0")
 
+    // ShedLock — 스케줄러 중복 실행 방지
+    implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0")
+
     // Test - Kafka
     testImplementation("org.springframework.kafka:spring-kafka-test")
 
-    // Test 
+    // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
+    testRuntimeOnly("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    systemProperty("spring.profiles.active", "test")
 }
 
 dependencyManagement {

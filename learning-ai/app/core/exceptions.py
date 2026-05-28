@@ -36,7 +36,9 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
     )
 
 
-async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     """Returns RequestValidationError in a consistent standard format."""
     error_response = ApiErrorResponse(
         success=False,

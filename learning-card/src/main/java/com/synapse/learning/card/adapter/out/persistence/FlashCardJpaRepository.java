@@ -18,6 +18,22 @@ public interface FlashCardJpaRepository extends JpaRepository<FlashCard, UUID> {
 
     Optional<FlashCard> findByIdAndDeletedAtIsNull(UUID id);
 
+    // ── 스케줄러용: 복습 대상 사용자 목록 조회 (userId + 카드 수) ──────────────
+    @Query(value = """
+            SELECT c.user_id AS userId, COUNT(*) AS dueCardCount
+            FROM cards c
+            JOIN card_decks d ON d.id = c.deck_id
+            WHERE c.deleted_at IS NULL
+              AND c.due_date <= CURRENT_DATE
+              AND c.status IN ('new', 'learning', 'review')
+            GROUP BY c.user_id
+            HAVING COUNT(*) > 0
+            ORDER BY c.user_id
+            LIMIT :limit OFFSET :offset
+            """, nativeQuery = true)
+    List<Object[]> findDueCardCountByUser(@Param("limit") int limit,
+                                          @Param("offset") int offset);
+
     @Query("SELECT c FROM FlashCard c WHERE c.tenantId = :tenantId " +
             "AND c.deckId = :deckId " +
             "AND c.deletedAt IS NULL " +
