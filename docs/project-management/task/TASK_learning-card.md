@@ -164,7 +164,7 @@
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) |
 | **Assignee** | @learning-card-owner |
 | **Reviewer** | @team-lead |
-| **Status** | TODO |
+| **Status** | ✅ DONE (2026-05-28) |
 
 ---
 
