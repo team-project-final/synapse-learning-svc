@@ -1,9 +1,13 @@
 package com.synapse.learning.srs.application.service;
 
+import com.synapse.learning.config.CacheConfig;
 import com.synapse.learning.srs.adapter.in.web.dto.*;
 import com.synapse.learning.srs.application.port.in.ReviewStatsUseCase;
 import com.synapse.learning.srs.application.port.out.ReviewStatsPort;
+import com.synapse.learning.srs.application.port.out.StreakPort;
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +22,10 @@ public class ReviewStatsService implements ReviewStatsUseCase {
 
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
     private final ReviewStatsPort reviewStatsPort;
+    private final StreakPort streakPort;
 
     @Override
+    @Cacheable(value = CacheConfig.STATS_OVERVIEW, key = "#tenantId + ':' + #userId")
     public ReviewStatsResponse getOverview(String tenantId, String userId) {
         LocalDate today = LocalDate.now(KST);
         Instant from = today.minusDays(29).atStartOfDay(KST).toInstant();
@@ -46,10 +52,13 @@ public class ReviewStatsService implements ReviewStatsUseCase {
         long totalReviews = rows.stream().mapToLong(ReviewStatsPort.DailyStat::reviewCount).sum();
         long totalCorrect = rows.stream().mapToLong(ReviewStatsPort.DailyStat::correctCount).sum();
 
-        return new ReviewStatsResponse(daily, totalReviews, toRate(totalCorrect, totalReviews));
+        StreakPort.StreakData streak = streakPort.getStreak(userId, tenantId);
+        return new ReviewStatsResponse(daily, totalReviews, toRate(totalCorrect, totalReviews),
+                streak.currentStreak(), streak.longestStreak());
     }
 
     @Override
+    @Cacheable(value = CacheConfig.STATS_HEATMAP, key = "#tenantId + ':' + #userId")
     public WeeklyStatsResponse getHeatmap(String tenantId, String userId) {
         LocalDate today = LocalDate.now(KST);
         LocalDate currentWeekStart = today.with(DayOfWeek.MONDAY);

@@ -26,6 +26,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
@@ -36,67 +37,64 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@EmbeddedKafka(
-        partitions = 1,
-        topics = {CardReviewedEventPublisher.TOPIC}
-)
+@ActiveProfiles("test")
+@EmbeddedKafka(partitions = 1, topics = { CardReviewedEventPublisher.TOPIC })
 @TestPropertySource(properties = {
-        "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "spring.kafka.producer.properties.schema.registry.url=mock://test-scope"
+                "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
+                "spring.kafka.producer.properties.schema.registry.url=mock://test-scope"
 })
 @DirtiesContext
 class CardReviewedEventPublisherIntegrationTest {
 
-    @TestConfiguration
-    static class KafkaTestConfig {
+        @TestConfiguration
+        static class KafkaTestConfig {
 
-        @Bean
-        @Primary
-        public KafkaTemplate<String, CardReviewed> kafkaTemplate(
-                @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
-            Map<String, Object> props = new HashMap<>();
-            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
-            props.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://test-scope");
-            return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(props));
+                @Bean
+                @Primary
+                public KafkaTemplate<String, CardReviewed> kafkaTemplate(
+                                @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
+                        Map<String, Object> props = new HashMap<>();
+                        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+                        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+                        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+                        props.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://test-scope");
+                        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(props));
+                }
         }
-    }
 
-    @Autowired
-    CardReviewedEventPublisher publisher;
+        @Autowired
+        CardReviewedEventPublisher publisher;
 
-    @Autowired
-    EmbeddedKafkaBroker embeddedKafkaBroker;
+        @Autowired
+        EmbeddedKafkaBroker embeddedKafkaBroker;
 
-    @Test
-    @DisplayName("rating 제출 시 card.reviewed 토픽에 메시지가 수신된다")
-    void publish_messageReceivedInTopic() throws InterruptedException {
-        // 컨슈머 직접 생성 (EmbeddedKafka 브로커에 바인딩)
-        Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(
-                "test-group", "true", embeddedKafkaBroker);
-        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
+        @Test
+        @DisplayName("rating 제출 시 card.reviewed 토픽에 메시지가 수신된다")
+        void publish_messageReceivedInTopic() throws InterruptedException {
+                // 컨슈머 직접 생성 (EmbeddedKafka 브로커에 바인딩)
+                Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(
+                                "test-group", "true", embeddedKafkaBroker);
+                consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+                consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
 
-        Consumer<String, byte[]> consumer =
-                new DefaultKafkaConsumerFactory<String, byte[]>(consumerProps).createConsumer();
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, CardReviewedEventPublisher.TOPIC);
+                Consumer<String, byte[]> consumer = new DefaultKafkaConsumerFactory<String, byte[]>(consumerProps)
+                                .createConsumer();
+                embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, CardReviewedEventPublisher.TOPIC);
 
-        // 발행
-        String userId = UUID.randomUUID().toString();
-        String cardId = UUID.randomUUID().toString();
-        String deckId = UUID.randomUUID().toString();
-        publisher.publish(userId, cardId, deckId, 3);
+                // 발행
+                String userId = UUID.randomUUID().toString();
+                String cardId = UUID.randomUUID().toString();
+                String deckId = UUID.randomUUID().toString();
+                publisher.publish(userId, cardId, deckId, 3);
 
-        // 수신 확인
-        ConsumerRecords<String, byte[]> records =
-                KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10));
-        consumer.close();
+                // 수신 확인
+                ConsumerRecords<String, byte[]> records = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10));
+                consumer.close();
 
-        assertThat(records.count()).isGreaterThan(0);
+                assertThat(records.count()).isGreaterThan(0);
 
-        ConsumerRecord<String, byte[]> record = records.iterator().next();
-        assertThat(record.topic()).isEqualTo(CardReviewedEventPublisher.TOPIC);
-        assertThat(record.key()).isEqualTo(userId);
-    }
+                ConsumerRecord<String, byte[]> record = records.iterator().next();
+                assertThat(record.topic()).isEqualTo(CardReviewedEventPublisher.TOPIC);
+                assertThat(record.key()).isEqualTo(userId);
+        }
 }
