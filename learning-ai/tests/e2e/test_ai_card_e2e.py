@@ -27,7 +27,11 @@ _BASE_EVENT = {
     "user_id": "e2e-user-222",
     "tenant_id": "e2e-tenant-333",
     "deck_id": "e2e-deck-444",
+    "title": "E2E 테스트 노트",
 }
+
+# Schema Registry 없는 테스트 환경용 JSON deserializer
+_JSON_DESER = lambda m: json.loads(m.decode())  # noqa: E731
 
 
 def _unique_event() -> dict[str, str]:
@@ -101,7 +105,7 @@ async def test_happy_path(kafka_bootstrap: str, monkeypatch: pytest.MonkeyPatch)
         processed.set()
         return ["card-1", "card-2"]
 
-    consumer = AiCardKafkaConsumer(pipeline_fn=pipeline_fn)
+    consumer = AiCardKafkaConsumer(pipeline_fn=pipeline_fn, value_deserializer=_JSON_DESER)
     await consumer.start()
     try:
         await _publish(kafka_bootstrap, TOPIC, event)
@@ -129,7 +133,7 @@ async def test_dlq_on_persistent_failure(
     ) -> list[str]:
         raise RuntimeError("LLM unavailable")
 
-    consumer = AiCardKafkaConsumer(pipeline_fn=always_fail)
+    consumer = AiCardKafkaConsumer(pipeline_fn=always_fail, value_deserializer=_JSON_DESER)
     # tenacity 대기 없이 즉시 실패 — 재시도 로직은 단위 테스트에서 검증됨
     consumer._process_with_retry = AsyncMock(  # type: ignore[method-assign]
         side_effect=RuntimeError("LLM unavailable")
@@ -164,7 +168,7 @@ async def test_performance(kafka_bootstrap: str, monkeypatch: pytest.MonkeyPatch
         processed.set()
         return ["card-1"]
 
-    consumer = AiCardKafkaConsumer(pipeline_fn=pipeline_fn)
+    consumer = AiCardKafkaConsumer(pipeline_fn=pipeline_fn, value_deserializer=_JSON_DESER)
     await consumer.start()
     try:
         publish_at = time.monotonic()
