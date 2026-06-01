@@ -68,7 +68,7 @@ class ReviewServiceTest {
         assertThat(response.lapses()).isEqualTo(0);
         verify(flashCardPort).saveAndFlush(any());
         verify(cardReviewPort).save(any(CardReview.class));
-        verify(eventPublisher).publish(eq(USER_ID.toString()), eq(CARD_ID.toString()), any(), eq(3));
+        verify(eventPublisher).publish(eq(USER_ID.toString()), eq(TENANT_ID.toString()), eq(CARD_ID.toString()), eq(3), any());
     }
 
     @Test
