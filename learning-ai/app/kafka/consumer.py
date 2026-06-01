@@ -2,9 +2,13 @@ import asyncio
 import contextlib
 import json
 import logging
+from collections.abc import Callable
 from typing import Any, Protocol
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from confluent_kafka.schema_registry import SchemaRegistryClient
+from confluent_kafka.schema_registry.avro import AvroDeserializer
+from confluent_kafka.serialization import MessageField, SerializationContext
 from tenacity import AsyncRetrying, stop_after_attempt, wait_exponential
 
 from app.core.config import settings
@@ -19,20 +23,35 @@ class EventHandlerFn(Protocol):
     ) -> list[str]: ...
 
 
+def _make_avro_deserializer(topic: str) -> Callable[[bytes], Any]:
+    sr = SchemaRegistryClient({"url": settings.schema_registry_url})
+    avro_deser = AvroDeserializer(schema_registry_client=sr)
+    ctx = SerializationContext(topic, MessageField.VALUE)
+    return lambda raw: avro_deser(raw, ctx)
+
+
 class AiCardKafkaConsumer:
-    def __init__(self, pipeline_fn: EventHandlerFn) -> None:
+    def __init__(
+        self,
+        pipeline_fn: EventHandlerFn,
+        value_deserializer: Callable[[bytes], Any] | None = None,
+    ) -> None:
         self._pipeline_fn = pipeline_fn
+        self._value_deserializer = value_deserializer
         self._consumer: AIOKafkaConsumer | None = None
         self._producer: AIOKafkaProducer | None = None
         self._processed: set[str] = set()
         self._task: asyncio.Task[None] | None = None
 
     async def start(self) -> None:
+        deser = self._value_deserializer or _make_avro_deserializer(
+            settings.kafka_note_created_topic
+        )
         self._consumer = AIOKafkaConsumer(
             settings.kafka_note_created_topic,
             bootstrap_servers=settings.kafka_bootstrap_servers,
             group_id=settings.kafka_consumer_group_id,
-            value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+            value_deserializer=deser,
             enable_auto_commit=False,
         )
         self._producer = AIOKafkaProducer(
@@ -84,6 +103,11 @@ class AiCardKafkaConsumer:
             await self._consumer.commit()  # type: ignore[union-attr]
             return
 
+        if event.deck_id is None:
+            logger.warning("event_id=%s has no deck_id, skipping card generation", event.event_id)
+            await self._consumer.commit()  # type: ignore[union-attr]
+            return
+
         try:
             await asyncio.wait_for(self._process_with_retry(event), timeout=60.0)
             self._processed.add(event.event_id)
@@ -95,6 +119,7 @@ class AiCardKafkaConsumer:
             await self._consumer.commit()  # type: ignore[union-attr]
 
     async def _process_with_retry(self, event: NoteCreatedEvent) -> None:
+        assert event.deck_id is not None
         async for attempt in AsyncRetrying(
             stop=stop_after_attempt(3),
             wait=wait_exponential(multiplier=2, max=8),
