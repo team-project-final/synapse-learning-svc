@@ -79,20 +79,21 @@ public class ReviewService {
                 newLapses,
                 dueDate);
 
-        publishAfterCommit(userId, cardId, card.getDeckId().toString(), request.rating());
+        String nextReviewAt = dueDate.toString();
+        publishAfterCommit(userId, tenantId, cardId, request.rating(), nextReviewAt);
 
         return response;
     }
 
-    private void publishAfterCommit(String userId, String cardId, String deckId, int rating) {
+    private void publishAfterCommit(String userId, String tenantId, String cardId, int rating, String nextReviewAt) {
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            eventPublisher.publish(userId, cardId, deckId, rating);
+            eventPublisher.publish(userId, tenantId, cardId, rating, nextReviewAt);
             return;
         }
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                eventPublisher.publish(userId, cardId, deckId, rating);
+                eventPublisher.publish(userId, tenantId, cardId, rating, nextReviewAt);
             }
         });
     }
