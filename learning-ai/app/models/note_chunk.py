@@ -39,7 +39,7 @@ class NoteChunk(Base):
             "idx_note_chunks_embedding",
             embedding,
             postgresql_using="hnsw",
-            postgresql_with={"m": 16, "ef_construction": 64},
+            postgresql_with={"m": 16, "ef_construction": 128},
             postgresql_ops={"embedding": "vector_cosine_ops"},
             postgresql_where=(tenant_id.isnot(None)),
         ),

@@ -169,7 +169,7 @@
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [09-버전-관리-정책](../../wiki/09-버전-관리-정책.md) · [14-배포-가이드](../../wiki/14-배포-가이드.md) |
 | **Assignee** | @learning-ai-owner |
 | **Reviewer** | @team-lead |
-| **Status** | TODO |
+| **Status** | DONE |
 
 ---
 
@@ -189,4 +189,4 @@
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [09-버전-관리-정책](../../wiki/09-버전-관리-정책.md) |
 | **Assignee** | @learning-ai-owner |
 | **Reviewer** | @team-lead |
-| **Status** | TODO |
+| **Status** | DONE |
