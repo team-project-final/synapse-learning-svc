@@ -70,6 +70,25 @@ jobs:
       - name: Test (pytest)
         run: pytest -v
 
+  e2e-python:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: learning-ai
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+      - name: E2E Tests
+        run: pytest -v -m e2e
+
   dev-smoke:
     needs: detect-changes
     if: needs.detect-changes.outputs.java == 'true'

@@ -27,7 +27,7 @@ dev = [
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
     "respx>=0.21.1",
-    "testcontainers[postgres]>=4.4.0",
+    "testcontainers[postgres,kafka]>=4.4.0",
     "ruff>=0.7.0",
     "mypy>=1.12.0",
 ]
@@ -49,6 +49,9 @@ strict = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = [
+    "e2e: end-to-end integration tests requiring Docker",
+]
 
 [[tool.mypy.overrides]]
 module = "pgvector.*"
@@ -61,3 +64,16 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "redis.*"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "testcontainers.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "numpy.*"
+ignore_missing_imports = true
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "tests.test_semantic_search_accuracy"
+ignore_errors = true
