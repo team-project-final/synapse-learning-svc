@@ -1,7 +1,7 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.learning.event.CardReviewed;
-import com.synapse.learning.event.Rating;
+import com.synapse.learning.ReviewCompleted;
+import com.synapse.learning.Rating;
 import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,7 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -18,37 +19,40 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class CardReviewedEventPublisher implements CardReviewedEventPort {
 
-    static final String TOPIC = "card.reviewed";
+    static final String TOPIC = "learning.card.review-completed-v1";
 
-    private final KafkaTemplate<String, CardReviewed> kafkaTemplate;
+    private final KafkaTemplate<String, ReviewCompleted> reviewCompletedKafkaTemplate;
 
     /**
      * 복습 완료 이벤트를 비동기 발행한다.
-     * 파티션 키 = userId → 같은 사용자의 이벤트 순서 보장
+     * 파티션 키 = tenantId → 같은 테넌트의 이벤트 순서 보장
      */
     @Override
-    public void publish(String userId, String cardId, String deckId, int rating) {
-        CardReviewed event = CardReviewed.newBuilder()
+    public void publish(String userId, String tenantId, String cardId, int rating, String nextReviewAt) {
+        ReviewCompleted event = ReviewCompleted.newBuilder()
+                .setEventId(UUID.randomUUID().toString())
                 .setUserId(userId)
+                .setTenantId(tenantId)
                 .setCardId(cardId)
-                .setDeckId(deckId)
                 .setRating(toRating(rating))
-                .setReviewedAt(Instant.now())
+                .setNextReviewAt(nextReviewAt)
+                .setReviewedAt(Instant.now().toString())
+                .setOccurredAt(Instant.now().toEpochMilli())
                 .build();
 
-        ProducerRecord<String, CardReviewed> record =
-                new ProducerRecord<>(TOPIC, userId, event);  // key = userId (파티션 키)
+        ProducerRecord<String, ReviewCompleted> record =
+                new ProducerRecord<>(TOPIC, tenantId, event);  // key = tenantId (파티션 키)
 
-        CompletableFuture<SendResult<String, CardReviewed>> future =
-                kafkaTemplate.send(record);
+        CompletableFuture<SendResult<String, ReviewCompleted>> future =
+                reviewCompletedKafkaTemplate.send(record);
 
         future.whenComplete((result, ex) -> {
             if (ex != null) {
-                log.error("[Kafka] card.reviewed 발행 실패 — userId={}, cardId={}, error={}",
-                        userId, cardId, ex.getMessage(), ex);
+                log.error("[Kafka] {} 발행 실패 — userId={}, cardId={}, error={}",
+                        TOPIC, userId, cardId, ex.getMessage(), ex);
             } else {
-                log.debug("[Kafka] card.reviewed 발행 성공 — userId={}, cardId={}, offset={}",
-                        userId, cardId,
+                log.debug("[Kafka] {} 발행 성공 — userId={}, cardId={}, offset={}",
+                        TOPIC, userId, cardId,
                         result.getRecordMetadata().offset());
             }
         });

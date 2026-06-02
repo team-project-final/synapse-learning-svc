@@ -3,6 +3,7 @@ package com.synapse.learning.srs.application.service;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewStatsResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.WeeklyStatsResponse;
 import com.synapse.learning.srs.application.port.out.ReviewStatsPort;
+import com.synapse.learning.srs.application.port.out.StreakPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,9 @@ class ReviewStatsServiceTest {
     @Mock
     ReviewStatsPort reviewStatsPort;
 
+    @Mock
+    StreakPort streakPort;
+
     @InjectMocks
     ReviewStatsService reviewStatsService;
 
@@ -45,6 +49,8 @@ class ReviewStatsServiceTest {
                 eq(UUID.fromString(USER_ID)), eq(UUID.fromString(TENANT_ID)),
                 any(Instant.class), any(Instant.class)))
                 .willReturn(List.of(stat));
+        given(streakPort.getStreak(USER_ID, TENANT_ID))
+                .willReturn(new StreakPort.StreakData(0, 0));
 
         ReviewStatsResponse response = reviewStatsService.getOverview(TENANT_ID, USER_ID);
 
@@ -64,6 +70,8 @@ class ReviewStatsServiceTest {
     void getOverview_emptyDays_filledWithZero() {
         given(reviewStatsPort.findDailyStats(any(), any(), any(), any()))
                 .willReturn(List.of());
+        given(streakPort.getStreak(USER_ID, TENANT_ID))
+                .willReturn(new StreakPort.StreakData(0, 0));
 
         ReviewStatsResponse response = reviewStatsService.getOverview(TENANT_ID, USER_ID);
 
@@ -81,6 +89,8 @@ class ReviewStatsServiceTest {
 
         given(reviewStatsPort.findDailyStats(any(), any(), any(), any()))
                 .willReturn(List.of(stat));
+        given(streakPort.getStreak(USER_ID, TENANT_ID))
+                .willReturn(new StreakPort.StreakData(0, 0));
 
         ReviewStatsResponse response = reviewStatsService.getOverview(TENANT_ID, USER_ID);
 

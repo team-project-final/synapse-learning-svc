@@ -1,7 +1,7 @@
 package com.synapse.learning.config;
 
-import com.synapse.learning.event.CardReviewDue;
-import com.synapse.learning.event.CardReviewed;
+import com.synapse.learning.CardReviewDue;
+import com.synapse.learning.ReviewCompleted;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class KafkaConfig {
 
     @Bean
-    public ProducerFactory<String, CardReviewed> cardReviewedProducerFactory(
+    public ProducerFactory<String, ReviewCompleted> reviewCompletedProducerFactory(
             @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
             @Value("${spring.kafka.producer.properties.schema.registry.url}") String schemaRegistryUrl,
             @Value("${spring.kafka.producer.acks:all}") String acks,
@@ -36,13 +36,14 @@ public class KafkaConfig {
         props.put(ProducerConfig.ACKS_CONFIG, acks);
         props.put(ProducerConfig.RETRIES_CONFIG, retries);
         props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, retryBackoffMs);
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean
-    public KafkaTemplate<String, CardReviewed> cardReviewedKafkaTemplate(
-            ProducerFactory<String, CardReviewed> cardReviewedProducerFactory) {
-        return new KafkaTemplate<>(cardReviewedProducerFactory);
+    public KafkaTemplate<String, ReviewCompleted> reviewCompletedKafkaTemplate(
+            ProducerFactory<String, ReviewCompleted> reviewCompletedProducerFactory) {
+        return new KafkaTemplate<>(reviewCompletedProducerFactory);
     }
 
     @Bean
@@ -60,7 +61,7 @@ public class KafkaConfig {
         props.put(ProducerConfig.ACKS_CONFIG, acks);
         props.put(ProducerConfig.RETRIES_CONFIG, retries);
         props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, retryBackoffMs);
-        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);  // 멱등성 Producer
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         return new DefaultKafkaProducerFactory<>(props);
     }
 

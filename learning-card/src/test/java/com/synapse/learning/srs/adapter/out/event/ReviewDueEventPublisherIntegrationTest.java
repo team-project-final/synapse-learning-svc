@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.learning.event.CardReviewDue;
+import com.synapse.learning.CardReviewDue;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -26,6 +26,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
@@ -37,10 +38,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@EmbeddedKafka(
-        partitions = 1,
-        topics = {ReviewDueEventPublisher.TOPIC}
-)
+@ActiveProfiles("test")
+@EmbeddedKafka(partitions = 1, topics = { ReviewDueEventPublisher.TOPIC })
 @TestPropertySource(properties = {
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
         "spring.kafka.producer.properties.schema.registry.url=mock://test-scope",
@@ -72,32 +71,29 @@ class ReviewDueEventPublisherIntegrationTest {
     EmbeddedKafkaBroker embeddedKafkaBroker;
 
     @Test
-    @DisplayName("복습 리마인더 발행 시 card.review.due 토픽에 메시지가 수신된다")
+    @DisplayName("복습 리마인더 발행 시 learning.card.review-due-v1 토픽에 메시지가 수신된다")
     void publish_messageReceivedInTopic() {
-        // 컨슈머 직접 생성 (EmbeddedKafka 브로커에 바인딩)
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(
                 "test-group-due", "true", embeddedKafkaBroker);
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
 
-        Consumer<String, byte[]> consumer =
-                new DefaultKafkaConsumerFactory<String, byte[]>(consumerProps).createConsumer();
+        Consumer<String, byte[]> consumer = new DefaultKafkaConsumerFactory<String, byte[]>(consumerProps)
+                .createConsumer();
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, ReviewDueEventPublisher.TOPIC);
 
-        // 발행
         String userId = UUID.randomUUID().toString();
+        String tenantId = UUID.randomUUID().toString();
         String dueDate = LocalDate.now().toString();
-        publisher.publish(userId, 5, dueDate);
+        publisher.publish(userId, tenantId, 5, dueDate);
 
-        // 수신 확인
-        ConsumerRecords<String, byte[]> records =
-                KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10));
+        ConsumerRecords<String, byte[]> records = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10));
         consumer.close();
 
         assertThat(records.count()).isGreaterThan(0);
 
         ConsumerRecord<String, byte[]> record = records.iterator().next();
         assertThat(record.topic()).isEqualTo(ReviewDueEventPublisher.TOPIC);
-        assertThat(record.key()).isEqualTo(userId);   // 파티션 키 = userId
+        assertThat(record.key()).isEqualTo(tenantId);  // 파티션 키 = tenantId
     }
 }

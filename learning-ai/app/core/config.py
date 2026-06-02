@@ -21,9 +21,13 @@ class Settings(BaseSettings):
     # Kafka
     kafka_enabled: bool = True
     kafka_bootstrap_servers: str = "localhost:9092"
-    kafka_consumer_group_id: str = "learning-ai-card-generator"
-    kafka_note_created_topic: str = "note.created.v1"
+    kafka_consumer_group_id: str = "learning-ai-svc-group"
+    kafka_note_created_topic: str = "knowledge.note.note-created-v1"
     kafka_dlq_topic: str = "note.created.dlq"
+    kafka_notification_topic: str = "platform.notification.notification-send-v1"
+
+    # Schema Registry
+    schema_registry_url: str = "http://localhost:8086"
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"

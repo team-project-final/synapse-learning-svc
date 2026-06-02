@@ -2,6 +2,7 @@ package com.synapse.learning.card.domain.model;
 
 import com.synapse.learning.global.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "cards")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FlashCard extends BaseEntity {
 
     @Column(name = "deck_id", nullable = false, updatable = false)

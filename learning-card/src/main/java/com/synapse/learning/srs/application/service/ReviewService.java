@@ -27,7 +27,6 @@ public class ReviewService {
 
     private final FlashCardPort flashCardPort;
     private final CardReviewPort cardReviewPort;
-    private final Sm2Calculator sm2Calculator;
     private final CardReviewedEventPort eventPublisher;
 
     @Transactional
@@ -45,7 +44,7 @@ public class ReviewService {
         int prevLapses = card.getLapses();
 
         // SM-2 계산
-        Sm2Result result = sm2Calculator.calculate(
+        Sm2Result result = Sm2Calculator.calculate(
                 request.rating(), prevEF, prevInterval, card.getRepetitions());
 
         Instant dueDate = Instant.now().plus(result.intervalDays(), ChronoUnit.DAYS);
@@ -79,20 +78,21 @@ public class ReviewService {
                 newLapses,
                 dueDate);
 
-        publishAfterCommit(userId, cardId, card.getDeckId().toString(), request.rating());
+        String nextReviewAt = dueDate.toString();
+        publishAfterCommit(userId, tenantId, cardId, request.rating(), nextReviewAt);
 
         return response;
     }
 
-    private void publishAfterCommit(String userId, String cardId, String deckId, int rating) {
+    private void publishAfterCommit(String userId, String tenantId, String cardId, int rating, String nextReviewAt) {
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            eventPublisher.publish(userId, cardId, deckId, rating);
+            eventPublisher.publish(userId, tenantId, cardId, rating, nextReviewAt);
             return;
         }
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                eventPublisher.publish(userId, cardId, deckId, rating);
+                eventPublisher.publish(userId, tenantId, cardId, rating, nextReviewAt);
             }
         });
     }

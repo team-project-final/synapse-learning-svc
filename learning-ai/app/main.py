@@ -19,6 +19,7 @@ from app.core.exceptions import (
 )
 from app.db.session import SessionLocal
 from app.kafka.consumer import AiCardKafkaConsumer
+from app.kafka.notification_producer import NotificationProducer
 from app.repositories.note_chunk_repository import NoteChunkRepository
 from app.services.ai_service import AIService
 from app.services.card_pipeline_service import AiCardPipelineService
@@ -33,26 +34,35 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     claude = ClaudeService(api_key=settings.anthropic_api_key or "")
     openai_svc = OpenAIEmbeddingService(api_key=settings.openai_api_key or "")
 
-    async def pipeline_fn(
-        *, note_id: str, user_id: str, tenant_id: str, deck_id: str
-    ) -> list[str]:
-        note_content = await note_client.get_note_content(
-            note_id=note_id, user_id=user_id, tenant_id=tenant_id
-        )
-        async with SessionLocal() as session:
-            repo = NoteChunkRepository(session)
-            ai_svc = AIService(claude=claude, openai=openai_svc, repo=repo)
-            pipeline = AiCardPipelineService(ai_service=ai_svc, card_client=card_client)
-            return await pipeline.generate_and_save(
-                note_content=note_content,
-                deck_id=deck_id,
-                user_id=user_id,
-                tenant_id=tenant_id,
-                note_id=note_id,
-            )
-
+    notification: NotificationProducer | None = None
     consumer: AiCardKafkaConsumer | None = None
+
     if settings.kafka_enabled:
+        notification = NotificationProducer()
+        await notification.start()
+
+        async def pipeline_fn(
+            *, note_id: str, user_id: str, tenant_id: str, deck_id: str
+        ) -> list[str]:
+            note_content = await note_client.get_note_content(
+                note_id=note_id, user_id=user_id, tenant_id=tenant_id
+            )
+            async with SessionLocal() as session:
+                repo = NoteChunkRepository(session)
+                ai_svc = AIService(claude=claude, openai=openai_svc, repo=repo)
+                pipeline = AiCardPipelineService(
+                    ai_service=ai_svc,
+                    card_client=card_client,
+                    notification=notification,
+                )
+                return await pipeline.generate_and_save(
+                    note_content=note_content,
+                    deck_id=deck_id,
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    note_id=note_id,
+                )
+
         consumer = AiCardKafkaConsumer(pipeline_fn=pipeline_fn)
         await consumer.start()
 
@@ -60,6 +70,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     if consumer is not None:
         await consumer.stop()
+    if notification is not None:
+        await notification.stop()
 
 
 app = FastAPI(

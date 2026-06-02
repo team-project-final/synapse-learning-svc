@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.learning.event.CardReviewed;
+import com.synapse.learning.ReviewCompleted;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -26,6 +26,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
@@ -36,13 +37,12 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@EmbeddedKafka(
-        partitions = 1,
-        topics = {CardReviewedEventPublisher.TOPIC}
-)
+@ActiveProfiles("test")
+@EmbeddedKafka(partitions = 1, topics = { CardReviewedEventPublisher.TOPIC })
 @TestPropertySource(properties = {
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "spring.kafka.producer.properties.schema.registry.url=mock://test-scope"
+        "spring.kafka.producer.properties.schema.registry.url=mock://test-scope",
+        "spring.main.allow-bean-definition-overriding=true"
 })
 @DirtiesContext
 class CardReviewedEventPublisherIntegrationTest {
@@ -52,7 +52,7 @@ class CardReviewedEventPublisherIntegrationTest {
 
         @Bean
         @Primary
-        public KafkaTemplate<String, CardReviewed> kafkaTemplate(
+        public KafkaTemplate<String, ReviewCompleted> reviewCompletedKafkaTemplate(
                 @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
             Map<String, Object> props = new HashMap<>();
             props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -70,33 +70,30 @@ class CardReviewedEventPublisherIntegrationTest {
     EmbeddedKafkaBroker embeddedKafkaBroker;
 
     @Test
-    @DisplayName("rating 제출 시 card.reviewed 토픽에 메시지가 수신된다")
+    @DisplayName("rating 제출 시 learning.card.review-completed-v1 토픽에 메시지가 수신된다")
     void publish_messageReceivedInTopic() throws InterruptedException {
-        // 컨슈머 직접 생성 (EmbeddedKafka 브로커에 바인딩)
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(
                 "test-group", "true", embeddedKafkaBroker);
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
 
-        Consumer<String, byte[]> consumer =
-                new DefaultKafkaConsumerFactory<String, byte[]>(consumerProps).createConsumer();
+        Consumer<String, byte[]> consumer = new DefaultKafkaConsumerFactory<String, byte[]>(consumerProps)
+                .createConsumer();
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, CardReviewedEventPublisher.TOPIC);
 
-        // 발행
         String userId = UUID.randomUUID().toString();
+        String tenantId = UUID.randomUUID().toString();
         String cardId = UUID.randomUUID().toString();
-        String deckId = UUID.randomUUID().toString();
-        publisher.publish(userId, cardId, deckId, 3);
+        String nextReviewAt = "2026-06-08";
+        publisher.publish(userId, tenantId, cardId, 3, nextReviewAt);
 
-        // 수신 확인
-        ConsumerRecords<String, byte[]> records =
-                KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10));
+        ConsumerRecords<String, byte[]> records = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10));
         consumer.close();
 
         assertThat(records.count()).isGreaterThan(0);
 
         ConsumerRecord<String, byte[]> record = records.iterator().next();
         assertThat(record.topic()).isEqualTo(CardReviewedEventPublisher.TOPIC);
-        assertThat(record.key()).isEqualTo(userId);
+        assertThat(record.key()).isEqualTo(tenantId);  // 파티션 키 = tenantId
     }
 }

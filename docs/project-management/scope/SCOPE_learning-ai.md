@@ -56,5 +56,5 @@
 - [x] AI 카드 자동 생성 (노트 → LLM → 카드) (W2 완료)
 - [x] note.created Kafka 이벤트 소비 → AI 카드 자동 생성 → learning-card API 저장 (W3 완료)
 - [x] RAG Q&A (`POST /ai/qa`, SSE 스트리밍, Redis 시맨틱 캐시) (W3 완료)
-- [ ] AI 카드 자동 생성 E2E 테스트 (W4)
-- [ ] 시맨틱 검색 정확도 검증 + P0 버그 수정 (W4)
+- [x] AI 카드 자동 생성 E2E 테스트 (W4 완료)
+- [x] 시맨틱 검색 정확도 검증 + P0 버그 수정 (W4 완료)

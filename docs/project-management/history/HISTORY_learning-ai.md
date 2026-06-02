@@ -35,14 +35,14 @@
 
 **W3 진행률**: 2/2 Steps 완료 (100%)
 
-### W4 (2026-06-02 ~ 06-06)
+### W4 (2026-06-01 ~ 06-05)
 
 | Step | 내용 | 상태 | 시작일 | 완료일 | 비고 |
 |------|------|------|--------|--------|------|
-| Step 8 | AI 카드 자동 생성 E2E 테스트 | Not Started | — | — | |
-| Step 9 | 시맨틱 검색 정확도 검증 | Not Started | — | — | |
+| Step 8 | AI 카드 자동 생성 E2E 테스트 | DONE | 2026-06-01 | 2026-06-01 | Testcontainers Kafka, DLQ 검증, 성능 측정 |
+| Step 9 | 시맨틱 검색 정확도 검증 | DONE | 2026-06-01 | 2026-06-01 | MRR/Precision@10, HNSW 튜닝 |
 
-**W4 진행률**: 0/2 Steps 완료
+**W4 진행률**: 2/2 Steps 완료 (100%)
 
 ---
 
@@ -117,13 +117,39 @@
 - **이슈**:
 - **주간 요약**:
 
-### W4 (2026-06-02 ~ 06-06)
+### W4 (2026-06-01 ~ 06-05)
 
-#### 2026-06-02 (월)
+#### 2026-06-01 (월)
 - **완료**:
-- **진행 중**:
-- **이슈**:
-- **다음**:
+  - **Step 8**: AI 카드 자동 생성 E2E 테스트 구현
+    - `tests/e2e/conftest.py`: 세션 스코프 `KafkaContainer` 픽스처 (confluentinc/cp-kafka:7.6.0)
+    - `tests/e2e/test_ai_card_e2e.py`: E2E 3시나리오 — 정상 플로우 / DLQ 전달 / 성능(10초 이내)
+    - `pyproject.toml`: `testcontainers[kafka]` 추가, `e2e` 마커 등록
+    - `.github/workflows/ci.yml`: `e2e-python` 잡 추가 (`pytest -v -m e2e`)
+    - 코드 리뷰 결과 P0 버그 없음, 기존 단위 테스트 12개 전원 통과
+  - **Step 9**: 시맨틱 검색 정확도 검증 및 HNSW 튜닝
+    - `tests/test_semantic_search_accuracy.py`: 25개 합성 쿼리, MRR ≥ 0.7, Precision@10 ≥ 0.6
+    - `app/models/note_chunk.py`: HNSW `ef_construction` 64 → 128 (빌드 품질 향상)
+    - `pyproject.toml`: numpy mypy override 추가
+    - 코드 리뷰 결과 P0 버그 없음 (search_similar 로직 정상, threshold 필터 정상)
+- **브랜치**: `feature/learning-ai-w4-e2e-accuracy`
+- **다음**: PR 작성 → dev 머지
+
+#### 2026-06-02 (화)
+- **완료**:
+  - **이슈 #22/#32 보완 (PR #35)**: Avro 소비 전환 + 알림 발행 구현
+    - `app/kafka/schemas.py`: `NoteCreatedEvent` camelCase alias, `deck_id` nullable, `title`/`content` 필드 추가
+    - `app/kafka/consumer.py`: Avro deserializer injectable (prod=Schema Registry, test=JSON)
+      — 토픽 `note.created.v1` → `knowledge.note.note-created-v1`
+      — 그룹 `learning-ai-card-generator` → `learning-ai-svc-group`
+      — `deck_id` None 이벤트 graceful skip
+    - `app/kafka/notification_producer.py`: `NotificationProducer` 신규 구현
+      — 카드 등록 성공 후 `platform.notification.notification-send-v1` Avro 발행
+      — 멱등 `eventId = uuidv5(noteId+userId)`, 알림 실패 시 non-fatal
+    - `app/services/card_pipeline_service.py`: `NotificationProducer` 선택적 주입
+    - `app/core/config.py`: `schema_registry_url`, `kafka_notification_topic` 추가
+    - `tests/e2e/test_ai_card_e2e.py`: JSON deserializer 명시적 주입 (Schema Registry 불필요)
+- **브랜치**: `dev` (PR #35 머지 완료)
 
 #### 2026-06-03 (화)
 - **완료**:
@@ -155,6 +181,7 @@
 
 | 날짜 | 변경 사항 |
 |------|-----------|
+| 2026-06-02 | W4 Step 8·9 완료 + PR #35(Avro 전환·알림 발행) 반영 (대시보드 + 작업 로그) |
 | 2026-05-27 | W3 Step 6·7 완료 반영 (대시보드 + 작업 로그) |
 | 2026-05-19 | HISTORY 문서 Step 분류 오류 수정 (Step 6을 W2에서 W3로 이동) |
 | 2026-05-11 | W2/W3/W4 대시보드 및 로그 템플릿 추가 |

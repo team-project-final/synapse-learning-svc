@@ -44,10 +44,11 @@ public class ReviewDueScheduler {
 
             for (Object[] row : batch) {
                 String userId = row[0].toString();
-                int dueCardCount = ((Number) row[1]).intValue();
+                String tenantId = row[1].toString();
+                int dueCardCount = ((Number) row[2]).intValue();
 
                 try {
-                    reviewDueEventPort.publish(userId, dueCardCount, dueDate);
+                    reviewDueEventPort.publish(userId, tenantId, dueCardCount, dueDate);
                     totalPublished++;
                 } catch (Exception e) {
                     log.error("[ReviewDueScheduler] 이벤트 발행 실패 — userId={}, error={}",

@@ -20,15 +20,15 @@ public interface FlashCardJpaRepository extends JpaRepository<FlashCard, UUID> {
 
     // ── 스케줄러용: 복습 대상 사용자 목록 조회 (userId + 카드 수) ──────────────
     @Query(value = """
-            SELECT c.user_id AS userId, COUNT(*) AS dueCardCount
+            SELECT d.user_id AS userId, d.tenant_id AS tenantId, COUNT(*) AS dueCardCount
             FROM cards c
             JOIN card_decks d ON d.id = c.deck_id
             WHERE c.deleted_at IS NULL
-              AND c.due_date <= CURRENT_DATE
+              AND c.due_date <= NOW()
               AND c.status IN ('new', 'learning', 'review')
-            GROUP BY c.user_id
+            GROUP BY d.user_id, d.tenant_id
             HAVING COUNT(*) > 0
-            ORDER BY c.user_id
+            ORDER BY d.user_id
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
     List<Object[]> findDueCardCountByUser(@Param("limit") int limit,
