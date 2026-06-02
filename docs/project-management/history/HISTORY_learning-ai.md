@@ -135,6 +135,22 @@
 - **브랜치**: `feature/learning-ai-w4-e2e-accuracy`
 - **다음**: PR 작성 → dev 머지
 
+#### 2026-06-02 (화)
+- **완료**:
+  - **이슈 #22/#32 보완 (PR #35)**: Avro 소비 전환 + 알림 발행 구현
+    - `app/kafka/schemas.py`: `NoteCreatedEvent` camelCase alias, `deck_id` nullable, `title`/`content` 필드 추가
+    - `app/kafka/consumer.py`: Avro deserializer injectable (prod=Schema Registry, test=JSON)
+      — 토픽 `note.created.v1` → `knowledge.note.note-created-v1`
+      — 그룹 `learning-ai-card-generator` → `learning-ai-svc-group`
+      — `deck_id` None 이벤트 graceful skip
+    - `app/kafka/notification_producer.py`: `NotificationProducer` 신규 구현
+      — 카드 등록 성공 후 `platform.notification.notification-send-v1` Avro 발행
+      — 멱등 `eventId = uuidv5(noteId+userId)`, 알림 실패 시 non-fatal
+    - `app/services/card_pipeline_service.py`: `NotificationProducer` 선택적 주입
+    - `app/core/config.py`: `schema_registry_url`, `kafka_notification_topic` 추가
+    - `tests/e2e/test_ai_card_e2e.py`: JSON deserializer 명시적 주입 (Schema Registry 불필요)
+- **브랜치**: `dev` (PR #35 머지 완료)
+
 #### 2026-06-03 (화)
 - **완료**:
 - **진행 중**:
@@ -165,6 +181,7 @@
 
 | 날짜 | 변경 사항 |
 |------|-----------|
+| 2026-06-02 | W4 Step 8·9 완료 + PR #35(Avro 전환·알림 발행) 반영 (대시보드 + 작업 로그) |
 | 2026-05-27 | W3 Step 6·7 완료 반영 (대시보드 + 작업 로그) |
 | 2026-05-19 | HISTORY 문서 Step 분류 오류 수정 (Step 6을 W2에서 W3로 이동) |
 | 2026-05-11 | W2/W3/W4 대시보드 및 로그 템플릿 추가 |
