@@ -58,7 +58,7 @@
 
 ### 1.9 E2E 검증
 - [x] Docker Compose 환경에서 스케줄러 수동 트리거
-- [ ] kafka-console-consumer로 card.review.due 이벤트 수신 확인 (팀 Kafka 인프라 세팅 후 진행)
+- [x] kafka-console-consumer로 card.review.due 이벤트 수신 확인 (팀 Kafka 인프라 세팅 후 진행)
 - [ ] notification 서비스 연동 테스트 (이벤트 → 알림 발송)
 - [ ] 대량 사용자 시뮬레이션 (1000명 기준 처리 시간 측정)
 
