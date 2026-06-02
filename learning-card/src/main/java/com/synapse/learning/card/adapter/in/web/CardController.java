@@ -35,38 +35,42 @@ public class CardController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<CardResponse>>> getCards(
             @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-Tenant-Id") String tenantId,
             @PathVariable String deckId,
             @PageableDefault(size = 20) Pageable pageable) {
         Pageable capped = PageRequest.of(
                 pageable.getPageNumber(),
                 Math.min(pageable.getPageSize(), 100),
                 pageable.getSort());
-        return ResponseEntity.ok(ApiResponse.success(cardUseCase.getCards(userId, deckId, capped)));
+        return ResponseEntity.ok(ApiResponse.success(cardUseCase.getCards(userId, tenantId, deckId, capped)));
     }
 
     @GetMapping("/{cardId}")
     public ResponseEntity<ApiResponse<CardResponse>> getCard(
             @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-Tenant-Id") String tenantId,
             @PathVariable String deckId,
             @PathVariable String cardId) {
-        return ResponseEntity.ok(ApiResponse.success(cardUseCase.getCard(userId, deckId, cardId)));
+        return ResponseEntity.ok(ApiResponse.success(cardUseCase.getCard(userId, tenantId, deckId, cardId)));
     }
 
     @PatchMapping("/{cardId}")
     public ResponseEntity<ApiResponse<CardResponse>> updateCard(
             @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-Tenant-Id") String tenantId,
             @PathVariable String deckId,
             @PathVariable String cardId,
             @RequestBody @Valid CardUpdateRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(cardUseCase.updateCard(userId, deckId, cardId, request)));
+        return ResponseEntity.ok(ApiResponse.success(cardUseCase.updateCard(userId, tenantId, deckId, cardId, request)));
     }
 
     @DeleteMapping("/{cardId}")
     public ResponseEntity<Void> deleteCard(
             @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-Tenant-Id") String tenantId,
             @PathVariable String deckId,
             @PathVariable String cardId) {
-        cardUseCase.deleteCard(userId, deckId, cardId);
+        cardUseCase.deleteCard(userId, tenantId, deckId, cardId);
         return ResponseEntity.noContent().build();
     }
 }

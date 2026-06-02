@@ -10,11 +10,11 @@ public interface CardUseCase {
 
     CardResponse createCard(String userId, String tenantId, String deckId, CardCreateRequest request);
 
-    PageResponse<CardResponse> getCards(String userId, String deckId, Pageable pageable);
+    PageResponse<CardResponse> getCards(String userId, String tenantId, String deckId, Pageable pageable);
 
-    CardResponse getCard(String userId, String deckId, String cardId);
+    CardResponse getCard(String userId, String tenantId, String deckId, String cardId);
 
-    CardResponse updateCard(String userId, String deckId, String cardId, CardUpdateRequest request);
+    CardResponse updateCard(String userId, String tenantId, String deckId, String cardId, CardUpdateRequest request);
 
-    void deleteCard(String userId, String deckId, String cardId);
+    void deleteCard(String userId, String tenantId, String deckId, String cardId);
 }

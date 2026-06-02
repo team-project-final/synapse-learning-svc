@@ -6,8 +6,6 @@ import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitRequest;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitResponse;
 import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
 import com.synapse.learning.srs.application.port.out.CardReviewPort;
-import com.synapse.learning.srs.domain.Sm2Calculator;
-import com.synapse.learning.srs.domain.Sm2Result;
 import com.synapse.learning.srs.domain.model.CardReview;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,8 +32,6 @@ class ReviewServiceTest {
     @Mock
     CardReviewPort cardReviewPort;
     @Mock
-    Sm2Calculator sm2Calculator;
-    @Mock
     CardReviewedEventPort eventPublisher;
 
     @InjectMocks
@@ -54,7 +50,6 @@ class ReviewServiceTest {
                 .build();
 
         given(flashCardPort.findByIdAndDeletedAtIsNull(CARD_ID)).willReturn(Optional.of(card));
-        given(sm2Calculator.calculate(3, 2.5, 0, 0)).willReturn(new Sm2Result(2.5, 1, 1));
         given(flashCardPort.saveAndFlush(any())).willReturn(card);
         given(cardReviewPort.save(any())).willReturn(null);
 
@@ -80,7 +75,6 @@ class ReviewServiceTest {
                 .build();
 
         given(flashCardPort.findByIdAndDeletedAtIsNull(CARD_ID)).willReturn(Optional.of(card));
-        given(sm2Calculator.calculate(1, 2.5, 0, 0)).willReturn(new Sm2Result(2.3, 1, 0));
         given(flashCardPort.saveAndFlush(any())).willReturn(card);
         given(cardReviewPort.save(any())).willReturn(null);
 

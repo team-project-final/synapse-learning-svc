@@ -34,7 +34,7 @@ public class CardService implements CardUseCase {
     @Transactional
     public CardResponse createCard(String userId, String tenantId, String deckId, CardCreateRequest request) {
         CardDeck deck = findActiveDeck(deckId);
-        validateDeckOwner(deck, userId);
+        validateDeckOwner(deck, userId, tenantId);
 
         FlashCard card = FlashCard.builder()
                 .deckId(UUID.fromString(deckId))
@@ -50,9 +50,9 @@ public class CardService implements CardUseCase {
     }
 
     @Override
-    public PageResponse<CardResponse> getCards(String userId, String deckId, Pageable pageable) {
+    public PageResponse<CardResponse> getCards(String userId, String tenantId, String deckId, Pageable pageable) {
         CardDeck deck = findActiveDeck(deckId);
-        validateDeckOwner(deck, userId);
+        validateDeckOwner(deck, userId, tenantId);
         Page<CardResponse> page = flashCardPort
                 .findAllByDeckIdAndDeletedAtIsNull(UUID.fromString(deckId), pageable)
                 .map(cardMapper::toResponse);
@@ -60,9 +60,9 @@ public class CardService implements CardUseCase {
     }
 
     @Override
-    public CardResponse getCard(String userId, String deckId, String cardId) {
+    public CardResponse getCard(String userId, String tenantId, String deckId, String cardId) {
         CardDeck deck = findActiveDeck(deckId);
-        validateDeckOwner(deck, userId);
+        validateDeckOwner(deck, userId, tenantId);
         FlashCard card = findActiveCard(cardId);
         validateCardInDeck(card, deckId);
         return cardMapper.toResponse(card);
@@ -70,9 +70,9 @@ public class CardService implements CardUseCase {
 
     @Override
     @Transactional
-    public CardResponse updateCard(String userId, String deckId, String cardId, CardUpdateRequest request) {
+    public CardResponse updateCard(String userId, String tenantId, String deckId, String cardId, CardUpdateRequest request) {
         CardDeck deck = findActiveDeck(deckId);
-        validateDeckOwner(deck, userId);
+        validateDeckOwner(deck, userId, tenantId);
         FlashCard card = findActiveCard(cardId);
         validateCardInDeck(card, deckId);
         card.update(request.frontContent(), request.backContent(), request.cardType());
@@ -82,9 +82,9 @@ public class CardService implements CardUseCase {
 
     @Override
     @Transactional
-    public void deleteCard(String userId, String deckId, String cardId) {
+    public void deleteCard(String userId, String tenantId, String deckId, String cardId) {
         CardDeck deck = findActiveDeck(deckId);
-        validateDeckOwner(deck, userId);
+        validateDeckOwner(deck, userId, tenantId);
         FlashCard card = findActiveCard(cardId);
         validateCardInDeck(card, deckId);
         card.softDelete();
@@ -97,8 +97,9 @@ public class CardService implements CardUseCase {
                 .orElseThrow(() -> new DeckNotFoundException(deckId));
     }
 
-    private void validateDeckOwner(CardDeck deck, String userId) {
-        if (!deck.getUserId().equals(UUID.fromString(userId))) {
+    private void validateDeckOwner(CardDeck deck, String userId, String tenantId) {
+        if (!deck.getTenantId().equals(UUID.fromString(tenantId))
+                || !deck.getUserId().equals(UUID.fromString(userId))) {
             throw new BusinessException(ErrorCode.DECK_ACCESS_DENIED);
         }
     }

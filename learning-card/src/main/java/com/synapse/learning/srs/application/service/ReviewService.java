@@ -27,7 +27,6 @@ public class ReviewService {
 
     private final FlashCardPort flashCardPort;
     private final CardReviewPort cardReviewPort;
-    private final Sm2Calculator sm2Calculator;
     private final CardReviewedEventPort eventPublisher;
 
     @Transactional
@@ -45,7 +44,7 @@ public class ReviewService {
         int prevLapses = card.getLapses();
 
         // SM-2 계산
-        Sm2Result result = sm2Calculator.calculate(
+        Sm2Result result = Sm2Calculator.calculate(
                 request.rating(), prevEF, prevInterval, card.getRepetitions());
 
         Instant dueDate = Instant.now().plus(result.intervalDays(), ChronoUnit.DAYS);
