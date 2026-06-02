@@ -1,13 +1,10 @@
 package com.synapse.learning.srs.domain;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public class Sm2Calculator {
 
     private static final double MIN_EASE_FACTOR = 1.3;
 
-    public Sm2Result calculate(int rating, double easeFactor, int intervalDays, int repetitions) {
+    public static Sm2Result calculate(int rating, double easeFactor, int intervalDays, int repetitions) {
         if (rating == 1) {
             double newEF = Math.max(MIN_EASE_FACTOR, easeFactor - 0.2);
             newEF = Math.round(newEF * 100.0) / 100.0;

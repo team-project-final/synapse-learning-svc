@@ -1,9 +1,9 @@
 package com.synapse.learning.card.adapter.in.web.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record CardUpdateRequest(
-        @NotBlank String frontContent,
-        @NotBlank String backContent,
+        @Size(max = 5000) String frontContent,
+        @Size(max = 5000) String backContent,
         String cardType) {
 }

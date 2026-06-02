@@ -22,7 +22,6 @@ public class ReviewSessionController {
 
     private final ReviewSessionUseCase reviewSessionUseCase;
 
-    // 세션 시작
     @PostMapping("/sessions")
     public ResponseEntity<ApiResponse<ReviewSessionResponse>> startSession(
             @RequestHeader("X-User-Id") String userId,
@@ -32,7 +31,6 @@ public class ReviewSessionController {
                 reviewSessionUseCase.startSession(tenantId, userId, request)));
     }
 
-    // 오늘 복습 카드 큐
     @GetMapping("/queue")
     public ResponseEntity<ApiResponse<List<ReviewCardResponse>>> getReviewQueue(
             @RequestHeader("X-Tenant-Id") String tenantId,
@@ -42,7 +40,6 @@ public class ReviewSessionController {
                 reviewSessionUseCase.getReviewQueue(tenantId, userId, deckId)));
     }
 
-    // 카드 rating 제출
     @PostMapping("/sessions/{sessionId}/submit")
     public ResponseEntity<ApiResponse<ReviewSubmitResponse>> submitReview(
             @RequestHeader("X-User-Id") String userId,
@@ -53,7 +50,6 @@ public class ReviewSessionController {
                 reviewSessionUseCase.submitReview(tenantId, userId, sessionId, request)));
     }
 
-    // 세션 완료
     @PutMapping("/sessions/{sessionId}/complete")
     public ResponseEntity<ApiResponse<ReviewSessionResponse>> completeSession(
             @RequestHeader("X-Tenant-Id") String tenantId,

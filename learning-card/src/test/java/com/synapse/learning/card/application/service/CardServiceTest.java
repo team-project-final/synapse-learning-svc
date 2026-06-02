@@ -131,7 +131,7 @@ class CardServiceTest {
         given(flashCardPort.findAllByDeckIdAndDeletedAtIsNull(DECK_ID, pageable)).willReturn(pageResult);
         given(cardMapper.toResponse(card)).willReturn(response);
 
-        PageResponse<CardResponse> result = cardService.getCards(USER_ID.toString(), DECK_ID.toString(), pageable);
+        PageResponse<CardResponse> result = cardService.getCards(USER_ID.toString(), TENANT_ID.toString(), DECK_ID.toString(), pageable);
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.content().get(0).frontContent()).isEqualTo("스택이란?");
@@ -151,7 +151,7 @@ class CardServiceTest {
         given(cardMapper.toResponse(card)).willReturn(response);
 
         CardResponse result = cardService.updateCard(
-                USER_ID.toString(), DECK_ID.toString(), CARD_ID.toString(),
+                USER_ID.toString(), TENANT_ID.toString(), DECK_ID.toString(), CARD_ID.toString(),
                 new CardUpdateRequest("수정된 질문", "수정된 답", "qa"));
 
         assertThat(result).isNotNull();
@@ -168,7 +168,7 @@ class CardServiceTest {
         given(cardDeckPort.findByIdAndDeletedAtIsNull(DECK_ID)).willReturn(Optional.of(mockDeck()));
         given(flashCardPort.findByIdAndDeletedAtIsNull(CARD_ID)).willReturn(Optional.of(card));
 
-        cardService.deleteCard(USER_ID.toString(), DECK_ID.toString(), CARD_ID.toString());
+        cardService.deleteCard(USER_ID.toString(), TENANT_ID.toString(), DECK_ID.toString(), CARD_ID.toString());
 
         assertThat(card.getDeletedAt()).isNotNull();
     }
@@ -182,7 +182,7 @@ class CardServiceTest {
         given(flashCardPort.findByIdAndDeletedAtIsNull(CARD_ID)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> cardService.getCard(
-                USER_ID.toString(), DECK_ID.toString(), CARD_ID.toString()))
+                USER_ID.toString(), TENANT_ID.toString(), DECK_ID.toString(), CARD_ID.toString()))
                 .isInstanceOf(CardNotFoundException.class);
     }
 }

@@ -104,11 +104,12 @@ class CardControllerTest {
     void getCards_returns200() throws Exception {
         PageResponse<CardResponse> page = new PageResponse<>(
                 List.of(mockResponse()), 0, 20, 1, 1, true);
-        given(cardUseCase.getCards(any(), any(), any())).willReturn(page);
+        given(cardUseCase.getCards(any(), any(), any(), any())).willReturn(page);
 
         mockMvc.perform(get("/decks/{deckId}/cards", DECK_ID)
                 .with(jwt())
-                .header("X-User-Id", USER_ID))
+                .header("X-User-Id", USER_ID)
+                .header("X-Tenant-Id", TENANT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content[0].frontContent").value("스택이란?"))
                 .andExpect(jsonPath("$.data.totalElements").value(1));
@@ -119,11 +120,12 @@ class CardControllerTest {
     @Test
     @DisplayName("PATCH /decks/{deckId}/cards/{cardId} — 카드 수정 200")
     void updateCard_returns200() throws Exception {
-        given(cardUseCase.updateCard(any(), any(), any(), any())).willReturn(mockResponse());
+        given(cardUseCase.updateCard(any(), any(), any(), any(), any())).willReturn(mockResponse());
 
         mockMvc.perform(patch("/decks/{deckId}/cards/{cardId}", DECK_ID, CARD_ID)
                 .with(jwt())
                 .header("X-User-Id", USER_ID)
+                .header("X-Tenant-Id", TENANT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(
                         new CardUpdateRequest("수정된 질문", "수정된 답", "qa"))))
@@ -138,7 +140,8 @@ class CardControllerTest {
     void deleteCard_returns204() throws Exception {
         mockMvc.perform(delete("/decks/{deckId}/cards/{cardId}", DECK_ID, CARD_ID)
                 .with(jwt())
-                .header("X-User-Id", USER_ID))
+                .header("X-User-Id", USER_ID)
+                .header("X-Tenant-Id", TENANT_ID))
                 .andExpect(status().isNoContent());
     }
 }
