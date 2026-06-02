@@ -84,3 +84,4 @@ dependencyManagement {
         mavenBom("org.springframework.modulith:spring-modulith-bom:1.3.0")
     }
 }
+ 
