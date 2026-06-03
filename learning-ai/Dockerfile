@@ -19,6 +19,10 @@ COPY --from=builder /install /usr/local
 # Copy application code
 COPY . .
 
+# Create non-root user (uid/gid 101) and own the app dir
+RUN groupadd -g 101 -r app && useradd -u 101 -r -g app app && chown -R app:app /app
+USER app
+
 # Environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
