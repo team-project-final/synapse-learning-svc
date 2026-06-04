@@ -30,8 +30,12 @@ async def test_consumer_passes_security_protocol_to_aiokafka() -> None:
     ssl_settings.__dict__["kafka_security_protocol"] = "SSL"
 
     with (
-        patch("app.kafka.consumer.AIOKafkaConsumer", return_value=mock_consumer) as mock_consumer_cls,
-        patch("app.kafka.consumer.AIOKafkaProducer", return_value=mock_producer) as mock_producer_cls,
+        patch(
+            "app.kafka.consumer.AIOKafkaConsumer", return_value=mock_consumer
+        ) as mock_consumer_cls,
+        patch(
+            "app.kafka.consumer.AIOKafkaProducer", return_value=mock_producer
+        ) as mock_producer_cls,
         patch("app.kafka.consumer._make_avro_deserializer", return_value=lambda x: x),
         patch("app.kafka.consumer.settings", ssl_settings),
     ):
@@ -56,7 +60,9 @@ async def test_notification_producer_passes_security_protocol() -> None:
     ssl_settings.__dict__["kafka_security_protocol"] = "SSL"
 
     with (
-        patch("app.kafka.notification_producer.AIOKafkaProducer", return_value=mock_producer) as mock_producer_cls,
+        patch(
+            "app.kafka.notification_producer.AIOKafkaProducer", return_value=mock_producer
+        ) as mock_producer_cls,
         patch("app.kafka.notification_producer.SchemaRegistryClient"),
         patch("app.kafka.notification_producer.AvroSerializer"),
         patch("app.kafka.notification_producer.settings", ssl_settings),
