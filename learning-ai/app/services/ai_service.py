@@ -2,6 +2,8 @@ import json
 import logging
 import uuid
 
+from anthropic import AuthenticationError, BadRequestError
+
 from app.repositories.note_chunk_repository import NoteChunkRepository
 from app.schemas.ai import (
     CardGenerateResponse,
@@ -38,6 +40,8 @@ class AIService:
         """
         try:
             return await self.claude.generate_claude_text(request)
+        except (AuthenticationError, BadRequestError):
+            raise
         except Exception as e:
             logger.warning(f"Claude failed, falling back to OpenAI: {e}")
             try:

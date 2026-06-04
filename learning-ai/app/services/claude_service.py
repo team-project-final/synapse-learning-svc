@@ -67,6 +67,11 @@ class ClaudeService(BaseAIService):
             ),
         )
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((RateLimitError, APIConnectionError, InternalServerError)),
+    )
     async def generate_qa(self, *, context: str, question: str) -> str:
         """RAG Q&A 비스트리밍 답변 생성."""
         system_prompt = load_system_prompt("qa")
@@ -82,6 +87,11 @@ class ClaudeService(BaseAIService):
             content = message.content[0].text
         return content
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((RateLimitError, APIConnectionError, InternalServerError)),
+    )
     async def stream_qa(
         self, *, context: str, question: str
     ) -> AsyncGenerator[str, None]:

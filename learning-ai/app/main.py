@@ -86,10 +86,9 @@ if settings.environment == "development" or settings.environment == "local":
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[str(origin) for origin in settings.backend_cors_origins],
-        allow_origin_regex=r"http://localhost:\d+",  # Flutter web 모든 포트 허용
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization", "Accept", "X-User-Id"],
     )
 
 # Exception Handlers
