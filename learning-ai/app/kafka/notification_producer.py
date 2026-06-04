@@ -52,7 +52,10 @@ class NotificationProducer:
         self._producer: AIOKafkaProducer | None = None
 
     async def start(self) -> None:
-        self._producer = AIOKafkaProducer(bootstrap_servers=settings.kafka_bootstrap_servers)
+        self._producer = AIOKafkaProducer(
+            bootstrap_servers=settings.kafka_bootstrap_servers,
+            security_protocol=settings.kafka_security_protocol,
+        )
         await self._producer.start()
         logger.info("NotificationProducer started topic=%s", settings.kafka_notification_topic)
 
