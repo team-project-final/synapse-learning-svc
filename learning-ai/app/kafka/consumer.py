@@ -53,10 +53,12 @@ class AiCardKafkaConsumer:
             group_id=settings.kafka_consumer_group_id,
             value_deserializer=deser,
             enable_auto_commit=False,
+            security_protocol=settings.kafka_security_protocol,
         )
         self._producer = AIOKafkaProducer(
             bootstrap_servers=settings.kafka_bootstrap_servers,
             value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+            security_protocol=settings.kafka_security_protocol,
         )
         await self._consumer.start()
         await self._producer.start()

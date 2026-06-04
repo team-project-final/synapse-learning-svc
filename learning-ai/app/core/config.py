@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     # Kafka
     kafka_enabled: bool = True
     kafka_bootstrap_servers: str = "localhost:9092"
+    kafka_security_protocol: str = "PLAINTEXT"
     kafka_consumer_group_id: str = "learning-ai-svc-group"
     kafka_note_created_topic: str = "knowledge.note.note-created-v1"
     kafka_dlq_topic: str = "note.created.dlq"
