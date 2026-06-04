@@ -140,7 +140,7 @@
 
 - [x] Avro 스키마 파일 작성 (src/main/avro/card_reviewed.avsc)
 - [x] Avro 코드 생성 플러그인 설정 (Gradle avro plugin)
-- [ ] Schema Registry에 스키마 등록 (POST /subjects/card.reviewed-value/versions) — 로컬 실행 후
+- [x] Schema Registry에 스키마 등록 (POST /subjects/card.reviewed-value/versions) — 로컬 실행 후
 
 ### 5.8 Service + Test
 
@@ -162,7 +162,7 @@
 ### 5.10 View + Test (해당 시)
 
 - [x] Flutter 화면 연동: 해당 없음
-- [ ] Kafka 토픽 메시지 확인 (kafka-console-consumer) — 로컬 실행 후
+- [x] Kafka 토픽 메시지 확인 (kafka-console-consumer) — 로컬 실행 후
 - [x] RULE Reference → TASK 반영
 
 **Step 5 Status**: [ ] Not Started / [ ] In Progress / [x] Done (2026-05-20)
@@ -243,7 +243,7 @@
 ### 6.10 View + Test (해당 시)
 
 - [x] Flutter 화면 연동: 해당 없음 (프론트 별도)
-- [ ] Swagger API 문서 확인 — 로컬 실행 후
+- [x] Swagger API 문서 확인 — 로컬 실행 후
 - [x] RULE Reference → TASK 반영
 
 **Step 6 Status**: [ ] Not Started / [ ] In Progress / [x] Done (2026-05-21)
