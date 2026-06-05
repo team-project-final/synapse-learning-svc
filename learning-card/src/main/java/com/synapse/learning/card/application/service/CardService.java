@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -36,6 +37,21 @@ public class CardService implements CardUseCase {
         CardDeck deck = findActiveDeck(deckId);
         validateDeckOwner(deck, userId, tenantId);
 
+        return createCard(deckId, tenantId, request);
+    }
+
+    @Override
+    @Transactional
+    public List<CardResponse> createCards(String userId, String tenantId, String deckId, List<CardCreateRequest> requests) {
+        CardDeck deck = findActiveDeck(deckId);
+        validateDeckOwner(deck, userId, tenantId);
+
+        return requests.stream()
+                .map(request -> createCard(deckId, tenantId, request))
+                .toList();
+    }
+
+    private CardResponse createCard(String deckId, String tenantId, CardCreateRequest request) {
         FlashCard card = FlashCard.builder()
                 .deckId(UUID.fromString(deckId))
                 .tenantId(UUID.fromString(tenantId))

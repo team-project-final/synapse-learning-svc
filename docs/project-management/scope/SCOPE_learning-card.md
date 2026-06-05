@@ -57,7 +57,7 @@
 - [x] 복습 세션 플로우 (카드 제시 → 답변 → rating → 다음 복습일)
 - [x] Kafka 이벤트 발행 (card.reviewed, card.review.due)
 - [x] 복습 통계 API 동작
-- [ ] 카드 일괄 생성 (`POST /cards/batch`) 동작 *(Wiki API 명세서 동기화 — 추가)*
+- [x] 카드 일괄 생성 (`POST /decks/{deckId}/cards/batch`) 동작 *(Wiki API 명세서 동기화 — 추가)*
 - [x] 복습 큐 조회 (`GET /reviews/queue`) 동작 *(Wiki API 명세서 동기화 — 추가)*
 - [x] 세션 완료 API (`PUT /reviews/sessions/{sessionId}/complete`) 동작 *(Wiki API 명세서 동기화 — 추가)*
 - [x] Stats 히트맵 (`GET /stats/heatmap`) API 동작 *(Wiki API 명세서 동기화 — 추가)*

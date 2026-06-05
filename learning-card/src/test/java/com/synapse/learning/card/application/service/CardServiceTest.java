@@ -117,6 +117,26 @@ class CardServiceTest {
                 .isInstanceOf(BusinessException.class);
     }
 
+    @Test
+    @DisplayName("카드 일괄 생성 성공")
+    void createCards_success() {
+        FlashCard card = mockCard();
+        CardResponse response = mockResponse();
+
+        given(cardDeckPort.findByIdAndDeletedAtIsNull(DECK_ID)).willReturn(Optional.of(mockDeck()));
+        given(flashCardPort.save(any())).willReturn(card);
+        given(cardMapper.toResponse(card)).willReturn(response);
+
+        List<CardResponse> result = cardService.createCards(
+                USER_ID.toString(), TENANT_ID.toString(), DECK_ID.toString(),
+                List.of(
+                        new CardCreateRequest("Q1", "A1", "qa", null, null),
+                        new CardCreateRequest("Q2", "A2", "qa", null, null)));
+
+        assertThat(result).hasSize(2);
+        verify(flashCardPort, org.mockito.Mockito.times(2)).save(any(FlashCard.class));
+    }
+
     // ── getCards ─────────────────────────────────────
 
     @Test

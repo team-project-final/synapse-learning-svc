@@ -261,3 +261,4 @@
 | 2026-06-05 | Step10 Done — Kafka 안정화 (security.protocol 배선, KAFKA_ENABLED 게이트, DLQ 설정, 전체 테스트 74개 BUILD SUCCESSFUL) W4 전체 완료 🎉 |
 | 2026-06-05 | Polish — Kafka/Avro 규칙 정합성 보강(namespace `com.synapse.event.learning`, `timestamp-millis`, `{originalTopic}.dlq`) |
 | 2026-06-05 | Polish — PostgreSQL Testcontainers stats E2E 추가(`/stats/overview`, `/stats/heatmap`) |
+| 2026-06-05 | Polish — 카드 일괄 생성 API 추가(`POST /decks/{deckId}/cards/batch`, 최대 100장) |

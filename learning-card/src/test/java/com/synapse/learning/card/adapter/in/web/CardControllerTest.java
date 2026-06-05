@@ -1,6 +1,7 @@
 package com.synapse.learning.card.adapter.in.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.synapse.learning.card.adapter.in.web.dto.CardBatchCreateRequest;
 import com.synapse.learning.card.adapter.in.web.dto.CardCreateRequest;
 import com.synapse.learning.card.adapter.in.web.dto.CardResponse;
 import com.synapse.learning.card.adapter.in.web.dto.CardUpdateRequest;
@@ -95,6 +96,38 @@ class CardControllerTest {
                         new CardCreateRequest("Q", "A", "qa", null, null))))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error.code").value("DECK_ACCESS_DENIED"));
+    }
+
+    @Test
+    @DisplayName("POST /decks/{deckId}/cards/batch — 카드 일괄 생성 201")
+    void createCards_returns201() throws Exception {
+        given(cardUseCase.createCards(any(), any(), any(), any())).willReturn(List.of(mockResponse(), mockResponse()));
+        CardBatchCreateRequest request = new CardBatchCreateRequest(List.of(
+                new CardCreateRequest("Q1", "A1", "qa", null, null),
+                new CardCreateRequest("Q2", "A2", "qa", null, null)));
+
+        mockMvc.perform(post("/decks/{deckId}/cards/batch", DECK_ID)
+                .with(jwt())
+                .header("X-User-Id", USER_ID)
+                .header("X-Tenant-Id", TENANT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data.length()").value(2));
+    }
+
+    @Test
+    @DisplayName("POST /decks/{deckId}/cards/batch — 빈 카드 목록 400")
+    void createCards_emptyCards_returns400() throws Exception {
+        mockMvc.perform(post("/decks/{deckId}/cards/batch", DECK_ID)
+                .with(jwt())
+                .header("X-User-Id", USER_ID)
+                .header("X-Tenant-Id", TENANT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CardBatchCreateRequest(List.of()))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
     }
 
     // ── GET /decks/{deckId}/cards ────────────────────
