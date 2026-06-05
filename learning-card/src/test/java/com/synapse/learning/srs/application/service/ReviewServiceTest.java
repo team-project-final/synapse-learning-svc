@@ -2,6 +2,7 @@ package com.synapse.learning.srs.application.service;
 
 import com.synapse.learning.card.application.port.out.FlashCardPort;
 import com.synapse.learning.card.domain.model.FlashCard;
+import com.synapse.learning.global.exception.BusinessException;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitRequest;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitResponse;
 import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
@@ -20,8 +21,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +53,7 @@ class ReviewServiceTest {
                 .build();
 
         given(flashCardPort.findByIdAndDeletedAtIsNull(CARD_ID)).willReturn(Optional.of(card));
+        given(flashCardPort.existsActiveCardOwnedBy(CARD_ID, USER_ID, TENANT_ID)).willReturn(true);
         given(flashCardPort.saveAndFlush(any())).willReturn(card);
         given(cardReviewPort.save(any())).willReturn(null);
 
@@ -75,6 +79,7 @@ class ReviewServiceTest {
                 .build();
 
         given(flashCardPort.findByIdAndDeletedAtIsNull(CARD_ID)).willReturn(Optional.of(card));
+        given(flashCardPort.existsActiveCardOwnedBy(CARD_ID, USER_ID, TENANT_ID)).willReturn(true);
         given(flashCardPort.saveAndFlush(any())).willReturn(card);
         given(cardReviewPort.save(any())).willReturn(null);
 
@@ -95,5 +100,26 @@ class ReviewServiceTest {
                 USER_ID.toString(), TENANT_ID.toString(), CARD_ID.toString(),
                 new ReviewSubmitRequest(3, 1000), null))
                 .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("submitReview denies cards not owned by current user")
+    void submitReview_notOwnedCard_throwsException() {
+        FlashCard card = FlashCard.builder()
+                .deckId(UUID.randomUUID()).tenantId(TENANT_ID)
+                .cardType("qa").frontContent("Q").backContent("A")
+                .build();
+
+        given(flashCardPort.findByIdAndDeletedAtIsNull(CARD_ID)).willReturn(Optional.of(card));
+        given(flashCardPort.existsActiveCardOwnedBy(CARD_ID, USER_ID, TENANT_ID)).willReturn(false);
+
+        assertThatThrownBy(() -> reviewService.submitReview(
+                USER_ID.toString(), TENANT_ID.toString(), CARD_ID.toString(),
+                new ReviewSubmitRequest(3, 1000), null))
+                .isInstanceOf(BusinessException.class);
+
+        verify(flashCardPort, never()).saveAndFlush(any());
+        verify(cardReviewPort, never()).save(any());
+        verify(eventPublisher, never()).publish(any(), any(), any(), anyInt(), any());
     }
 }

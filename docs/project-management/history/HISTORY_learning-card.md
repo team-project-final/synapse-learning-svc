@@ -236,7 +236,7 @@
   - `ReviewStatsPostgresE2ETest`: 복습 완료 후 `/stats/overview`, `/stats/heatmap` 집계 검증
   - H2에서 제외했던 PostgreSQL native query(`DATE_TRUNC`, `AT TIME ZONE`) 경로를 실제 PostgreSQL로 검증
 - **이슈**: WS3-C Noop 파일 커밋 누락 → Step10 브랜치에서 함께 포함 / EmbeddedKafka 통합 테스트 2개 `NoSuchBeanDefinitionException` → `synapse.kafka.enabled=true` 추가로 해결
-- **다음**: 남은 TODO 확인
+- **다음**: -
 
 #### 2026-06-06 (금)
 - **완료**:
@@ -263,3 +263,4 @@
 | 2026-06-05 | Polish — PostgreSQL Testcontainers stats E2E 추가(`/stats/overview`, `/stats/heatmap`) |
 | 2026-06-05 | Polish — 카드 일괄 생성 API 추가(`POST /decks/{deckId}/cards/batch`, 최대 100장) |
 | 2026-06-05 | Polish — Stats 리텐션 커브 API 추가(`GET /stats/retention`, 최근 30일 일별 정답률 커브) |
+| 2026-06-05 | Polish — 복습 제출 카드 소유자 검증 보강 및 streak fallback 의도 명시 |

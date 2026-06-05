@@ -3,6 +3,8 @@ package com.synapse.learning.srs.application.service;
 import com.synapse.learning.card.application.port.out.FlashCardPort;
 import com.synapse.learning.card.domain.exception.CardNotFoundException;
 import com.synapse.learning.card.domain.model.FlashCard;
+import com.synapse.learning.global.exception.BusinessException;
+import com.synapse.learning.global.exception.ErrorCode;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitRequest;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewSubmitResponse;
 import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
@@ -32,32 +34,26 @@ public class ReviewService {
     @Transactional
     public ReviewSubmitResponse submitReview(String userId, String tenantId,
             String cardId, ReviewSubmitRequest request, UUID sessionId) {
-        // 카드 조회
         FlashCard card = flashCardPort
                 .findByIdAndDeletedAtIsNull(UUID.fromString(cardId))
                 .orElseThrow(() -> new CardNotFoundException(cardId));
 
-        // TODO: JWT 도입 시 실제 소유자 검증으로 교체
+        validateCardOwner(cardId, userId, tenantId);
 
         double prevEF = card.getEasinessFactor();
         int prevInterval = card.getIntervalDays();
         int prevLapses = card.getLapses();
 
-        // SM-2 계산
         Sm2Result result = Sm2Calculator.calculate(
                 request.rating(), prevEF, prevInterval, card.getRepetitions());
 
         Instant dueDate = Instant.now().plus(result.intervalDays(), ChronoUnit.DAYS);
-
-        // lapses: Again(1)이면 +1
         int newLapses = (request.rating() == 1) ? prevLapses + 1 : prevLapses;
 
-        // 카드 SRS 필드 업데이트
         card.updateSrsFields(result.easeFactor(), result.intervalDays(),
                 result.repetitions(), newLapses, dueDate);
         flashCardPort.saveAndFlush(card);
 
-        // 복습 이력 저장
         cardReviewPort.save(CardReview.builder()
                 .tenantId(UUID.fromString(tenantId))
                 .cardId(UUID.fromString(cardId))
@@ -78,10 +74,19 @@ public class ReviewService {
                 newLapses,
                 dueDate);
 
-        String nextReviewAt = dueDate.toString();
-        publishAfterCommit(userId, tenantId, cardId, request.rating(), nextReviewAt);
+        publishAfterCommit(userId, tenantId, cardId, request.rating(), dueDate.toString());
 
         return response;
+    }
+
+    private void validateCardOwner(String cardId, String userId, String tenantId) {
+        boolean owned = flashCardPort.existsActiveCardOwnedBy(
+                UUID.fromString(cardId),
+                UUID.fromString(userId),
+                UUID.fromString(tenantId));
+        if (!owned) {
+            throw new BusinessException(ErrorCode.CARD_ACCESS_DENIED);
+        }
     }
 
     private void publishAfterCommit(String userId, String tenantId, String cardId, int rating, String nextReviewAt) {

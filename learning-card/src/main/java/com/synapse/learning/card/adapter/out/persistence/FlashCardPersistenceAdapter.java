@@ -34,6 +34,11 @@ public class FlashCardPersistenceAdapter implements FlashCardPort {
     }
 
     @Override
+    public boolean existsActiveCardOwnedBy(UUID cardId, UUID userId, UUID tenantId) {
+        return jpaRepository.existsActiveCardOwnedBy(cardId, userId, tenantId);
+    }
+
+    @Override
     public Page<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId, Pageable pageable) {
         return jpaRepository.findAllByDeckIdAndDeletedAtIsNull(deckId, pageable);
     }
