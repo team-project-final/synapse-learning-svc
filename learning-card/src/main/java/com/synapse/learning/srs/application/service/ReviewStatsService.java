@@ -88,6 +88,34 @@ public class ReviewStatsService implements ReviewStatsUseCase {
         return new WeeklyStatsResponse(weekly);
     }
 
+    @Override
+    @Cacheable(value = CacheConfig.STATS_RETENTION, key = "#tenantId + ':' + #userId")
+    public RetentionStatsResponse getRetention(String tenantId, String userId) {
+        LocalDate today = LocalDate.now(KST);
+        Instant from = today.minusDays(29).atStartOfDay(KST).toInstant();
+        Instant to = today.plusDays(1).atStartOfDay(KST).toInstant();
+
+        List<ReviewStatsPort.DailyStat> rows = reviewStatsPort.findDailyStats(
+                UUID.fromString(userId), UUID.fromString(tenantId), from, to);
+
+        Map<LocalDate, ReviewStatsPort.DailyStat> rowMap = rows.stream()
+                .collect(Collectors.toMap(ReviewStatsPort.DailyStat::date, r -> r));
+
+        List<RetentionPointResponse> points = new ArrayList<>();
+        for (int i = 29; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            ReviewStatsPort.DailyStat row = rowMap.get(date);
+            if (row != null) {
+                points.add(new RetentionPointResponse(date, i, row.reviewCount(),
+                        toRate(row.correctCount(), row.reviewCount())));
+            } else {
+                points.add(RetentionPointResponse.empty(date, i));
+            }
+        }
+
+        return new RetentionStatsResponse(points);
+    }
+
     private double toRate(long correct, long total) {
         if (total == 0)
             return 0.0;

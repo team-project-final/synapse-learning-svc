@@ -75,7 +75,7 @@ class ReviewStatsPostgresE2ETest {
         @Bean
         @Primary
         CacheManager postgresE2eCacheManager() {
-            return new ConcurrentMapCacheManager("stats:overview", "stats:heatmap");
+            return new ConcurrentMapCacheManager("stats:overview", "stats:heatmap", "stats:retention");
         }
     }
 
@@ -107,6 +107,16 @@ class ReviewStatsPostgresE2ETest {
                 .andExpect(jsonPath("$.data.weekly").isArray())
                 .andExpect(jsonPath("$.data.weekly[11].reviewCount").value(1))
                 .andExpect(jsonPath("$.data.weekly[11].correctRate").value(100.0));
+
+        mockMvc.perform(get("/stats/retention")
+                        .with(jwt())
+                        .header("X-User-Id", USER_ID)
+                        .header("X-Tenant-Id", TENANT_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.points").isArray())
+                .andExpect(jsonPath("$.data.points[29].daysAgo").value(0))
+                .andExpect(jsonPath("$.data.points[29].reviewCount").value(1))
+                .andExpect(jsonPath("$.data.points[29].retentionRate").value(100.0));
     }
 
     private String createDeck() throws Exception {

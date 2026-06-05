@@ -61,4 +61,4 @@
 - [x] 복습 큐 조회 (`GET /reviews/queue`) 동작 *(Wiki API 명세서 동기화 — 추가)*
 - [x] 세션 완료 API (`PUT /reviews/sessions/{sessionId}/complete`) 동작 *(Wiki API 명세서 동기화 — 추가)*
 - [x] Stats 히트맵 (`GET /stats/heatmap`) API 동작 *(Wiki API 명세서 동기화 — 추가)*
-- [ ] Stats 리텐션 커브 (`GET /stats/retention`) API 동작 *(W5 이월 — Step6에서 미구현)*
+- [x] Stats 리텐션 커브 (`GET /stats/retention`) API 동작 *(W5 이월 — Step6에서 미구현)*
