@@ -20,7 +20,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
 @DisplayName("복습 전체 플로우 E2E")
 class ReviewFlowE2ETest {
@@ -42,7 +42,7 @@ class ReviewFlowE2ETest {
 
     @Test
     @DisplayName("덱 생성 → 카드 생성 → 복습 세션 → SM-2 제출 → 세션 완료 → 통계 조회 전체 플로우가 정상 동작한다")
-    void fullReviewFlow() throws Exception {
+    void reviewFlow_카드생성부터세션완료까지_should정상동작한다() throws Exception {
 
         // 1. 덱 생성
         MvcResult deckResult = mockMvc.perform(post("/decks")

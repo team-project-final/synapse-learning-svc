@@ -250,4 +250,4 @@
 | 2026-05-19 | 단위 테스트 완료 — Step2~4 전체 34개 테스트 작성 및 통과 (Sm2Calculator, ReviewService, ReviewSessionService, ReviewSessionController, CardService, DeckService) |
 | 2026-05-19 | Step4 Done — 복습 세션 관리 구현 (4개 엔드포인트, V14~V15 마이그레이션, Swagger 검증) W2 Step4 완료 |
 | 2026-06-02 | Step9 Done — 복습 E2E 테스트 (FlashCardJpaRepository 쿼리 2건 수정, 전체 테스트 통과) W4 Step9 완료 |
-| 2026-06-05 | Step10 Done — Kafka 안정화 (security.protocol 배선, KAFKA_ENABLED 게이트, DLQ 설정, 전체 테스트 74개 BUILD SUCCESSFUL) W4 전체 완료 🎉 |�
+| 2026-06-05 | Step10 Done — Kafka 안정화 (security.protocol 배선, KAFKA_ENABLED 게이트, DLQ 설정, 전체 테스트 74개 BUILD SUCCESSFUL) W4 전체 완료 🎉 |
