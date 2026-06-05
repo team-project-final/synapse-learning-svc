@@ -88,6 +88,19 @@ public class KafkaConfig {
     }
 
     @Bean
+    public KafkaTemplate<String, String> dlqKafkaTemplate(
+            @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        if (!"PLAINTEXT".equalsIgnoreCase(securityProtocol)) {
+            props.put("security.protocol", securityProtocol);
+        }
+        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(props));
+    }
+
+    @Bean
     public ConsumerFactory<String, Object> consumerFactory(
             @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
             @Value("${spring.kafka.consumer.properties.schema.registry.url}") String schemaRegistryUrl) {

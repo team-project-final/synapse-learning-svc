@@ -59,8 +59,8 @@
 ### 1.9 E2E 검증
 - [x] Docker Compose 환경에서 스케줄러 수동 트리거
 - [x] kafka-console-consumer로 card.review.due 이벤트 수신 확인 (팀 Kafka 인프라 세팅 후 진행)
-- [ ] notification 서비스 연동 테스트 (이벤트 → 알림 발송)
-- [ ] 대량 사용자 시뮬레이션 (1000명 기준 처리 시간 측정)
+- [ ] notification 서비스 연동 테스트 (이벤트 → 알림 발송) — notification-svc 별도 팀 담당, 범위 외
+- [x] 대량 사용자 시뮬레이션 (1000명 기준 처리 시간 측정) — ReviewDueSchedulerLoadTest: 1000명 3초 이내 완료 확인
 
 ### 1.10 결과 정리
 - [x] 이벤트 스키마 문서화 (card_review_due.avsc)

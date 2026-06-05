@@ -1,6 +1,7 @@
 package com.synapse.learning.srs.adapter.out.event;
 
 import com.synapse.learning.CardReviewDue;
+import com.synapse.learning.srs.application.port.out.KafkaDlqPort;
 import com.synapse.learning.srs.application.port.out.ReviewDueEventPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +24,8 @@ public class ReviewDueEventPublisher implements ReviewDueEventPort {
     static final String TOPIC = "learning.card.review-due-v1";
 
     private final KafkaTemplate<String, CardReviewDue> reviewDueKafkaTemplate;
+    private final KafkaDlqPort kafkaDlqPort;
 
-    /**
-     * 복습 리마인더 이벤트를 비동기 발행한다.
-     * 파티션 키 = tenantId → 같은 테넌트의 이벤트 순서 보장
-     */
     @Override
     public void publish(String userId, String tenantId, int dueCardCount, String dueDate) {
         CardReviewDue event = CardReviewDue.newBuilder()
@@ -40,7 +38,7 @@ public class ReviewDueEventPublisher implements ReviewDueEventPort {
                 .build();
 
         ProducerRecord<String, CardReviewDue> record =
-                new ProducerRecord<>(TOPIC, tenantId, event);  // key = tenantId (파티션 키)
+                new ProducerRecord<>(TOPIC, tenantId, event);
 
         CompletableFuture<SendResult<String, CardReviewDue>> future =
                 reviewDueKafkaTemplate.send(record);
@@ -49,6 +47,10 @@ public class ReviewDueEventPublisher implements ReviewDueEventPort {
             if (ex != null) {
                 log.error("[Kafka] {} 발행 실패 — userId={}, dueCardCount={}, error={}",
                         TOPIC, userId, dueCardCount, ex.getMessage(), ex);
+                String payload = String.format(
+                        "{\"topic\":\"%s\",\"userId\":\"%s\",\"dueCardCount\":%d,\"dueDate\":\"%s\",\"error\":\"%s\"}",
+                        TOPIC, userId, dueCardCount, dueDate, ex.getMessage());
+                kafkaDlqPort.publish(TOPIC, tenantId, payload);
             } else {
                 log.debug("[Kafka] {} 발행 성공 — userId={}, dueDate={}, offset={}",
                         TOPIC, userId, dueDate,
