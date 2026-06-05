@@ -215,6 +215,7 @@
 - **다음**: PR → dev 머지
 
 #### 2026-06-05 (목)
+<<<<<<< HEAD
 - **완료**: WS3-C — KAFKA_ENABLED 게이트 추가 (engagement 패턴 정합, PR #53)
   - `application.yml`: `synapse.kafka.enabled: ${KAFKA_ENABLED:false}` 바인딩
   - `KafkaConfig` / `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: `@ConditionalOnProperty(enabled=true)` 추가
@@ -229,6 +230,20 @@
 - **진행 중**: -
 - **이슈**: WS3-C Noop 파일 커밋 누락 → Step10 브랜치에서 함께 포함
 - **다음**: PR → dev 머지 → Step11(안정화) / Step12(문서화)
+=======
+- **완료**: WS3-C — KAFKA_ENABLED 게이트 추가 (engagement 패턴 정합)
+  - `application.yml`: `synapse.kafka.enabled: ${KAFKA_ENABLED:false}` 바인딩 추가
+  - `KafkaConfig.java`: `@ConditionalOnProperty(prefix="synapse.kafka", name="enabled", havingValue="true")` 추가
+  - `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: 동일 조건 추가
+  - `NoopCardReviewedEventPublisher` / `NoopReviewDueEventPublisher` 신설 (Kafka 꺼짐 시 폴백, matchIfMissing=true)
+  - `KafkaEnabledGateTest` 신설 — enabled/disabled 4케이스 TDD 검증
+  - 기존 통합 테스트 4개 `synapse.kafka.enabled=true` 추가 (회귀 방지)
+  - 전체 테스트 BUILD SUCCESSFUL (75개)
+  - 브랜치: `feat/kafka-learning-card-enabled-gate`
+- **진행 중**: -
+- **이슈**: EmbeddedKafka 통합 테스트 2개 `NoSuchBeanDefinitionException` → `synapse.kafka.enabled=true` 추가로 해결
+- **다음**: PR → dev 머지
+>>>>>>> dev
 
 #### 2026-06-06 (금)
 - **완료**:
