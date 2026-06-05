@@ -21,6 +21,7 @@ class KafkaConfigSecurityProtocolTest {
     @ExtendWith(SpringExtension.class)
     @Import(KafkaConfig.class)
     @TestPropertySource(properties = {
+            "synapse.kafka.enabled=true",
             "spring.kafka.bootstrap-servers=localhost:9094",
             "spring.kafka.producer.properties.schema.registry.url=mock://test",
             "spring.kafka.producer.acks=all",
@@ -57,6 +58,7 @@ class KafkaConfigSecurityProtocolTest {
     @ExtendWith(SpringExtension.class)
     @Import(KafkaConfig.class)
     @TestPropertySource(properties = {
+            "synapse.kafka.enabled=true",
             "spring.kafka.bootstrap-servers=localhost:9092",
             "spring.kafka.producer.properties.schema.registry.url=mock://test",
             "spring.kafka.producer.acks=all",
