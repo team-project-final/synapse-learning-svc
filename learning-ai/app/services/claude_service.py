@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncGenerator
 from typing import Any
 
@@ -15,11 +16,13 @@ from app.core.prompts import load_system_prompt, render_user_prompt
 from app.schemas.ai import GenerateRequest, GenerateResponse, UsageInfo
 from app.services.base import BaseAIService
 
+logger = logging.getLogger("llm.cost")
+
 
 class ClaudeService(BaseAIService):
     """Service for interacting with Anthropic (Claude) API with retry logic."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str) -> None:
         # Set timeout to 30 seconds as per workflow requirement
         self.client = AsyncAnthropic(
             api_key=api_key, timeout=httpx.Timeout(30.0, connect=5.0), max_retries=0
@@ -82,6 +85,14 @@ class ClaudeService(BaseAIService):
             system=system_prompt,
             messages=[{"role": "user", "content": user_message}],
         )
+        logger.info(
+            "LLM call track",
+            extra={
+                "model": message.model,
+                "input_tokens": message.usage.input_tokens,
+                "output_tokens": message.usage.output_tokens,
+            },
+        )
         content = ""
         if message.content and hasattr(message.content[0], "text"):
             content = message.content[0].text
@@ -106,3 +117,12 @@ class ClaudeService(BaseAIService):
         ) as stream:
             async for text in stream.text_stream:
                 yield text
+            final = await stream.get_final_message()
+            logger.info(
+                "LLM call track",
+                extra={
+                    "model": final.model,
+                    "input_tokens": final.usage.input_tokens,
+                    "output_tokens": final.usage.output_tokens,
+                },
+            )

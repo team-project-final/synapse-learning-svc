@@ -4,42 +4,55 @@ from collections.abc import Callable
 from datetime import date
 from typing import Any
 
+from redis.asyncio import Redis
+
+from app.core.config import settings
 from app.schemas.ai import GenerateResponse
 
 logger = logging.getLogger("llm.cost")
 
-# In production, this should be in Redis. For now, we use a global dict.
-_daily_tokens: dict[str, int] = {}
 DAILY_LIMIT = 500_000
+_REDIS_KEY_PREFIX = "llm:daily_tokens"
+_redis: Redis | None = None
+
+
+def _get_redis() -> Redis:
+    global _redis
+    if _redis is None:
+        _redis = Redis.from_url(settings.redis_url, decode_responses=True)
+    return _redis
+
 
 class TokenLimitExceededError(Exception):
     """Raised when daily token limit is exceeded."""
 
-    pass
+
 def track_tokens[T: Callable[..., Any]](func: T) -> T:
     """Decorator to track token usage and enforce daily limits."""
 
     @functools.wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
-        today = date.today().isoformat()
-        if _daily_tokens.get(today, 0) >= DAILY_LIMIT:
+        redis = _get_redis()
+        key = f"{_REDIS_KEY_PREFIX}:{date.today().isoformat()}"
+
+        if int(await redis.get(key) or 0) >= DAILY_LIMIT:
             raise TokenLimitExceededError(f"Daily token limit {DAILY_LIMIT} exceeded")
 
         response = await func(*args, **kwargs)
 
         if isinstance(response, GenerateResponse):
             total = response.usage.input_tokens + response.usage.output_tokens
-            _daily_tokens[today] = _daily_tokens.get(today, 0) + total
-
+            daily_total = await redis.incrby(key, total)
+            await redis.expire(key, 172_800)  # 48h TTL — 자정 경계 안전 마진
             logger.info(
                 "LLM call track",
                 extra={
                     "model": response.model,
                     "input_tokens": response.usage.input_tokens,
                     "output_tokens": response.usage.output_tokens,
-                    "daily_total": _daily_tokens[today],
+                    "daily_total": daily_total,
                 },
             )
         return response
 
-    return wrapper  # type: ignore
+    return wrapper  # type: ignore[return-value]

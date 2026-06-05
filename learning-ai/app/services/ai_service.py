@@ -28,7 +28,7 @@ class AIService:
         claude: ClaudeService,
         openai: OpenAIEmbeddingService,
         repo: NoteChunkRepository,
-    ):
+    ) -> None:
         self.claude = claude
         self.openai = openai
         self.repo = repo
