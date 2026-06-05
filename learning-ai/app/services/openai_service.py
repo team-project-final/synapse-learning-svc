@@ -19,7 +19,7 @@ from app.services.base import BaseEmbeddingService
 class OpenAIEmbeddingService(BaseEmbeddingService):
     """Service for interacting with OpenAI API with stability and tracking."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str) -> None:
         self.client = AsyncOpenAI(
             api_key=api_key, timeout=httpx.Timeout(30.0, connect=5.0), max_retries=0
         )

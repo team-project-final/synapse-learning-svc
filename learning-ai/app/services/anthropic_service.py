@@ -8,7 +8,7 @@ from app.services.base import BaseAIService
 class AnthropicService(BaseAIService):
     """Service for interacting with Anthropic (Claude) API."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str) -> None:
         self.client = AsyncAnthropic(api_key=api_key)
 
     async def generate_text(self, prompt: str, **kwargs: Any) -> str:
