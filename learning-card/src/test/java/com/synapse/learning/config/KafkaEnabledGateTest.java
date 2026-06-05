@@ -1,7 +1,9 @@
 package com.synapse.learning.config;
 
 import com.synapse.learning.srs.adapter.out.event.CardReviewedEventPublisher;
+import com.synapse.learning.srs.adapter.out.event.KafkaDlqPublisher;
 import com.synapse.learning.srs.adapter.out.event.NoopCardReviewedEventPublisher;
+import com.synapse.learning.srs.adapter.out.event.NoopKafkaDlqPublisher;
 import com.synapse.learning.srs.adapter.out.event.NoopReviewDueEventPublisher;
 import com.synapse.learning.srs.adapter.out.event.ReviewDueEventPublisher;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +20,7 @@ class KafkaEnabledGateTest {
     class WhenEnabled {
 
         final ApplicationContextRunner runner = new ApplicationContextRunner()
-                .withUserConfiguration(KafkaConfig.class, CardReviewedEventPublisher.class, ReviewDueEventPublisher.class)
+                .withUserConfiguration(KafkaConfig.class, KafkaDlqPublisher.class, CardReviewedEventPublisher.class, ReviewDueEventPublisher.class)
                 .withPropertyValues(
                         "synapse.kafka.enabled=true",
                         "spring.kafka.bootstrap-servers=localhost:9092",
@@ -53,14 +55,18 @@ class KafkaEnabledGateTest {
         final ApplicationContextRunner runner = new ApplicationContextRunner()
                 .withUserConfiguration(
                         KafkaConfig.class,
+                        NoopKafkaDlqPublisher.class,
                         NoopCardReviewedEventPublisher.class,
                         NoopReviewDueEventPublisher.class
                 );
 
         @Test
-        @DisplayName("KafkaConfig Bean이 생성되지 않는다")
-        void kafkaConfigBeanAbsent() {
-            runner.run(ctx -> assertThat(ctx).doesNotHaveBean(KafkaConfig.class));
+        @DisplayName("실제 Publisher Bean이 생성되지 않는다")
+        void realPublishersAbsent() {
+            runner.run(ctx -> {
+                assertThat(ctx).doesNotHaveBean(CardReviewedEventPublisher.class);
+                assertThat(ctx).doesNotHaveBean(ReviewDueEventPublisher.class);
+            });
         }
 
         @Test
