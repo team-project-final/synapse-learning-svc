@@ -5,6 +5,7 @@ import com.synapse.learning.srs.application.port.out.ReviewDueEventPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "synapse.kafka", name = "enabled", havingValue = "true")
 public class ReviewDueEventPublisher implements ReviewDueEventPort {
 
     static final String TOPIC = "learning.card.review-due-v1";

@@ -52,6 +52,8 @@ springdoc:
     path: /swagger-ui.html
 
 synapse:
+  kafka:
+    enabled: ${KAFKA_ENABLED:false}
   jwt:
     public-key: ${JWT_PUBLIC_KEY:}
     issuer: ${JWT_ISSUER:synapse-auth}
