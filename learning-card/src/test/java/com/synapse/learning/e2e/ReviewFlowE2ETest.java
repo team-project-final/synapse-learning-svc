@@ -122,7 +122,7 @@ class ReviewFlowE2ETest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.status").value("completed"));
 
-        // 7. 통계 API — /stats/overview는 PostgreSQL native query(DATE_TRUNC, AT TIME ZONE)를
-        //    사용하므로 H2 E2E에서는 검증하지 않음 (ReviewStatsControllerTest에서 mock 커버)
+        // 7. 통계 API는 PostgreSQL native query를 사용하므로
+        //    ReviewStatsPostgresE2ETest에서 PostgreSQL Testcontainers로 검증한다.
     }
 }
