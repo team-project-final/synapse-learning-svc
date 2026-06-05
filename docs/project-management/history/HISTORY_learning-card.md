@@ -215,10 +215,20 @@
 - **다음**: PR → dev 머지
 
 #### 2026-06-05 (목)
-- **완료**:
-- **진행 중**:
-- **이슈**:
-- **다음**:
+- **완료**: WS3-C — KAFKA_ENABLED 게이트 추가 (engagement 패턴 정합, PR #53)
+  - `application.yml`: `synapse.kafka.enabled: ${KAFKA_ENABLED:false}` 바인딩
+  - `KafkaConfig` / `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: `@ConditionalOnProperty(enabled=true)` 추가
+  - `NoopCardReviewedEventPublisher` / `NoopReviewDueEventPublisher` 신설 (matchIfMissing=true)
+- **완료**: Step10 — Kafka DLQ 안정화
+  - `KafkaDlqPort` 인터페이스 신설, `KafkaDlqPublisher` / `NoopKafkaDlqPublisher` 신설
+  - `KafkaConfig`: DLQ용 `KafkaTemplate<String, String>` Bean 추가
+  - `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: 발행 실패 시 DLQ(`learning.card.dlq`) 저장 연동
+  - `KafkaDlqPublisherTest` / `KafkaEnabledGateTest` 신설
+  - 전체 테스트 BUILD SUCCESSFUL (74개)
+  - 브랜치: `feat/LEARN-CARD-011-kafka-event-stabilization`
+- **진행 중**: -
+- **이슈**: WS3-C Noop 파일 커밋 누락 → Step10 브랜치에서 함께 포함
+- **다음**: PR → dev 머지 → Step11(안정화) / Step12(문서화)
 
 #### 2026-06-06 (금)
 - **완료**:
