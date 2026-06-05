@@ -9,7 +9,7 @@ from app.models.note_chunk import NoteChunk
 class NoteChunkRepository:
     """Repository for handling persistence of NoteChunks as per ERD 5.4."""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
     async def save_chunk(self, chunk: NoteChunk) -> NoteChunk:
