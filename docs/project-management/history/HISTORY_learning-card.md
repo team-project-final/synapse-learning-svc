@@ -223,12 +223,17 @@
 - **완료**: Step10 — Kafka DLQ 안정화 (PR #56)
   - `KafkaDlqPort` 인터페이스 신설, `KafkaDlqPublisher` / `NoopKafkaDlqPublisher` 신설
   - `KafkaConfig`: DLQ용 `KafkaTemplate<String, String>` Bean 추가
-  - `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: 발행 실패 시 DLQ(`learning.card.dlq`) 저장 연동
+  - `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: 발행 실패 시 원본 토픽 기반 DLQ(`{originalTopic}.dlq`) 저장 연동
   - `KafkaDlqPublisherTest` 신설 — 전체 테스트 BUILD SUCCESSFUL (74개)
   - 브랜치: `feat/LEARN-CARD-011-kafka-event-stabilization`
+- **완료**: polish 보완 — Kafka/Avro 규칙 정합성 보강
+  - `ReviewCompleted.avsc` / `CardReviewDue.avsc`: namespace를 `com.synapse.event.learning`으로 정렬
+  - `reviewedAt` / `occurredAt`: Avro `timestamp-millis` logicalType 적용
+  - `KafkaDlqPublisher`: DLQ 토픽을 `{originalTopic}.dlq` 규칙으로 변경
+  - 검증: `compileJava` 통과, Kafka event/DLQ 관련 테스트 통과
 - **진행 중**: -
-- **이슈**: WS3-C Noop 파일 커밋 누락 → Step10 브랜치에서 함께 포함 / EmbeddedKafka 통합 테스트 2개 `NoSuchBeanDefinitionException` → `synapse.kafka.enabled=true` 추가로 해결
-- **다음**: PR → dev 머지 완료
+- **이슈**: WS3-C Noop 파일 커밋 누락 → Step10 브랜치에서 함께 포함 / EmbeddedKafka 통합 테스트 2개 `NoSuchBeanDefinitionException` → `synapse.kafka.enabled=true` 추가로 해결 / stats E2E는 PostgreSQL Testcontainers 의존성 추가 후 별도 보강 필요
+- **다음**: stats 포함 E2E 보강 여부 결정
 
 #### 2026-06-06 (금)
 - **완료**:
@@ -251,3 +256,4 @@
 | 2026-05-19 | Step4 Done — 복습 세션 관리 구현 (4개 엔드포인트, V14~V15 마이그레이션, Swagger 검증) W2 Step4 완료 |
 | 2026-06-02 | Step9 Done — 복습 E2E 테스트 (FlashCardJpaRepository 쿼리 2건 수정, 전체 테스트 통과) W4 Step9 완료 |
 | 2026-06-05 | Step10 Done — Kafka 안정화 (security.protocol 배선, KAFKA_ENABLED 게이트, DLQ 설정, 전체 테스트 74개 BUILD SUCCESSFUL) W4 전체 완료 🎉 |
+| 2026-06-05 | Polish — Kafka/Avro 규칙 정합성 보강(namespace `com.synapse.event.learning`, `timestamp-millis`, `{originalTopic}.dlq`) |

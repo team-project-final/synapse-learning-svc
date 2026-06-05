@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.learning.ReviewCompleted;
+import com.synapse.event.learning.ReviewCompleted;
 import com.synapse.learning.srs.application.port.out.KafkaDlqPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

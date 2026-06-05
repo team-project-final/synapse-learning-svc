@@ -97,7 +97,7 @@
 | **Input** | Step 4 완료된 복습 세션, Kafka/Schema Registry 설정, PRD_W2 이벤트 명세 |
 | **Instructions** | 1. `card-reviewed-v1.avsc` Avro 스키마 파일 작성 (cardId, userId, rating, reviewedAt)<br>2. Schema Registry에 스키마 등록<br>3. Kafka Producer 설정 (Spring Kafka + Avro Serializer)<br>4. 복습 완료 이벤트 발행 로직 구현 (rating 제출 후 비동기 발행)<br>5. Kafka 토픽 `card.reviewed` 생성 설정<br>6. 컨슈머 통합 테스트 작성 (이벤트 수신 확인)<br>7. 발행 실패 시 재시도 로직 구현 |
 | **Output Format** | Avro 스키마 파일 + Kafka Producer 설정 + 이벤트 발행/수신 테스트 결과 |
-| **Constraints** | - Avro 직렬화 필수<br>- Schema Registry BACKWARD 호환성<br>- 발행 실패 시 최대 3회 재시도<br>- 이벤트 순서 보장 (userId 기반 파티션 키)<br>- 이벤트 발행은 비동기 (복습 응답 지연 금지) |
+| **Constraints** | - Avro 직렬화 필수<br>- Schema Registry BACKWARD 호환성<br>- Avro namespace는 `com.synapse.event.learning` 준수<br>- timestamp 필드는 `timestamp-millis` logicalType 사용<br>- 발행 실패 시 최대 3회 재시도<br>- 이벤트 순서 보장 (userId 기반 파티션 키)<br>- 이벤트 발행은 비동기 (복습 응답 지연 금지) |
 | **Duration** | 0.5일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) · [14-배포-가이드](../../wiki/14-배포-가이드.md) |
 | **Assignee** | @learning-card-owner |
@@ -139,7 +139,7 @@
 | **Input** | Step 5 완료된 Kafka 설정, 복습 스케줄 데이터, PRD_W3 리마인더 요구사항 |
 | **Instructions** | 1. `card-review-due-v1.avsc` Avro 스키마 작성 (userId, dueCardCount, dueDate)<br>2. Schema Registry에 스키마 등록<br>3. 일일 스케줄러 구현 (@Scheduled, 매일 08:00 KST)<br>4. 복습 대상 사용자 추출 쿼리 (nextReviewDate ≤ today, 카드 수 집계)<br>5. card.review.due Kafka 이벤트 발행 로직 구현<br>6. 배치 발행 최적화 (한 번에 100명씩 처리)<br>7. 통합 테스트: 스케줄러 실행 → 이벤트 발행 확인 |
 | **Output Format** | Avro 스키마 + 스케줄러 코드 + 이벤트 발행 테스트 결과 |
-| **Constraints** | - 스케줄러 실행 시간: 매일 08:00 KST<br>- 배치 크기: 100명씩 처리<br>- 복습 대상 0건인 사용자는 이벤트 발행하지 않음<br>- 스케줄러 중복 실행 방지 (ShedLock 또는 유사 메커니즘)<br>- 발행 실패 시 재시도 3회 |
+| **Constraints** | - 스케줄러 실행 시간: 매일 08:00 KST<br>- 배치 크기: 100명씩 처리<br>- 복습 대상 0건인 사용자는 이벤트 발행하지 않음<br>- Avro namespace는 `com.synapse.event.learning` 준수<br>- timestamp 필드는 `timestamp-millis` logicalType 사용<br>- 스케줄러 중복 실행 방지 (ShedLock 또는 유사 메커니즘)<br>- 발행 실패 시 재시도 3회 |
 | **Duration** | 1.5일 |
 | **RULE Reference** | [03-아키텍처](../../wiki/03-아키텍처.md) · [18-기술-스택](../../wiki/18-기술-스택.md) · [14-배포-가이드](../../wiki/14-배포-가이드.md) |
 | **Assignee** | @learning-card-owner |
@@ -199,7 +199,7 @@
 | **Done When** | P0 버그 0건 + Kafka 이벤트 발행 성공률 99.9% + 회귀 테스트 통과 |
 | **Scope** | **In**: P0 버그 수정, Kafka 발행 안정화, 회귀 테스트 / **Out**: 프로덕션 배포, 신규 기능 추가 |
 | **Input** | Step 9 E2E 테스트 결과, P0 버그 목록, Kafka 모니터링 로그 |
-| **Instructions** | 1. P0 버그 목록 정리 및 우선순위 배정<br>2. 각 P0 버그 원인 분석 및 수정<br>3. Kafka 발행 실패 원인 분석 (재시도, 타임아웃, 직렬화 에러)<br>4. Kafka Producer 안정화 (acks=all, 재시도 설정 튜닝)<br>5. Dead Letter Queue(DLQ) 설정 (발행 실패 이벤트 보관)<br>6. 회귀 테스트 전체 실행 및 통과 확인<br>7. 수정 사항 코드 리뷰 및 반영 |
+| **Instructions** | 1. P0 버그 목록 정리 및 우선순위 배정<br>2. 각 P0 버그 원인 분석 및 수정<br>3. Kafka 발행 실패 원인 분석 (재시도, 타임아웃, 직렬화 에러)<br>4. Kafka Producer 안정화 (acks=all, 재시도 설정 튜닝)<br>5. Dead Letter Queue(DLQ) 설정 (발행 실패 이벤트 보관, 토픽명 `{originalTopic}.dlq`)<br>6. 회귀 테스트 전체 실행 및 통과 확인<br>7. 수정 사항 코드 리뷰 및 반영 |
 | **Output Format** | P0 버그 수정 내역 + Kafka 설정 변경 이력 + 회귀 테스트 결과 |
 | **Constraints** | - P0 버그 0건 달성 필수<br>- Kafka 발행 성공률 99.9% 이상<br>- DLQ 설정으로 이벤트 유실 방지<br>- 수정으로 인한 기존 테스트 회귀 금지<br>- 코드 프리즈 전 완료 |
 | **Duration** | 1.5일 |

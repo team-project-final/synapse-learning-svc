@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.learning.CardReviewDue;
+import com.synapse.event.learning.CardReviewDue;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.clients.consumer.Consumer;

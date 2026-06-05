@@ -1,7 +1,7 @@
 {
   "type": "record",
   "name": "ReviewCompleted",
-  "namespace": "com.synapse.learning",
+  "namespace": "com.synapse.event.learning",
   "doc": "Emitted when a user completes a flashcard review.",
   "fields": [
     {"name": "eventId", "type": "string", "default": "", "doc": "Unique event ID (UUID) — idempotency key (common meta, EVENT_CONTRACT_STANDARD §1)"},
@@ -10,7 +10,7 @@
     {"name": "tenantId", "type": "string", "default": "", "doc": "Tenant identifier"},
     {"name": "rating", "type": {"type": "enum", "name": "Rating", "symbols": ["AGAIN", "HARD", "GOOD", "EASY"]}, "default": "AGAIN", "doc": "User's difficulty rating"},
     {"name": "nextReviewAt", "type": "string", "default": "", "doc": "ISO-8601 next review date from SM-2"},
-    {"name": "reviewedAt", "type": "string", "default": "", "doc": "ISO-8601 review timestamp"},
-    {"name": "occurredAt", "type": "long", "default": 0, "doc": "Event emission time (epoch millis) — common meta"}
+    {"name": "reviewedAt", "type": {"type": "long", "logicalType": "timestamp-millis"}, "default": 0, "doc": "Review timestamp (epoch millis)"},
+    {"name": "occurredAt", "type": {"type": "long", "logicalType": "timestamp-millis"}, "default": 0, "doc": "Event emission time (epoch millis) — common meta"}
   ]
 }
