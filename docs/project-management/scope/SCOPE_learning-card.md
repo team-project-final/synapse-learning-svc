@@ -52,12 +52,13 @@
 
 ## 성공 기준
 
-- [ ] 덱/카드 CRUD 완전 동작
-- [ ] SM-2 알고리즘 정확 계산 (4개 rating × 경계값 테스트)
-- [ ] 복습 세션 플로우 (카드 제시 → 답변 → rating → 다음 복습일)
-- [ ] Kafka 이벤트 발행 (card.reviewed, card.review.due)
-- [ ] 복습 통계 API 동작
+- [x] 덱/카드 CRUD 완전 동작
+- [x] SM-2 알고리즘 정확 계산 (4개 rating × 경계값 테스트)
+- [x] 복습 세션 플로우 (카드 제시 → 답변 → rating → 다음 복습일)
+- [x] Kafka 이벤트 발행 (card.reviewed, card.review.due)
+- [x] 복습 통계 API 동작
 - [ ] 카드 일괄 생성 (`POST /cards/batch`) 동작 *(Wiki API 명세서 동기화 — 추가)*
-- [ ] 복습 큐 조회 (`GET /reviews/queue`) 동작 *(Wiki API 명세서 동기화 — 추가)*
-- [ ] 세션 완료 API (`PUT /reviews/sessions/{sessionId}/complete`) 동작 *(Wiki API 명세서 동기화 — 추가)*
-- [ ] Stats 히트맵 (`GET /stats/heatmap`) 및 리텐션 커브 (`GET /stats/retention`) API 동작 *(Wiki API 명세서 동기화 — 추가)*
+- [x] 복습 큐 조회 (`GET /reviews/queue`) 동작 *(Wiki API 명세서 동기화 — 추가)*
+- [x] 세션 완료 API (`PUT /reviews/sessions/{sessionId}/complete`) 동작 *(Wiki API 명세서 동기화 — 추가)*
+- [x] Stats 히트맵 (`GET /stats/heatmap`) API 동작 *(Wiki API 명세서 동기화 — 추가)*
+- [ ] Stats 리텐션 커브 (`GET /stats/retention`) API 동작 *(W5 이월 — Step6에서 미구현)*

@@ -33,19 +33,17 @@
 |------|------|------|--------|--------|------|
 | Step 7 | review.due 스케줄러 | ✅ Done | 2026-05-26 | 2026-05-26 | card.review.due Avro 이벤트 + ShedLock 스케줄러 + 단위/통합 테스트 완료 |
 | Step 8 | 복습 통계 대시보드 | ✅ Done | 2026-05-28 | 2026-05-28 | Redis 캐싱 TTL 5분 + StreakPort/MockStreakAdapter + 전체 테스트 JWT 적용 완료 |
-| Step 9 | 복습 알림 | Not Started | — | — | |
 
-**W3 진행률**: 2/3 Steps 완료
+**W3 진행률**: 2/2 Steps 완료 🎉
 
 ### W4 (2026-06-02 ~ 06-06)
 
 | Step | 내용 | 상태 | 시작일 | 완료일 | 비고 |
 |------|------|------|--------|--------|------|
-| Step 10 | E2E 테스트 | Not Started | — | — | |
-| Step 11 | 안정화 | Not Started | — | — | |
-| Step 12 | 문서화 | Not Started | — | — | |
+| Step 9 | 복습 전체 E2E 테스트 | ✅ Done | 2026-06-02 | 2026-06-02 | FlashCardJpaRepository 쿼리 버그 수정, 전체 테스트 통과 |
+| Step 10 | Kafka 안정화 | ✅ Done | 2026-06-04 | 2026-06-05 | security.protocol 배선, KAFKA_ENABLED 게이트, DLQ 설정 |
 
-**W4 진행률**: 0/3 Steps 완료
+**W4 진행률**: 2/2 Steps 완료 🎉
 
 ---
 
@@ -215,35 +213,22 @@
 - **다음**: PR → dev 머지
 
 #### 2026-06-05 (목)
-<<<<<<< HEAD
 - **완료**: WS3-C — KAFKA_ENABLED 게이트 추가 (engagement 패턴 정합, PR #53)
-  - `application.yml`: `synapse.kafka.enabled: ${KAFKA_ENABLED:false}` 바인딩
-  - `KafkaConfig` / `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: `@ConditionalOnProperty(enabled=true)` 추가
+  - `application.yml`: `synapse.kafka.enabled: ${KAFKA_ENABLED:false}` 바인딩 추가
+  - `KafkaConfig` / `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: `@ConditionalOnProperty(prefix="synapse.kafka", name="enabled", havingValue="true")` 추가
   - `NoopCardReviewedEventPublisher` / `NoopReviewDueEventPublisher` 신설 (matchIfMissing=true)
-- **완료**: Step10 — Kafka DLQ 안정화
+  - `KafkaEnabledGateTest` 신설 — enabled/disabled 4케이스 TDD 검증
+  - 기존 통합 테스트 4개 `synapse.kafka.enabled=true` 추가 (회귀 방지)
+  - 전체 테스트 BUILD SUCCESSFUL (75개) — 브랜치: `feat/kafka-learning-card-enabled-gate`
+- **완료**: Step10 — Kafka DLQ 안정화 (PR #56)
   - `KafkaDlqPort` 인터페이스 신설, `KafkaDlqPublisher` / `NoopKafkaDlqPublisher` 신설
   - `KafkaConfig`: DLQ용 `KafkaTemplate<String, String>` Bean 추가
   - `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: 발행 실패 시 DLQ(`learning.card.dlq`) 저장 연동
-  - `KafkaDlqPublisherTest` / `KafkaEnabledGateTest` 신설
-  - 전체 테스트 BUILD SUCCESSFUL (74개)
+  - `KafkaDlqPublisherTest` 신설 — 전체 테스트 BUILD SUCCESSFUL (74개)
   - 브랜치: `feat/LEARN-CARD-011-kafka-event-stabilization`
 - **진행 중**: -
-- **이슈**: WS3-C Noop 파일 커밋 누락 → Step10 브랜치에서 함께 포함
-- **다음**: PR → dev 머지 → Step11(안정화) / Step12(문서화)
-=======
-- **완료**: WS3-C — KAFKA_ENABLED 게이트 추가 (engagement 패턴 정합)
-  - `application.yml`: `synapse.kafka.enabled: ${KAFKA_ENABLED:false}` 바인딩 추가
-  - `KafkaConfig.java`: `@ConditionalOnProperty(prefix="synapse.kafka", name="enabled", havingValue="true")` 추가
-  - `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: 동일 조건 추가
-  - `NoopCardReviewedEventPublisher` / `NoopReviewDueEventPublisher` 신설 (Kafka 꺼짐 시 폴백, matchIfMissing=true)
-  - `KafkaEnabledGateTest` 신설 — enabled/disabled 4케이스 TDD 검증
-  - 기존 통합 테스트 4개 `synapse.kafka.enabled=true` 추가 (회귀 방지)
-  - 전체 테스트 BUILD SUCCESSFUL (75개)
-  - 브랜치: `feat/kafka-learning-card-enabled-gate`
-- **진행 중**: -
-- **이슈**: EmbeddedKafka 통합 테스트 2개 `NoSuchBeanDefinitionException` → `synapse.kafka.enabled=true` 추가로 해결
-- **다음**: PR → dev 머지
->>>>>>> dev
+- **이슈**: WS3-C Noop 파일 커밋 누락 → Step10 브랜치에서 함께 포함 / EmbeddedKafka 통합 테스트 2개 `NoSuchBeanDefinitionException` → `synapse.kafka.enabled=true` 추가로 해결
+- **다음**: PR → dev 머지 완료
 
 #### 2026-06-06 (금)
 - **완료**:
@@ -263,4 +248,6 @@
 | 2026-05-21 | Step6 Done — 복습 통계 API 구현 (GET /stats/overview 일별 30일, GET /stats/heatmap 주별 12주, Native Query DATE_TRUNC+FILTER, 빈날짜 Java 채우기) W2 전체 완료 🎉 |
 | 2026-05-20 | Step5 Done — card.reviewed Avro 이벤트 발행 구현 (card_reviewed.avsc, CardReviewedEventPublisher, EmbeddedKafka 통합 테스트), Spring Modulith OPEN 모듈 설정 |
 | 2026-05-19 | 단위 테스트 완료 — Step2~4 전체 34개 테스트 작성 및 통과 (Sm2Calculator, ReviewService, ReviewSessionService, ReviewSessionController, CardService, DeckService) |
-| 2026-05-19 | Step4 Done — 복습 세션 관리 구�
+| 2026-05-19 | Step4 Done — 복습 세션 관리 구현 (4개 엔드포인트, V14~V15 마이그레이션, Swagger 검증) W2 Step4 완료 |
+| 2026-06-02 | Step9 Done — 복습 E2E 테스트 (FlashCardJpaRepository 쿼리 2건 수정, 전체 테스트 통과) W4 Step9 완료 |
+| 2026-06-05 | Step10 Done — Kafka 안정화 (security.protocol 배선, KAFKA_ENABLED 게이트, DLQ 설정, 전체 테스트 74개 BUILD SUCCESSFUL) W4 전체 완료 🎉 |�
