@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.application.service;
 
-import com.synapse.learning.card.adapter.out.persistence.FlashCardJpaRepository;
+import com.synapse.learning.card.application.port.out.FlashCardPort;
 import com.synapse.learning.srs.application.port.out.ReviewDueEventPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ class ReviewDueSchedulerLoadTest {
     private static final String TENANT_ID = UUID.randomUUID().toString();
 
     @Mock
-    FlashCardJpaRepository flashCardJpaRepository;
+    FlashCardPort flashCardPort;
 
     @Mock
     ReviewDueEventPort reviewDueEventPort;
@@ -43,7 +43,7 @@ class ReviewDueSchedulerLoadTest {
     @Test
     @DisplayName("1000명 처리 시 이벤트가 전원 발행되고 3초 이내에 완료된다")
     void loadTest_1000users_allPublishedWithinTimeLimit() {
-        given(flashCardJpaRepository.findDueCardCountByUser(eq(BATCH_SIZE), anyInt()))
+        given(flashCardPort.findDueCardCountByUser(eq(BATCH_SIZE), anyInt()))
                 .willAnswer(invocation -> {
                     int offset = invocation.getArgument(1);
                     if (offset >= TOTAL_USERS) return Collections.emptyList();

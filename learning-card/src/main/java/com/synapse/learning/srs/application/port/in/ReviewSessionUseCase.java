@@ -17,5 +17,5 @@ public interface ReviewSessionUseCase {
 
     ReviewSubmitResponse submitReview(String tenantId, String userId, UUID sessionId, ReviewSessionSubmitRequest request);
 
-    ReviewSessionResponse completeSession(String tenantId, UUID sessionId);
+    ReviewSessionResponse completeSession(String tenantId, String userId, UUID sessionId);
 }

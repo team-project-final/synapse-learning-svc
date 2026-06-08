@@ -1,5 +1,6 @@
 package com.synapse.learning.card.adapter.in.web;
 
+import com.synapse.learning.card.adapter.in.web.dto.CardBatchCreateRequest;
 import com.synapse.learning.card.adapter.in.web.dto.CardCreateRequest;
 import com.synapse.learning.card.adapter.in.web.dto.CardResponse;
 import com.synapse.learning.card.adapter.in.web.dto.CardUpdateRequest;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/decks/{deckId}/cards")
 @RequiredArgsConstructor
@@ -29,6 +32,16 @@ public class CardController {
             @PathVariable String deckId,
             @RequestBody @Valid CardCreateRequest request) {
         CardResponse response = cardUseCase.createCard(userId, tenantId, deckId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<ApiResponse<List<CardResponse>>> createCards(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-Tenant-Id") String tenantId,
+            @PathVariable String deckId,
+            @RequestBody @Valid CardBatchCreateRequest request) {
+        List<CardResponse> response = cardUseCase.createCards(userId, tenantId, deckId, request.cards());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 

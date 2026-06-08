@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.learning.CardReviewDue;
+import com.synapse.event.learning.CardReviewDue;
 import com.synapse.learning.srs.application.port.out.KafkaDlqPort;
 import com.synapse.learning.srs.application.port.out.ReviewDueEventPort;
 import lombok.RequiredArgsConstructor;
@@ -28,17 +28,18 @@ public class ReviewDueEventPublisher implements ReviewDueEventPort {
 
     @Override
     public void publish(String userId, String tenantId, int dueCardCount, String dueDate) {
+        Instant now = Instant.now();
         CardReviewDue event = CardReviewDue.newBuilder()
                 .setEventId(UUID.randomUUID().toString())
                 .setUserId(userId)
                 .setTenantId(tenantId)
                 .setDueCardCount(dueCardCount)
                 .setDueDate(dueDate)
-                .setOccurredAt(Instant.now().toEpochMilli())
+                .setOccurredAt(now)
                 .build();
 
         ProducerRecord<String, CardReviewDue> record =
-                new ProducerRecord<>(TOPIC, tenantId, event);
+                new ProducerRecord<>(TOPIC, userId, event);
 
         CompletableFuture<SendResult<String, CardReviewDue>> future =
                 reviewDueKafkaTemplate.send(record);

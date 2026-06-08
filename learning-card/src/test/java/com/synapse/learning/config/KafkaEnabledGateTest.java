@@ -39,11 +39,18 @@ class KafkaEnabledGateTest {
         }
 
         @Test
+        @DisplayName("DLQ Publisher Bean이 생성된다")
+        void dlqPublisherExists() {
+            runner.run(ctx -> assertThat(ctx).hasSingleBean(KafkaDlqPublisher.class));
+        }
+
+        @Test
         @DisplayName("Noop Publisher Bean이 생성되지 않는다")
         void noopPublishersAbsent() {
             runner.run(ctx -> {
                 assertThat(ctx).doesNotHaveBean(NoopCardReviewedEventPublisher.class);
                 assertThat(ctx).doesNotHaveBean(NoopReviewDueEventPublisher.class);
+                assertThat(ctx).doesNotHaveBean(NoopKafkaDlqPublisher.class);
             });
         }
     }
@@ -66,6 +73,7 @@ class KafkaEnabledGateTest {
             runner.run(ctx -> {
                 assertThat(ctx).doesNotHaveBean(CardReviewedEventPublisher.class);
                 assertThat(ctx).doesNotHaveBean(ReviewDueEventPublisher.class);
+                assertThat(ctx).doesNotHaveBean(KafkaDlqPublisher.class);
             });
         }
 
@@ -75,6 +83,7 @@ class KafkaEnabledGateTest {
             runner.run(ctx -> {
                 assertThat(ctx).hasSingleBean(NoopCardReviewedEventPublisher.class);
                 assertThat(ctx).hasSingleBean(NoopReviewDueEventPublisher.class);
+                assertThat(ctx).hasSingleBean(NoopKafkaDlqPublisher.class);
             });
         }
     }

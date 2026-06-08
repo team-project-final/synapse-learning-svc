@@ -1,7 +1,7 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.learning.ReviewCompleted;
-import com.synapse.learning.Rating;
+import com.synapse.event.learning.Rating;
+import com.synapse.event.learning.ReviewCompleted;
 import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
 import com.synapse.learning.srs.application.port.out.KafkaDlqPort;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +29,7 @@ public class CardReviewedEventPublisher implements CardReviewedEventPort {
 
     @Override
     public void publish(String userId, String tenantId, String cardId, int rating, String nextReviewAt) {
+        Instant now = Instant.now();
         ReviewCompleted event = ReviewCompleted.newBuilder()
                 .setEventId(UUID.randomUUID().toString())
                 .setUserId(userId)
@@ -36,12 +37,12 @@ public class CardReviewedEventPublisher implements CardReviewedEventPort {
                 .setCardId(cardId)
                 .setRating(toRating(rating))
                 .setNextReviewAt(nextReviewAt)
-                .setReviewedAt(Instant.now().toString())
-                .setOccurredAt(Instant.now().toEpochMilli())
+                .setReviewedAt(now)
+                .setOccurredAt(now)
                 .build();
 
         ProducerRecord<String, ReviewCompleted> record =
-                new ProducerRecord<>(TOPIC, tenantId, event);
+                new ProducerRecord<>(TOPIC, userId, event);
 
         CompletableFuture<SendResult<String, ReviewCompleted>> future =
                 reviewCompletedKafkaTemplate.send(record);

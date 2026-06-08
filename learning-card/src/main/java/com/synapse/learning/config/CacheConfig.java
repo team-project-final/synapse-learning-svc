@@ -19,6 +19,7 @@ public class CacheConfig {
 
     public static final String STATS_OVERVIEW = "stats:overview";
     public static final String STATS_HEATMAP  = "stats:heatmap";
+    public static final String STATS_RETENTION = "stats:retention";
 
     @Bean
     RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
@@ -35,7 +36,8 @@ public class CacheConfig {
                 .cacheDefaults(defaults)
                 .withInitialCacheConfigurations(Map.of(
                         STATS_OVERVIEW, fiveMin,
-                        STATS_HEATMAP,  fiveMin
+                        STATS_HEATMAP,  fiveMin,
+                        STATS_RETENTION, fiveMin
                 ))
                 .build();
     }

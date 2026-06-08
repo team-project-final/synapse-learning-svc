@@ -24,6 +24,11 @@ public class FlashCardPersistenceAdapter implements FlashCardPort {
     }
 
     @Override
+    public List<FlashCard> saveAll(List<FlashCard> cards) {
+        return jpaRepository.saveAll(cards);
+    }
+
+    @Override
     public FlashCard saveAndFlush(FlashCard card) {
         return jpaRepository.saveAndFlush(card);
     }
@@ -34,6 +39,11 @@ public class FlashCardPersistenceAdapter implements FlashCardPort {
     }
 
     @Override
+    public boolean existsActiveCardOwnedBy(UUID cardId, UUID userId, UUID tenantId) {
+        return jpaRepository.existsActiveCardOwnedBy(cardId, userId, tenantId);
+    }
+
+    @Override
     public Page<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId, Pageable pageable) {
         return jpaRepository.findAllByDeckIdAndDeletedAtIsNull(deckId, pageable);
     }
@@ -41,5 +51,10 @@ public class FlashCardPersistenceAdapter implements FlashCardPort {
     @Override
     public List<FlashCard> findDueCards(UUID tenantId, UUID deckId, Instant now, Pageable pageable) {
         return jpaRepository.findDueCards(tenantId, deckId, now, pageable);
+    }
+
+    @Override
+    public List<Object[]> findDueCardCountByUser(int limit, int offset) {
+        return jpaRepository.findDueCardCountByUser(limit, offset);
     }
 }
