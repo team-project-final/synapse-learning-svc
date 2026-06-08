@@ -1,0 +1,41 @@
+{
+  "description": "시맨틱 검색 발표용 데모 쿼리 — demo_note.md 기반",
+  "queries": [
+    {
+      "id": 1,
+      "query": "프로세스와 스레드의 차이점은 무엇인가요?",
+      "expected_relevance": "high",
+      "note": "핵심 개념 직접 질문 — 상위 결과에 프로세스/스레드 섹션 등장해야 함"
+    },
+    {
+      "id": 2,
+      "query": "페이지 폴트가 발생하면 운영체제는 어떻게 처리하나요?",
+      "expected_relevance": "high",
+      "note": "페이징·가상 메모리 섹션과 직접 매칭"
+    },
+    {
+      "id": 3,
+      "query": "CPU 스케줄링 알고리즘의 종류와 특징",
+      "expected_relevance": "high",
+      "note": "스케줄링 섹션(FCFS/SJF/RR/Priority) 전체 커버"
+    },
+    {
+      "id": 4,
+      "query": "교착 상태가 발생하는 조건 네 가지",
+      "expected_relevance": "high",
+      "note": "Deadlock 섹션의 4가지 조건과 직접 매칭"
+    },
+    {
+      "id": 5,
+      "query": "컨텍스트 스위칭이 성능에 미치는 영향",
+      "expected_relevance": "medium",
+      "note": "스케줄링 섹션에서 컨텍스트 스위칭 오버헤드 언급"
+    },
+    {
+      "id": 6,
+      "query": "파이썬 판다스 데이터프레임 병합 방법",
+      "expected_relevance": "low",
+      "note": "무관련 쿼리 — 유사도 낮음을 시각적으로 대비하기 위한 쿼리"
+    }
+  ]
+}
