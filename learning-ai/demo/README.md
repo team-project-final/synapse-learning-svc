@@ -11,6 +11,7 @@
 - [ ] `docker compose up -d` — PostgreSQL(pgvector), Redis, Kafka 기동 확인
 - [ ] `uvicorn app.main:app --port 8090` 또는 Docker 컨테이너 기동
 - [ ] `GET http://localhost:8090/health` → `{"status":"ok"}` 확인
+- [ ] `.venv/Scripts/python demo/seed_demo_data.py` — 데모 노트 청크 DB 삽입 (시맨틱 검색 전 필수)
 - [ ] `demo_note.md` 내용을 클립보드에 복사해 두기
 
 ---
