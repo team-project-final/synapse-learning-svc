@@ -11,6 +11,7 @@
 - [ ] `docker compose up -d` — PostgreSQL(pgvector), Redis, Kafka 기동 확인
 - [ ] `uvicorn app.main:app --port 8090` 또는 Docker 컨테이너 기동
 - [ ] `GET http://localhost:8090/health` → `{"status":"ok"}` 확인
+- [ ] `.venv/Scripts/python demo/seed_demo_data.py` — 데모 노트 청크 DB 삽입 (시맨틱 검색 전 필수)
 - [ ] `demo_note.md` 내용을 클립보드에 복사해 두기
 
 ---
@@ -45,10 +46,10 @@ curl -s -X POST http://localhost:8090/ai/cards/generate \
 ```bash
 curl -s -X POST http://localhost:8090/ai/search/semantic \
   -H "Content-Type: application/json" \
-  -H "X-User-Id: demo-user-001" \
+  -H "X-User-Id: a0000000-0000-0000-0000-000000000001" \
   -d '{
-    "query": "프로세스와 스레드의 차이점은 무엇인가요?",
-    "tenant_id": "demo-tenant-001",
+    "query": "CPU 스케줄링 알고리즘의 종류와 특징",
+    "tenant_id": "a0000000-0000-0000-0000-000000000001",
     "top_k": 5
   }' | python -m json.tool
 ```
@@ -57,15 +58,15 @@ curl -s -X POST http://localhost:8090/ai/search/semantic \
 ```bash
 curl -s -X POST http://localhost:8090/ai/search/semantic \
   -H "Content-Type: application/json" \
-  -H "X-User-Id: demo-user-001" \
+  -H "X-User-Id: a0000000-0000-0000-0000-000000000001" \
   -d '{
     "query": "파이썬 판다스 데이터프레임 병합 방법",
-    "tenant_id": "demo-tenant-001",
+    "tenant_id": "a0000000-0000-0000-0000-000000000001",
     "top_k": 5
   }' | python -m json.tool
 ```
 
-**기대 결과**: 관련 쿼리는 유사도 0.8+ 결과 반환, 무관련 쿼리는 낮은 점수 또는 빈 결과
+**기대 결과**: 관련 쿼리는 유사도 0.55~0.70 결과 반환, 무관련 쿼리는 빈 결과 (hits=0)
 
 ---
 
