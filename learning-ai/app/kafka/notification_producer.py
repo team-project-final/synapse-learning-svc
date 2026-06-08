@@ -53,7 +53,9 @@ class NotificationProducer:
         self._producer: AIOKafkaProducer | None = None
 
     async def start(self) -> None:
-        ssl_context = ssl.create_default_context() if settings.kafka_security_protocol == "SSL" else None
+        ssl_context = (
+            ssl.create_default_context() if settings.kafka_security_protocol == "SSL" else None
+        )
         self._producer = AIOKafkaProducer(
             bootstrap_servers=settings.kafka_bootstrap_servers,
             security_protocol=settings.kafka_security_protocol,
