@@ -1,3 +1,12 @@
+# 작업 보고서: 컨테이너 비-root 실행 (2026-06-03)
+
+## 2026-06-03 — 컨테이너 비-root 실행
+- Dockerfile runtime stage에 uid/gid 101 `app` 유저 생성(groupadd/useradd) + `/app` chown + `USER app` 추가.
+- 근거: gitops base의 `runAsNonRoot:true`(B2 보안 하드닝) 대응. uvicorn은 비-root로 /app(읽기)+/usr/local(읽기)만 사용.
+- 이전: root 실행(USER 미지정).
+
+---
+
 # 작업 보고서: learning-ai 규정 준수 및 리팩토링 (2026-05-15)
 
 ## 1. 개요
