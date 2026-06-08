@@ -24,13 +24,13 @@
 - [x] 실패 쿼리 원인 분류
 
 ### 9.2 발표 준비
-- [ ] AI 카드 생성 데모 노트 준비
-- [ ] 시맨틱 검색 데모 쿼리 준비
-- [ ] RAG Q&A는 시간 허용 항목으로 상태 명시
+- [x] AI 카드 생성 데모 노트 준비 (`learning-ai/demo/demo_note.md` — 운영체제 기초)
+- [x] 시맨틱 검색 데모 쿼리 준비 (`learning-ai/demo/demo_queries.json` — 6개 쿼리)
+- [x] RAG Q&A는 시간 허용 항목으로 상태 명시 (`learning-ai/demo/README.md` — P2 표기)
 
 ## Done When
 
 - [x] AI 카드 자동 생성 E2E가 통과한다.
 - [x] 시맨틱 검색 정확도 기준을 만족한다.
 - [x] learning-ai P0 버그가 0건이다.
-- [ ] 발표용 AI 데모가 안정적으로 동작한다.
+- [x] 발표용 AI 데모가 안정적으로 동작한다.

@@ -198,9 +198,14 @@
       - `test_performance`: 이벤트 발행 → pipeline_fn 호출 10초 이내 SLA 통과
     - `test_semantic_search_accuracy`: MRR ≥ 0.7, Precision@10 ≥ 0.6 기준 충족
     - P0 버그 0건
+  - **Step 9.2**: 발표용 데모 자료 준비
+    - `learning-ai/demo/demo_note.md`: 운영체제 기초 데모 노트 (프로세스/스레드/스케줄링/페이징/교착상태)
+    - `learning-ai/demo/demo_queries.json`: 시맨틱 검색 데모 쿼리 6개 (관련 5개 + 무관련 1개 대비)
+    - `learning-ai/demo/README.md`: 발표 당일 데모 순서 가이드 (curl 커맨드 + 트러블슈팅)
+    - RAG Q&A: P2(시간 허용 시) 명시
 - **진행 중**:
 - **이슈**: 없음
-- **다음**: Step 9.2 발표용 데모 노트/쿼리 준비
+- **다음**: PR 작성 → dev 머지
 
 #### 2026-06-09 (화)
 - **완료**:
