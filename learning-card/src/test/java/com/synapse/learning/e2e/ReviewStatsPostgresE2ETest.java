@@ -178,6 +178,7 @@ class ReviewStatsPostgresE2ETest {
     private void completeSession(String sessionId) throws Exception {
         mockMvc.perform(put("/reviews/sessions/{sessionId}/complete", sessionId)
                         .with(jwt())
+                        .header("X-User-Id", USER_ID)
                         .header("X-Tenant-Id", TENANT_ID))
                 .andExpect(status().isOk());
     }
