@@ -16,7 +16,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+import app.models.note_chunk  # noqa: F401 — register model for Base.metadata
 from app.core.config import settings
+from app.db.session import Base
 from app.models.note_chunk import NoteChunk
 from app.repositories.note_chunk_repository import NoteChunkRepository
 from app.services.openai_service import OpenAIEmbeddingService
@@ -42,10 +44,6 @@ async def main() -> None:
     engine = create_async_engine(settings.database_url)
     async with engine.begin() as conn:
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-
-    from app.db.session import Base
-    import app.models.note_chunk  # noqa: F401 — register model
-    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
@@ -62,7 +60,7 @@ async def main() -> None:
                 embedding_model=embed_resp.model,
                 chunk_strategy="section",
             )
-            for i, (chunk, vec) in enumerate(zip(chunks, embed_resp.embeddings))
+            for i, (chunk, vec) in enumerate(zip(chunks, embed_resp.embeddings, strict=False))
         ]
         await repo.bulk_save_chunks(note_chunks)
         print(f"note_chunks {len(note_chunks)}개 저장 완료")

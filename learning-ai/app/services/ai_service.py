@@ -2,7 +2,7 @@ import json
 import logging
 import uuid
 
-from anthropic import AuthenticationError, BadRequestError
+from anthropic import AuthenticationError
 
 from app.repositories.note_chunk_repository import NoteChunkRepository
 from app.schemas.ai import (
