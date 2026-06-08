@@ -39,7 +39,7 @@ public interface FlashCardJpaRepository extends JpaRepository<FlashCard, UUID> {
             JOIN card_decks d ON d.id = c.deck_id
             WHERE c.deleted_at IS NULL
               AND c.due_date <= NOW()
-              AND c.status IN ('new', 'learning', 'review')
+              AND c.status IN ('new', 'learning', 'review', 'relearning')
             GROUP BY d.user_id, d.tenant_id
             HAVING COUNT(*) > 0
             ORDER BY d.user_id

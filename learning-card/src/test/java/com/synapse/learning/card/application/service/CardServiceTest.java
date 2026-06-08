@@ -124,7 +124,7 @@ class CardServiceTest {
         CardResponse response = mockResponse();
 
         given(cardDeckPort.findByIdAndDeletedAtIsNull(DECK_ID)).willReturn(Optional.of(mockDeck()));
-        given(flashCardPort.save(any())).willReturn(card);
+        given(flashCardPort.saveAll(any())).willReturn(List.of(card, card));
         given(cardMapper.toResponse(card)).willReturn(response);
 
         List<CardResponse> result = cardService.createCards(
@@ -134,7 +134,7 @@ class CardServiceTest {
                         new CardCreateRequest("Q2", "A2", "qa", null, null)));
 
         assertThat(result).hasSize(2);
-        verify(flashCardPort, org.mockito.Mockito.times(2)).save(any(FlashCard.class));
+        verify(flashCardPort, org.mockito.Mockito.times(1)).saveAll(any());
     }
 
     // ── getCards ─────────────────────────────────────

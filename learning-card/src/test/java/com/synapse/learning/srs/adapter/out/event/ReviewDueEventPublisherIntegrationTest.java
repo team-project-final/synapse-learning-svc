@@ -95,6 +95,6 @@ class ReviewDueEventPublisherIntegrationTest {
 
         ConsumerRecord<String, byte[]> record = records.iterator().next();
         assertThat(record.topic()).isEqualTo(ReviewDueEventPublisher.TOPIC);
-        assertThat(record.key()).isEqualTo(tenantId);  // 파티션 키 = tenantId
+        assertThat(record.key()).isEqualTo(userId);  // 파티션 키 = userId
     }
 }

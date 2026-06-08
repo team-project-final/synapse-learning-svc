@@ -2,6 +2,7 @@ package com.synapse.learning.srs.application.service;
 
 import com.synapse.learning.card.application.port.out.CardDeckPort;
 import com.synapse.learning.card.application.port.out.FlashCardPort;
+import com.synapse.learning.global.exception.BusinessException;
 import com.synapse.learning.card.domain.model.CardDeck;
 import com.synapse.learning.card.domain.model.FlashCard;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewCardResponse;
@@ -113,7 +114,7 @@ class ReviewSessionServiceTest {
                 .willReturn(Optional.of(session));
 
         ReviewSessionResponse response = reviewSessionService.completeSession(
-                TENANT_ID.toString(), SESSION_ID);
+                TENANT_ID.toString(), USER_ID.toString(), SESSION_ID);
 
         assertThat(response.status()).isEqualTo("completed");
         assertThat(response.completedAt()).isNotNull();
@@ -126,9 +127,8 @@ class ReviewSessionServiceTest {
                 .willReturn(Optional.empty());
 
         assertThatThrownBy(() -> reviewSessionService.completeSession(
-                TENANT_ID.toString(), SESSION_ID))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Session not found");
+                TENANT_ID.toString(), USER_ID.toString(), SESSION_ID))
+                .isInstanceOf(BusinessException.class);
     }
 
     private CardDeck mockDeck() {

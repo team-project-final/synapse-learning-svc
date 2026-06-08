@@ -46,13 +46,20 @@ public class CardService implements CardUseCase {
         CardDeck deck = findActiveDeck(deckId);
         validateDeckOwner(deck, userId, tenantId);
 
-        return requests.stream()
-                .map(request -> createCard(deckId, tenantId, request))
+        List<FlashCard> cards = requests.stream()
+                .map(request -> buildCard(deckId, tenantId, request))
+                .toList();
+        return flashCardPort.saveAll(cards).stream()
+                .map(cardMapper::toResponse)
                 .toList();
     }
 
     private CardResponse createCard(String deckId, String tenantId, CardCreateRequest request) {
-        FlashCard card = FlashCard.builder()
+        return cardMapper.toResponse(flashCardPort.save(buildCard(deckId, tenantId, request)));
+    }
+
+    private FlashCard buildCard(String deckId, String tenantId, CardCreateRequest request) {
+        return FlashCard.builder()
                 .deckId(UUID.fromString(deckId))
                 .tenantId(UUID.fromString(tenantId))
                 .cardType(request.cardType())
@@ -61,8 +68,6 @@ public class CardService implements CardUseCase {
                 .sourceId(request.sourceId() != null ? UUID.fromString(request.sourceId()) : null)
                 .bloomLevel(request.bloomLevel())
                 .build();
-
-        return cardMapper.toResponse(flashCardPort.save(card));
     }
 
     @Override

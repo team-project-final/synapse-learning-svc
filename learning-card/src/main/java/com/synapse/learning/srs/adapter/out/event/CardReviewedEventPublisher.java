@@ -42,7 +42,7 @@ public class CardReviewedEventPublisher implements CardReviewedEventPort {
                 .build();
 
         ProducerRecord<String, ReviewCompleted> record =
-                new ProducerRecord<>(TOPIC, tenantId, event);
+                new ProducerRecord<>(TOPIC, userId, event);
 
         CompletableFuture<SendResult<String, ReviewCompleted>> future =
                 reviewCompletedKafkaTemplate.send(record);
