@@ -1,5 +1,6 @@
 import json
 import logging
+import ssl
 import uuid
 
 from aiokafka import AIOKafkaProducer
@@ -52,9 +53,11 @@ class NotificationProducer:
         self._producer: AIOKafkaProducer | None = None
 
     async def start(self) -> None:
+        ssl_context = ssl.create_default_context() if settings.kafka_security_protocol == "SSL" else None
         self._producer = AIOKafkaProducer(
             bootstrap_servers=settings.kafka_bootstrap_servers,
             security_protocol=settings.kafka_security_protocol,
+            ssl_context=ssl_context,
         )
         await self._producer.start()
         logger.info("NotificationProducer started topic=%s", settings.kafka_notification_topic)

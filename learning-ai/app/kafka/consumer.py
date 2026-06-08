@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import json
 import logging
+import ssl
 from collections.abc import Callable
 from typing import Any, Protocol
 
@@ -47,6 +48,7 @@ class AiCardKafkaConsumer:
         deser = self._value_deserializer or _make_avro_deserializer(
             settings.kafka_note_created_topic
         )
+        ssl_context = ssl.create_default_context() if settings.kafka_security_protocol == "SSL" else None
         self._consumer = AIOKafkaConsumer(
             settings.kafka_note_created_topic,
             bootstrap_servers=settings.kafka_bootstrap_servers,
@@ -54,11 +56,13 @@ class AiCardKafkaConsumer:
             value_deserializer=deser,
             enable_auto_commit=False,
             security_protocol=settings.kafka_security_protocol,
+            ssl_context=ssl_context,
         )
         self._producer = AIOKafkaProducer(
             bootstrap_servers=settings.kafka_bootstrap_servers,
             value_serializer=lambda v: json.dumps(v).encode("utf-8"),
             security_protocol=settings.kafka_security_protocol,
+            ssl_context=ssl_context,
         )
         await self._consumer.start()
         await self._producer.start()
