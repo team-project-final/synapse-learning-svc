@@ -45,6 +45,15 @@
 
 **W4 진행률**: 2/2 Steps 완료 🎉
 
+### W5 (2026-06-08 ~ 06-12)
+
+| Step | 내용 | 상태 | 시작일 | 완료일 | 비고 |
+|------|------|------|--------|--------|------|
+| Step 9 | E2E + AI 카드 저장 검증 | 🔄 진행 중 | 2026-06-08 | - | KafkaEventFlowE2ETest + AiCardGenerationE2ETest 완료 |
+| Step 10 | Kafka 이벤트 플로우 E2E | 🔄 진행 중 | 2026-06-08 | - | Avro 필드 검증 완료, 라이브 소비 연동 미완 |
+
+**W5 진행률**: Day 1 완료 🚀
+
 ---
 
 ## 작업 로그
@@ -239,10 +248,34 @@
 - **다음**: -
 
 #### 2026-06-06 (금)
-- **완료**:
-- **진행 중**:
-- **이슈**:
-- **주간 요약**:
+- **완료**: W4 전체 완료 — Step9(복습 E2E) + Step10(Kafka 안정화)
+- **진행 중**: -
+- **이슈**: -
+- **주간 요약**: W4 목표 전부 달성. Step9 MockMvc E2E 통과, Step10 Kafka DLQ/ENABLED 게이트 안정화.
+
+---
+
+### W5 (2026-06-08 ~ 06-12) — E2E 라이브 + Kafka 이벤트 플로우 검증
+
+#### 2026-06-08 (월)
+- **완료**: Step 9 — AI 카드 자동생성 E2E + Step 10 — Kafka 이벤트 Avro 필드 검증
+  - `KafkaEventFlowE2ETest` 신설 (EmbeddedKafka + Avro 역직렬화 필드 검증)
+    - 시나리오 1: `ReviewCompleted` Avro 이벤트 — cardId/userId/tenantId/rating=GOOD/nextReviewAt/occurredAt 검증
+    - 시나리오 2: `CardReviewDue` Avro 이벤트 — userId/tenantId/dueCardCount/dueDate/occurredAt 검증
+    - 시나리오 3: 파티션 키 = userId (사용자 순서 보장) 검증
+    - 기존 `CardReviewedEventPublisherIntegrationTest`는 바이트 수신만 확인 → 본 테스트에서 Avro 역직렬화까지 확장
+  - `AiCardGenerationE2ETest` 신설 (note.created → AI 카드 → 덱 저장 시뮬레이션)
+    - 시나리오 1: learning-ai `POST /decks/{deckId}/cards` 3회 호출 → AI_GENERATED 카드 3개 저장 확인
+    - 시나리오 2: `POST /decks/{deckId}/cards/batch` 배치 저장 확인
+    - 시나리오 3: 저장된 AI 카드가 즉시 복습 큐에 포함됨(dueDate = Instant.now()) 확인
+  - `docker-compose.yml` 업데이트 — Kafka + Zookeeper + Schema Registry 서비스 추가 (라이브 E2E 환경)
+  - **버그 수정**: `KafkaEventFlowE2ETest`의 `@DirtiesContext` 종료 시 공유 H2(`mem:learning`) 테이블이 DROP되어 `ReviewFlowE2ETest` 500 오류 발생하던 기존 flaky 버그 해결
+    - 원인: 서로 다른 Spring 컨텍스트가 동일한 H2 인메모리 DB URL 공유 + `create-drop` 조합
+    - 수정: `KafkaEventFlowE2ETest`에 독립 DB URL(`mem:kafka-e2e-test`) 지정
+  - 전체 테스트 BUILD SUCCESSFUL (skipped 1건 — Docker 없을 때 ReviewStatsPostgresE2ETest)
+- **진행 중**: -
+- **이슈**: -
+- **다음**: Docker Compose 라이브 E2E 실행 (engagement/platform 소비 연동 확인), 발표 준비
 
 ---
 
@@ -264,3 +297,4 @@
 | 2026-06-05 | Polish — 카드 일괄 생성 API 추가(`POST /decks/{deckId}/cards/batch`, 최대 100장) |
 | 2026-06-05 | Polish — Stats 리텐션 커브 API 추가(`GET /stats/retention`, 최근 30일 일별 정답률 커브) |
 | 2026-06-05 | Polish — 복습 제출 카드 소유자 검증 보강 및 streak fallback 의도 명시 |
+| 2026-06-08 | W5 Day1 — KafkaEventFlowE2ETest (Avro 역직렬화 필드 검증), AiCardGenerationE2ETest (AI 카드 저장 E2E), docker-compose Kafka 스택 추가, H2 공유 컨텍스트 DROP 버그 수정 |
