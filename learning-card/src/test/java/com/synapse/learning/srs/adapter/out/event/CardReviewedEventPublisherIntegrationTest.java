@@ -40,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @EmbeddedKafka(partitions = 1, topics = { CardReviewedEventPublisher.TOPIC })
 @TestPropertySource(properties = {
+        "synapse.kafka.enabled=true",
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
         "spring.kafka.producer.properties.schema.registry.url=mock://test-scope",
         "spring.main.allow-bean-definition-overriding=true"

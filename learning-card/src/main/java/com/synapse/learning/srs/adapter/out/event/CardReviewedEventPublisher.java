@@ -3,9 +3,11 @@ package com.synapse.learning.srs.adapter.out.event;
 import com.synapse.learning.ReviewCompleted;
 import com.synapse.learning.Rating;
 import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
+import com.synapse.learning.srs.application.port.out.KafkaDlqPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -17,16 +19,14 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "synapse.kafka", name = "enabled", havingValue = "true")
 public class CardReviewedEventPublisher implements CardReviewedEventPort {
 
     static final String TOPIC = "learning.card.review-completed-v1";
 
     private final KafkaTemplate<String, ReviewCompleted> reviewCompletedKafkaTemplate;
+    private final KafkaDlqPort kafkaDlqPort;
 
-    /**
-     * 복습 완료 이벤트를 비동기 발행한다.
-     * 파티션 키 = tenantId → 같은 테넌트의 이벤트 순서 보장
-     */
     @Override
     public void publish(String userId, String tenantId, String cardId, int rating, String nextReviewAt) {
         ReviewCompleted event = ReviewCompleted.newBuilder()
@@ -41,7 +41,7 @@ public class CardReviewedEventPublisher implements CardReviewedEventPort {
                 .build();
 
         ProducerRecord<String, ReviewCompleted> record =
-                new ProducerRecord<>(TOPIC, tenantId, event);  // key = tenantId (파티션 키)
+                new ProducerRecord<>(TOPIC, tenantId, event);
 
         CompletableFuture<SendResult<String, ReviewCompleted>> future =
                 reviewCompletedKafkaTemplate.send(record);
@@ -50,6 +50,10 @@ public class CardReviewedEventPublisher implements CardReviewedEventPort {
             if (ex != null) {
                 log.error("[Kafka] {} 발행 실패 — userId={}, cardId={}, error={}",
                         TOPIC, userId, cardId, ex.getMessage(), ex);
+                String payload = String.format(
+                        "{\"topic\":\"%s\",\"userId\":\"%s\",\"cardId\":\"%s\",\"rating\":%d,\"error\":\"%s\"}",
+                        TOPIC, userId, cardId, rating, ex.getMessage());
+                kafkaDlqPort.publish(TOPIC, tenantId, payload);
             } else {
                 log.debug("[Kafka] {} 발행 성공 — userId={}, cardId={}, offset={}",
                         TOPIC, userId, cardId,

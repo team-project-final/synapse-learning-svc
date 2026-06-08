@@ -50,7 +50,7 @@ class SemanticSearchRequest(BaseModel):
     query: str = Field(..., min_length=1, description="The text to search for")
     top_k: int = Field(10, ge=1, le=100, description="Number of results to return")
     threshold: float = Field(
-        0.7, ge=0.0, le=1.0, description="Minimum similarity score threshold"
+        0.5, ge=0.0, le=1.0, description="Minimum similarity score threshold"
     )
 
 

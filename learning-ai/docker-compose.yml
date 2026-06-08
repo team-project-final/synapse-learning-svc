@@ -10,6 +10,13 @@ services:
       - POSTGRES_DB=synapse
     restart: always
 
+  redis:
+    image: redis:7-alpine
+    container_name: synapse-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
   learning-ai:
     build: .
     container_name: learning-ai
