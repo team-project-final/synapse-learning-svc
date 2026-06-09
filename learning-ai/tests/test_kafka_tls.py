@@ -38,6 +38,7 @@ async def test_consumer_passes_security_protocol_to_aiokafka() -> None:
         ) as mock_producer_cls,
         patch("app.kafka.consumer._make_avro_deserializer", return_value=lambda x: x),
         patch("app.kafka.consumer.settings", ssl_settings),
+        patch("app.kafka.ssl_support.settings", ssl_settings),
     ):
         from app.kafka.consumer import AiCardKafkaConsumer
         consumer = AiCardKafkaConsumer(pipeline_fn=AsyncMock())
@@ -45,9 +46,12 @@ async def test_consumer_passes_security_protocol_to_aiokafka() -> None:
 
         _, kwargs = mock_consumer_cls.call_args
         assert kwargs.get("security_protocol") == "SSL"
+        # SSL이면 ssl_context를 반드시 전달해야 한다(#144 — 없으면 start() 실패→CrashLoop).
+        assert kwargs.get("ssl_context") is not None
 
         _, kwargs = mock_producer_cls.call_args
         assert kwargs.get("security_protocol") == "SSL"
+        assert kwargs.get("ssl_context") is not None
 
 
 @pytest.mark.asyncio
@@ -66,6 +70,7 @@ async def test_notification_producer_passes_security_protocol() -> None:
         patch("app.kafka.notification_producer.SchemaRegistryClient"),
         patch("app.kafka.notification_producer.AvroSerializer"),
         patch("app.kafka.notification_producer.settings", ssl_settings),
+        patch("app.kafka.ssl_support.settings", ssl_settings),
     ):
         from app.kafka.notification_producer import NotificationProducer
         producer = NotificationProducer()
@@ -73,3 +78,5 @@ async def test_notification_producer_passes_security_protocol() -> None:
 
         _, kwargs = mock_producer_cls.call_args
         assert kwargs.get("security_protocol") == "SSL"
+        # SSL이면 ssl_context를 반드시 전달해야 한다(#144).
+        assert kwargs.get("ssl_context") is not None
