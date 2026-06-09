@@ -9,6 +9,7 @@ from confluent_kafka.schema_registry.avro import AvroSerializer
 from confluent_kafka.serialization import MessageField, SerializationContext
 
 from app.core.config import settings
+from app.kafka.ssl_support import kafka_ssl_context
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,7 @@ class NotificationProducer:
         self._producer = AIOKafkaProducer(
             bootstrap_servers=settings.kafka_bootstrap_servers,
             security_protocol=settings.kafka_security_protocol,
+            ssl_context=kafka_ssl_context(),
         )
         await self._producer.start()
         logger.info("NotificationProducer started topic=%s", settings.kafka_notification_topic)
