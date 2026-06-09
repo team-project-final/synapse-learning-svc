@@ -67,7 +67,7 @@ VALUES (
     NOW() - INTERVAL '1 day'
 );
 
--- 카드 3: @Transactional (learning 상태 — 오늘 처음 복습, 내일 다시)
+-- 카드 3: @Transactional (learning 상태 — 어제 첫 복습, 오늘 다시 복습 대상)
 INSERT INTO cards (id, tenant_id, deck_id, card_type, front_content, back_content,
                    status, easiness_factor, interval_days, repetitions, lapses,
                    due_date, last_reviewed_at, created_at, updated_at)
@@ -83,10 +83,10 @@ VALUES (
     1,
     1,
     0,
-    NOW() + INTERVAL '1 day',
     NOW(),
+    NOW() - INTERVAL '1 day',
     NOW() - INTERVAL '2 days',
-    NOW()
+    NOW() - INTERVAL '1 day'
 );
 
 -- 카드 4: Kafka (new 상태 — 아직 복습 안함)
