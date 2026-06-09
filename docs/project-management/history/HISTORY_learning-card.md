@@ -45,6 +45,15 @@
 
 **W4 진행률**: 2/2 Steps 완료 🎉
 
+### W5 (2026-06-08 ~ 06-12)
+
+| Step | 내용 | 상태 | 시작일 | 완료일 | 비고 |
+|------|------|------|--------|--------|------|
+| Step 9 | E2E + AI 카드 저장 검증 | ✅ Done | 2026-06-08 | 2026-06-08 | KafkaEventFlowE2ETest + AiCardGenerationE2ETest 완료 |
+| Step 10 | Kafka 이벤트 플로우 E2E + 발표 준비 | ✅ Done | 2026-06-08 | 2026-06-09 | KafkaLiveContainerE2ETest + 시드 데이터 + 데모 시나리오 완료 |
+
+**W5 진행률**: 전체 완료 🎉
+
 ---
 
 ## 작업 로그
@@ -239,10 +248,51 @@
 - **다음**: -
 
 #### 2026-06-06 (금)
-- **완료**:
-- **진행 중**:
-- **이슈**:
-- **주간 요약**:
+- **완료**: W4 전체 완료 — Step9(복습 E2E) + Step10(Kafka 안정화)
+- **진행 중**: -
+- **이슈**: -
+- **주간 요약**: W4 목표 전부 달성. Step9 MockMvc E2E 통과, Step10 Kafka DLQ/ENABLED 게이트 안정화.
+
+---
+
+### W5 (2026-06-08 ~ 06-12) — E2E 라이브 + Kafka 이벤트 플로우 검증
+
+#### 2026-06-08 (월)
+- **완료**: Step 9 — AI 카드 자동생성 E2E + Step 10 — Kafka 이벤트 Avro 필드 검증
+  - `KafkaEventFlowE2ETest` 신설 (EmbeddedKafka + Avro 역직렬화 필드 검증)
+    - 시나리오 1: `ReviewCompleted` Avro 이벤트 — cardId/userId/tenantId/rating=GOOD/nextReviewAt/occurredAt 검증
+    - 시나리오 2: `CardReviewDue` Avro 이벤트 — userId/tenantId/dueCardCount/dueDate/occurredAt 검증
+    - 시나리오 3: 파티션 키 = userId (사용자 순서 보장) 검증
+    - 기존 `CardReviewedEventPublisherIntegrationTest`는 바이트 수신만 확인 → 본 테스트에서 Avro 역직렬화까지 확장
+  - `AiCardGenerationE2ETest` 신설 (note.created → AI 카드 → 덱 저장 시뮬레이션)
+    - 시나리오 1: learning-ai `POST /decks/{deckId}/cards` 3회 호출 → AI_GENERATED 카드 3개 저장 확인
+    - 시나리오 2: `POST /decks/{deckId}/cards/batch` 배치 저장 확인
+    - 시나리오 3: 저장된 AI 카드가 즉시 복습 큐에 포함됨(dueDate = Instant.now()) 확인
+  - `docker-compose.yml` 업데이트 — Kafka + Zookeeper + Schema Registry 서비스 추가 (라이브 E2E 환경)
+  - **버그 수정**: `KafkaEventFlowE2ETest`의 `@DirtiesContext` 종료 시 공유 H2(`mem:learning`) 테이블이 DROP되어 `ReviewFlowE2ETest` 500 오류 발생하던 기존 flaky 버그 해결
+    - 원인: 서로 다른 Spring 컨텍스트가 동일한 H2 인메모리 DB URL 공유 + `create-drop` 조합
+    - 수정: `KafkaEventFlowE2ETest`에 독립 DB URL(`mem:kafka-e2e-test`) 지정
+  - 전체 테스트 BUILD SUCCESSFUL (skipped 1건 — Docker 없을 때 ReviewStatsPostgresE2ETest)
+- **진행 중**: -
+- **이슈**: -
+- **다음**: Docker Compose 라이브 E2E 실행 (engagement/platform 소비 연동 확인), 발표 준비
+
+#### 2026-06-09 (화)
+- **완료**: Step 10 — Kafka 라이브 E2E + 발표 준비 전체 완료
+  - `KafkaLiveContainerE2ETest` 신설 (Testcontainers `confluentinc/cp-kafka:7.6.1` 실제 컨테이너)
+    - 시나리오 1: `ReviewCompleted` — 실제 Kafka 컨테이너에서 발행·소비 + Avro 필드 전체 검증 ✅
+    - 시나리오 2: `CardReviewDue` — 실제 Kafka 컨테이너에서 발행·소비 + Avro 필드 전체 검증 ✅
+    - EmbeddedKafka 대비 차이: 실제 Docker 네트워크 소켓을 통한 직렬화/역직렬화 검증
+  - `build.gradle.kts` — `org.testcontainers:kafka:1.21.4` 의존성 추가
+  - `~/.testcontainers.properties` — Testcontainers 2.0.2 + Docker Desktop `desktop-linux` 소켓 경로 수정
+    - 기존: `docker.client.strategy=NpipeSocketClientProviderStrategy` (1.x 캐싱 값, 2.x에서 동작 안함)
+    - 변경: `docker.host=npipe:////./pipe/dockerDesktopLinuxEngine`
+  - `V999__demo_seed_data.sql` 신설 (`db/demo/`, demo 프로파일 전용)
+    - 데모 덱 1개, 카드 5장 (review 2, learning 1, new 2), 세션 2개, 복습 이력 5건
+  - `application-demo.yml` 신설 (Flyway locations에 `classpath:db/demo` 추가)
+  - `docs/demo/DEMO_SCENARIO.md` 신설 — 발표용 5단계 curl 시나리오 문서
+- **이슈**: Testcontainers 2.0.2 Docker 소켓 경로 불일치 (Spring Boot 4.0.0 BOM이 TC core를 1.x→2.x로 업그레이드)
+- **W5 전체 완료** 🎉
 
 ---
 
@@ -264,3 +314,5 @@
 | 2026-06-05 | Polish — 카드 일괄 생성 API 추가(`POST /decks/{deckId}/cards/batch`, 최대 100장) |
 | 2026-06-05 | Polish — Stats 리텐션 커브 API 추가(`GET /stats/retention`, 최근 30일 일별 정답률 커브) |
 | 2026-06-05 | Polish — 복습 제출 카드 소유자 검증 보강 및 streak fallback 의도 명시 |
+| 2026-06-08 | W5 Day1 — KafkaEventFlowE2ETest (Avro 역직렬화 필드 검증), AiCardGenerationE2ETest (AI 카드 저장 E2E), docker-compose Kafka 스택 추가, H2 공유 컨텍스트 DROP 버그 수정 |
+| 2026-06-09 | W5 Day2 — KafkaLiveContainerE2ETest (Testcontainers 실제 Kafka 컨테이너, 2 tests passed), V999__demo_seed_data.sql + application-demo.yml, docs/demo/DEMO_SCENARIO.md, TC 2.0.2 소켓 경로 수정 — W5 전체 완료 🎉 |
