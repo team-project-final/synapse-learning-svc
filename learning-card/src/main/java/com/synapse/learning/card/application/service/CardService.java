@@ -62,7 +62,7 @@ public class CardService implements CardUseCase {
         return FlashCard.builder()
                 .deckId(UUID.fromString(deckId))
                 .tenantId(UUID.fromString(tenantId))
-                .cardType(request.cardType())
+                .cardType(CardTypeNormalizer.normalize(request.cardType()))
                 .frontContent(request.frontContent())
                 .backContent(request.backContent())
                 .sourceId(request.sourceId() != null ? UUID.fromString(request.sourceId()) : null)
@@ -96,7 +96,9 @@ public class CardService implements CardUseCase {
         validateDeckOwner(deck, userId, tenantId);
         FlashCard card = findActiveCard(cardId);
         validateCardInDeck(card, deckId);
-        card.update(request.frontContent(), request.backContent(), request.cardType());
+        String normalizedType = request.cardType() != null
+                ? CardTypeNormalizer.normalize(request.cardType()) : null;
+        card.update(request.frontContent(), request.backContent(), normalizedType);
         FlashCard saved = flashCardPort.saveAndFlush(card);
         return cardMapper.toResponse(saved);
     }

@@ -87,7 +87,7 @@ class AiCardGenerationE2ETest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(card)))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.data.cardType").value("AI_GENERATED"));
+                    .andExpect(jsonPath("$.data.cardType").value("basic"));
         }
 
         // 덱 카드 목록 조회 — 3개 모두 존재해야 함
@@ -97,9 +97,9 @@ class AiCardGenerationE2ETest {
                         .header("X-Tenant-Id", TENANT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content.length()").value(3))
-                .andExpect(jsonPath("$.data.content[0].cardType").value("AI_GENERATED"))
-                .andExpect(jsonPath("$.data.content[1].cardType").value("AI_GENERATED"))
-                .andExpect(jsonPath("$.data.content[2].cardType").value("AI_GENERATED"));
+                .andExpect(jsonPath("$.data.content[0].cardType").value("basic"))
+                .andExpect(jsonPath("$.data.content[1].cardType").value("basic"))
+                .andExpect(jsonPath("$.data.content[2].cardType").value("basic"));
     }
 
     // ── 시나리오 2: AI 카드 배치 저장 ──
@@ -128,8 +128,8 @@ class AiCardGenerationE2ETest {
                         .content(objectMapper.writeValueAsString(Map.of("cards", cards))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].cardType").value("AI_GENERATED"))
-                .andExpect(jsonPath("$.data[1].cardType").value("AI_GENERATED"));
+                .andExpect(jsonPath("$.data[0].cardType").value("basic"))
+                .andExpect(jsonPath("$.data[1].cardType").value("basic"));
     }
 
     // ── 시나리오 3: AI 카드가 즉시 복습 대상이 됨 ──

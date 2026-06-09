@@ -63,14 +63,14 @@ class CardServiceTest {
         return FlashCard.builder()
                 .deckId(DECK_ID)
                 .tenantId(TENANT_ID)
-                .cardType("qa")
+                .cardType("basic")
                 .frontContent("스택이란?")
                 .backContent("LIFO")
                 .build();
     }
 
     private CardResponse mockResponse() {
-        return new CardResponse(CARD_ID, DECK_ID, "qa", "스택이란?", "LIFO",
+        return new CardResponse(CARD_ID, DECK_ID, "basic", "스택이란?", "LIFO",
                 null, "new", 2.5, 0, 0, 0, Instant.now(), null, Instant.now(), Instant.now());
     }
 
@@ -88,7 +88,7 @@ class CardServiceTest {
 
         CardResponse result = cardService.createCard(
                 USER_ID.toString(), TENANT_ID.toString(), DECK_ID.toString(),
-                new CardCreateRequest("스택이란?", "LIFO", "qa", null, null));
+                new CardCreateRequest("스택이란?", "LIFO", "BASIC", null, null));
 
         assertThat(result.frontContent()).isEqualTo("스택이란?");
         verify(flashCardPort).save(any(FlashCard.class));
@@ -101,7 +101,7 @@ class CardServiceTest {
 
         assertThatThrownBy(() -> cardService.createCard(
                 USER_ID.toString(), TENANT_ID.toString(), DECK_ID.toString(),
-                new CardCreateRequest("Q", "A", "qa", null, null)))
+                new CardCreateRequest("Q", "A", "BASIC", null, null)))
                 .isInstanceOf(DeckNotFoundException.class);
     }
 
@@ -113,7 +113,7 @@ class CardServiceTest {
 
         assertThatThrownBy(() -> cardService.createCard(
                 otherUserId.toString(), TENANT_ID.toString(), DECK_ID.toString(),
-                new CardCreateRequest("Q", "A", "qa", null, null)))
+                new CardCreateRequest("Q", "A", "BASIC", null, null)))
                 .isInstanceOf(BusinessException.class);
     }
 
@@ -130,8 +130,8 @@ class CardServiceTest {
         List<CardResponse> result = cardService.createCards(
                 USER_ID.toString(), TENANT_ID.toString(), DECK_ID.toString(),
                 List.of(
-                        new CardCreateRequest("Q1", "A1", "qa", null, null),
-                        new CardCreateRequest("Q2", "A2", "qa", null, null)));
+                        new CardCreateRequest("Q1", "A1", "BASIC", null, null),
+                        new CardCreateRequest("Q2", "A2", "CLOZE", null, null)));
 
         assertThat(result).hasSize(2);
         verify(flashCardPort, org.mockito.Mockito.times(1)).saveAll(any());
@@ -172,7 +172,7 @@ class CardServiceTest {
 
         CardResponse result = cardService.updateCard(
                 USER_ID.toString(), TENANT_ID.toString(), DECK_ID.toString(), CARD_ID.toString(),
-                new CardUpdateRequest("수정된 질문", "수정된 답", "qa"));
+                new CardUpdateRequest("수정된 질문", "수정된 답", "BASIC"));
 
         assertThat(result).isNotNull();
         verify(flashCardPort).saveAndFlush(any());
