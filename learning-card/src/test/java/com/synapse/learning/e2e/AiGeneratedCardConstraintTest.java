@@ -6,8 +6,11 @@ import com.synapse.learning.card.domain.model.CardDeck;
 import com.synapse.learning.card.domain.model.FlashCard;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -18,18 +21,19 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Flyway V18 검증 — 실제 PostgreSQL 제약에서 AI_GENERATED card_type 저장 가능 여부 확인
+ * V20 card_type 정규화 검증 — 실제 PostgreSQL 제약에서 canonical 값만 허용되는지 확인
  *
- * H2 테스트는 Flyway가 아닌 Hibernate DDL로 스키마를 생성하므로 CHECK 제약이 없어
- * AI_GENERATED가 통과되지만, 실제 PostgreSQL은 V9의 chk_cards_card_type 제약이 적용된다.
- * V18 마이그레이션이 해당 제약을 AI_GENERATED 포함으로 확장함을 검증한다.
+ * V20 마이그레이션 이후 DB 제약: card_type IN ('basic', 'cloze', 'definition')
+ * - 'qa', 'AI_GENERATED' 등 레거시 값은 서비스 레이어에서 정규화된 후 저장됨
+ * - DB에 직접 레거시 값을 넣으면 제약 위반
  */
 @SpringBootTest
 @ActiveProfiles("test")
 @Testcontainers(disabledWithoutDocker = true)
-@DisplayName("[E2E][Constraint] V18 AI_GENERATED card_type — PostgreSQL 제약 검증")
+@DisplayName("[E2E][Constraint] V20 card_type 정규화 — PostgreSQL 제약 검증")
 class AiGeneratedCardConstraintTest {
 
     @Container
@@ -58,49 +62,45 @@ class AiGeneratedCardConstraintTest {
                 CardDeck.builder()
                         .tenantId(tenantId)
                         .userId(userId)
-                        .name("V18 제약 검증 덱")
+                        .name("V20 제약 검증 덱")
                         .build());
     }
 
-    @Test
-    @DisplayName("V18 마이그레이션 후 AI_GENERATED card_type 카드가 PostgreSQL 제약 없이 저장된다")
-    void aiGeneratedCardType_실제PostgreSQL제약에서_저장된다() {
+    @ParameterizedTest
+    @ValueSource(strings = {"basic", "cloze", "definition"})
+    @DisplayName("V20 이후 canonical 소문자 값(basic/cloze/definition)은 DB에 직접 저장된다")
+    void canonicalCardType_저장된다(String cardType) {
         UUID tenantId = UUID.randomUUID();
-        UUID userId   = UUID.randomUUID();
-        CardDeck deck = createDeck(tenantId, userId);
+        CardDeck deck = createDeck(tenantId, UUID.randomUUID());
 
         FlashCard card = FlashCard.builder()
                 .deckId(deck.getId())
                 .tenantId(tenantId)
-                .cardType("AI_GENERATED")
-                .frontContent("스택(Stack)이란?")
-                .backContent("LIFO(Last In First Out) 구조의 자료구조")
+                .cardType(cardType)
+                .frontContent("앞면")
+                .backContent("뒷면")
                 .build();
 
         FlashCard saved = flashCardJpaRepository.saveAndFlush(card);
-
-        assertThat(saved.getId()).isNotNull();
-        assertThat(saved.getCardType()).isEqualTo("AI_GENERATED");
+        assertThat(saved.getCardType()).isEqualTo(cardType);
     }
 
-    @Test
-    @DisplayName("기존 card_type(qa, cloze, definition)도 V18 마이그레이션 후 정상 저장된다 (회귀)")
-    void 기존_cardType_회귀_저장된다() {
+    @ParameterizedTest
+    @ValueSource(strings = {"qa", "AI_GENERATED", "BASIC", "CLOZE"})
+    @DisplayName("V20 이후 레거시/대문자 값은 DB에 직접 저장하면 제약 위반 — 서비스 레이어 정규화 필수")
+    void legacyCardType_직접저장_제약위반(String cardType) {
         UUID tenantId = UUID.randomUUID();
-        UUID userId   = UUID.randomUUID();
-        CardDeck deck = createDeck(tenantId, userId);
+        CardDeck deck = createDeck(tenantId, UUID.randomUUID());
 
-        for (String cardType : new String[]{"qa", "cloze", "definition"}) {
-            FlashCard card = FlashCard.builder()
-                    .deckId(deck.getId())
-                    .tenantId(tenantId)
-                    .cardType(cardType)
-                    .frontContent("앞면")
-                    .backContent("뒷면")
-                    .build();
+        FlashCard card = FlashCard.builder()
+                .deckId(deck.getId())
+                .tenantId(tenantId)
+                .cardType(cardType)
+                .frontContent("앞면")
+                .backContent("뒷면")
+                .build();
 
-            FlashCard saved = flashCardJpaRepository.saveAndFlush(card);
-            assertThat(saved.getCardType()).isEqualTo(cardType);
-        }
+        assertThatThrownBy(() -> flashCardJpaRepository.saveAndFlush(card))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 }
