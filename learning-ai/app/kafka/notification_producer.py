@@ -13,7 +13,8 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 # platform.NotificationSend Avro 스키마 (synapse-shared 정본 미러링, 2026-06-08 표준 정렬)
-# namespace=com.synapse.platform + 공통메타(eventId/tenantId/occurredAt/traceparent) — 구 DRAFT(com.synapse.event.platform) 폐기
+# namespace=com.synapse.platform + 공통메타(eventId/tenantId/occurredAt/traceparent)
+# — 구 DRAFT(com.synapse.event.platform) 폐기
 _NOTIFICATION_SEND_SCHEMA = json.dumps(
     {
         "type": "record",
