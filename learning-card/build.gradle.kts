@@ -53,7 +53,11 @@ dependencies {
     // Kafka + Avro
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.apache.avro:avro:1.12.0")
-    implementation("io.confluent:kafka-avro-serializer:7.7.0")
+    implementation("io.confluent:kafka-avro-serializer:7.7.0") {
+        exclude(group = "io.swagger.core.v3", module = "swagger-annotations")
+        exclude(group = "io.swagger.core.v3", module = "swagger-core")
+        exclude(group = "io.swagger.core.v3", module = "swagger-models")
+    }
 
     // ShedLock — 스케줄러 중복 실행 방지
     implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
