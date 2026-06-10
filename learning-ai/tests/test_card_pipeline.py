@@ -1,7 +1,6 @@
 import json
 from unittest.mock import AsyncMock, MagicMock
 
-import httpx
 import pytest
 import respx
 from httpx import Response
