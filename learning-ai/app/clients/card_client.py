@@ -39,12 +39,19 @@ class CardApiClient:
                     resp.raise_for_status()
                     card_id = resp.json().get("data", {}).get("id")
                     if card_id is None:
-                        logger.warning("Unexpected response structure for deck %s: %s", deck_id, resp.text)
+                        logger.warning(
+                            "Unexpected response structure for deck %s: %s", deck_id, resp.text
+                        )
                         continue
                     saved_ids.append(card_id)
                     logger.info("Saved card %s to deck %s", card_id, deck_id)
                 except httpx.HTTPStatusError as e:
-                    logger.error("Failed to save card to deck %s (HTTP %s): %s", deck_id, e.response.status_code, e)
+                    logger.error(
+                        "Failed to save card to deck %s (HTTP %s): %s",
+                        deck_id,
+                        e.response.status_code,
+                        e,
+                    )
                 except Exception as e:
                     logger.error("Unexpected error saving card to deck %s: %s", deck_id, e)
         return saved_ids
