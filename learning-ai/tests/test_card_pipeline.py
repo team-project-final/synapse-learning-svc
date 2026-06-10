@@ -125,15 +125,15 @@ async def test_generate_and_save_happy_path(
 async def test_generate_and_save_api_failure(
     pipeline: AiCardPipelineService,
 ) -> None:
-    """learning-card API 503 응답 시 HTTPStatusError 발생."""
+    """learning-card API 503 응답 시 예외 없이 빈 목록 반환."""
     respx.post(f"{CARD_BASE_URL}/decks/{DECK_ID}/cards").mock(
         return_value=Response(503, json={"message": "Service Unavailable"})
     )
 
-    with pytest.raises(httpx.HTTPStatusError):
-        await pipeline.generate_and_save(
-            note_content="노트 내용",
-            deck_id=DECK_ID,
-            user_id=USER_ID,
-            tenant_id=TENANT_ID,
-        )
+    saved_ids = await pipeline.generate_and_save(
+        note_content="노트 내용",
+        deck_id=DECK_ID,
+        user_id=USER_ID,
+        tenant_id=TENANT_ID,
+    )
+    assert saved_ids == []
