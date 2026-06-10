@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.learning.CardReviewDue;
+import com.synapse.event.learning.CardReviewDue;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -95,6 +95,6 @@ class ReviewDueEventPublisherIntegrationTest {
 
         ConsumerRecord<String, byte[]> record = records.iterator().next();
         assertThat(record.topic()).isEqualTo(ReviewDueEventPublisher.TOPIC);
-        assertThat(record.key()).isEqualTo(tenantId);  // 파티션 키 = tenantId
+        assertThat(record.key()).isEqualTo(userId);  // 파티션 키 = userId
     }
 }

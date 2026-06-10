@@ -33,19 +33,26 @@
 |------|------|------|--------|--------|------|
 | Step 7 | review.due 스케줄러 | ✅ Done | 2026-05-26 | 2026-05-26 | card.review.due Avro 이벤트 + ShedLock 스케줄러 + 단위/통합 테스트 완료 |
 | Step 8 | 복습 통계 대시보드 | ✅ Done | 2026-05-28 | 2026-05-28 | Redis 캐싱 TTL 5분 + StreakPort/MockStreakAdapter + 전체 테스트 JWT 적용 완료 |
-| Step 9 | 복습 알림 | Not Started | — | — | |
 
-**W3 진행률**: 2/3 Steps 완료
+**W3 진행률**: 2/2 Steps 완료 🎉
 
 ### W4 (2026-06-02 ~ 06-06)
 
 | Step | 내용 | 상태 | 시작일 | 완료일 | 비고 |
 |------|------|------|--------|--------|------|
-| Step 10 | E2E 테스트 | Not Started | — | — | |
-| Step 11 | 안정화 | Not Started | — | — | |
-| Step 12 | 문서화 | Not Started | — | — | |
+| Step 9 | 복습 전체 E2E 테스트 | ✅ Done | 2026-06-02 | 2026-06-02 | FlashCardJpaRepository 쿼리 버그 수정, 전체 테스트 통과 |
+| Step 10 | Kafka 안정화 | ✅ Done | 2026-06-04 | 2026-06-05 | security.protocol 배선, KAFKA_ENABLED 게이트, DLQ 설정 |
 
-**W4 진행률**: 0/3 Steps 완료
+**W4 진행률**: 2/2 Steps 완료 🎉
+
+### W5 (2026-06-08 ~ 06-12)
+
+| Step | 내용 | 상태 | 시작일 | 완료일 | 비고 |
+|------|------|------|--------|--------|------|
+| Step 9 | E2E + AI 카드 저장 검증 | ✅ Done | 2026-06-08 | 2026-06-08 | KafkaEventFlowE2ETest + AiCardGenerationE2ETest 완료 |
+| Step 10 | Kafka 이벤트 플로우 E2E + 발표 준비 | ✅ Done | 2026-06-08 | 2026-06-09 | KafkaLiveContainerE2ETest + 시드 데이터 + 데모 시나리오 완료 |
+
+**W5 진행률**: 전체 완료 🎉
 
 ---
 
@@ -215,41 +222,77 @@
 - **다음**: PR → dev 머지
 
 #### 2026-06-05 (목)
-<<<<<<< HEAD
 - **완료**: WS3-C — KAFKA_ENABLED 게이트 추가 (engagement 패턴 정합, PR #53)
-  - `application.yml`: `synapse.kafka.enabled: ${KAFKA_ENABLED:false}` 바인딩
-  - `KafkaConfig` / `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: `@ConditionalOnProperty(enabled=true)` 추가
-  - `NoopCardReviewedEventPublisher` / `NoopReviewDueEventPublisher` 신설 (matchIfMissing=true)
-- **완료**: Step10 — Kafka DLQ 안정화
-  - `KafkaDlqPort` 인터페이스 신설, `KafkaDlqPublisher` / `NoopKafkaDlqPublisher` 신설
-  - `KafkaConfig`: DLQ용 `KafkaTemplate<String, String>` Bean 추가
-  - `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: 발행 실패 시 DLQ(`learning.card.dlq`) 저장 연동
-  - `KafkaDlqPublisherTest` / `KafkaEnabledGateTest` 신설
-  - 전체 테스트 BUILD SUCCESSFUL (74개)
-  - 브랜치: `feat/LEARN-CARD-011-kafka-event-stabilization`
-- **진행 중**: -
-- **이슈**: WS3-C Noop 파일 커밋 누락 → Step10 브랜치에서 함께 포함
-- **다음**: PR → dev 머지 → Step11(안정화) / Step12(문서화)
-=======
-- **완료**: WS3-C — KAFKA_ENABLED 게이트 추가 (engagement 패턴 정합)
   - `application.yml`: `synapse.kafka.enabled: ${KAFKA_ENABLED:false}` 바인딩 추가
-  - `KafkaConfig.java`: `@ConditionalOnProperty(prefix="synapse.kafka", name="enabled", havingValue="true")` 추가
-  - `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: 동일 조건 추가
-  - `NoopCardReviewedEventPublisher` / `NoopReviewDueEventPublisher` 신설 (Kafka 꺼짐 시 폴백, matchIfMissing=true)
+  - `KafkaConfig` / `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: `@ConditionalOnProperty(prefix="synapse.kafka", name="enabled", havingValue="true")` 추가
+  - `NoopCardReviewedEventPublisher` / `NoopReviewDueEventPublisher` 신설 (matchIfMissing=true)
   - `KafkaEnabledGateTest` 신설 — enabled/disabled 4케이스 TDD 검증
   - 기존 통합 테스트 4개 `synapse.kafka.enabled=true` 추가 (회귀 방지)
-  - 전체 테스트 BUILD SUCCESSFUL (75개)
-  - 브랜치: `feat/kafka-learning-card-enabled-gate`
+  - 전체 테스트 BUILD SUCCESSFUL (75개) — 브랜치: `feat/kafka-learning-card-enabled-gate`
+- **완료**: Step10 — Kafka DLQ 안정화 (PR #56)
+  - `KafkaDlqPort` 인터페이스 신설, `KafkaDlqPublisher` / `NoopKafkaDlqPublisher` 신설
+  - `KafkaConfig`: DLQ용 `KafkaTemplate<String, String>` Bean 추가
+  - `CardReviewedEventPublisher` / `ReviewDueEventPublisher`: 발행 실패 시 원본 토픽 기반 DLQ(`{originalTopic}.dlq`) 저장 연동
+  - `KafkaDlqPublisherTest` 신설 — 전체 테스트 BUILD SUCCESSFUL (74개)
+  - 브랜치: `feat/LEARN-CARD-011-kafka-event-stabilization`
+- **완료**: polish 보완 — Kafka/Avro 규칙 정합성 보강
+  - `ReviewCompleted.avsc` / `CardReviewDue.avsc`: namespace를 `com.synapse.event.learning`으로 정렬
+  - `reviewedAt` / `occurredAt`: Avro `timestamp-millis` logicalType 적용
+  - `KafkaDlqPublisher`: DLQ 토픽을 `{originalTopic}.dlq` 규칙으로 변경
+  - 검증: `compileJava` 통과, Kafka event/DLQ 관련 테스트 통과
 - **진행 중**: -
-- **이슈**: EmbeddedKafka 통합 테스트 2개 `NoSuchBeanDefinitionException` → `synapse.kafka.enabled=true` 추가로 해결
-- **다음**: PR → dev 머지
->>>>>>> dev
+- **완료**: Step9 보강 — PostgreSQL Testcontainers 기반 stats E2E 추가
+  - `ReviewStatsPostgresE2ETest`: 복습 완료 후 `/stats/overview`, `/stats/heatmap` 집계 검증
+  - H2에서 제외했던 PostgreSQL native query(`DATE_TRUNC`, `AT TIME ZONE`) 경로를 실제 PostgreSQL로 검증
+- **이슈**: WS3-C Noop 파일 커밋 누락 → Step10 브랜치에서 함께 포함 / EmbeddedKafka 통합 테스트 2개 `NoSuchBeanDefinitionException` → `synapse.kafka.enabled=true` 추가로 해결
+- **다음**: -
 
 #### 2026-06-06 (금)
-- **완료**:
-- **진행 중**:
-- **이슈**:
-- **주간 요약**:
+- **완료**: W4 전체 완료 — Step9(복습 E2E) + Step10(Kafka 안정화)
+- **진행 중**: -
+- **이슈**: -
+- **주간 요약**: W4 목표 전부 달성. Step9 MockMvc E2E 통과, Step10 Kafka DLQ/ENABLED 게이트 안정화.
+
+---
+
+### W5 (2026-06-08 ~ 06-12) — E2E 라이브 + Kafka 이벤트 플로우 검증
+
+#### 2026-06-08 (월)
+- **완료**: Step 9 — AI 카드 자동생성 E2E + Step 10 — Kafka 이벤트 Avro 필드 검증
+  - `KafkaEventFlowE2ETest` 신설 (EmbeddedKafka + Avro 역직렬화 필드 검증)
+    - 시나리오 1: `ReviewCompleted` Avro 이벤트 — cardId/userId/tenantId/rating=GOOD/nextReviewAt/occurredAt 검증
+    - 시나리오 2: `CardReviewDue` Avro 이벤트 — userId/tenantId/dueCardCount/dueDate/occurredAt 검증
+    - 시나리오 3: 파티션 키 = userId (사용자 순서 보장) 검증
+    - 기존 `CardReviewedEventPublisherIntegrationTest`는 바이트 수신만 확인 → 본 테스트에서 Avro 역직렬화까지 확장
+  - `AiCardGenerationE2ETest` 신설 (note.created → AI 카드 → 덱 저장 시뮬레이션)
+    - 시나리오 1: learning-ai `POST /decks/{deckId}/cards` 3회 호출 → AI_GENERATED 카드 3개 저장 확인
+    - 시나리오 2: `POST /decks/{deckId}/cards/batch` 배치 저장 확인
+    - 시나리오 3: 저장된 AI 카드가 즉시 복습 큐에 포함됨(dueDate = Instant.now()) 확인
+  - `docker-compose.yml` 업데이트 — Kafka + Zookeeper + Schema Registry 서비스 추가 (라이브 E2E 환경)
+  - **버그 수정**: `KafkaEventFlowE2ETest`의 `@DirtiesContext` 종료 시 공유 H2(`mem:learning`) 테이블이 DROP되어 `ReviewFlowE2ETest` 500 오류 발생하던 기존 flaky 버그 해결
+    - 원인: 서로 다른 Spring 컨텍스트가 동일한 H2 인메모리 DB URL 공유 + `create-drop` 조합
+    - 수정: `KafkaEventFlowE2ETest`에 독립 DB URL(`mem:kafka-e2e-test`) 지정
+  - 전체 테스트 BUILD SUCCESSFUL (skipped 1건 — Docker 없을 때 ReviewStatsPostgresE2ETest)
+- **진행 중**: -
+- **이슈**: -
+- **다음**: Docker Compose 라이브 E2E 실행 (engagement/platform 소비 연동 확인), 발표 준비
+
+#### 2026-06-09 (화)
+- **완료**: Step 10 — Kafka 라이브 E2E + 발표 준비 전체 완료
+  - `KafkaLiveContainerE2ETest` 신설 (Testcontainers `confluentinc/cp-kafka:7.6.1` 실제 컨테이너)
+    - 시나리오 1: `ReviewCompleted` — 실제 Kafka 컨테이너에서 발행·소비 + Avro 필드 전체 검증 ✅
+    - 시나리오 2: `CardReviewDue` — 실제 Kafka 컨테이너에서 발행·소비 + Avro 필드 전체 검증 ✅
+    - EmbeddedKafka 대비 차이: 실제 Docker 네트워크 소켓을 통한 직렬화/역직렬화 검증
+  - `build.gradle.kts` — `org.testcontainers:kafka:1.21.4` 의존성 추가
+  - `~/.testcontainers.properties` — Testcontainers 2.0.2 + Docker Desktop `desktop-linux` 소켓 경로 수정
+    - 기존: `docker.client.strategy=NpipeSocketClientProviderStrategy` (1.x 캐싱 값, 2.x에서 동작 안함)
+    - 변경: `docker.host=npipe:////./pipe/dockerDesktopLinuxEngine`
+  - `V999__demo_seed_data.sql` 신설 (`db/demo/`, demo 프로파일 전용)
+    - 데모 덱 1개, 카드 5장 (review 2, learning 1, new 2), 세션 2개, 복습 이력 5건
+  - `application-demo.yml` 신설 (Flyway locations에 `classpath:db/demo` 추가)
+  - `docs/demo/DEMO_SCENARIO.md` 신설 — 발표용 5단계 curl 시나리오 문서
+- **이슈**: Testcontainers 2.0.2 Docker 소켓 경로 불일치 (Spring Boot 4.0.0 BOM이 TC core를 1.x→2.x로 업그레이드)
+- **W5 전체 완료** 🎉
 
 ---
 
@@ -263,4 +306,13 @@
 | 2026-05-21 | Step6 Done — 복습 통계 API 구현 (GET /stats/overview 일별 30일, GET /stats/heatmap 주별 12주, Native Query DATE_TRUNC+FILTER, 빈날짜 Java 채우기) W2 전체 완료 🎉 |
 | 2026-05-20 | Step5 Done — card.reviewed Avro 이벤트 발행 구현 (card_reviewed.avsc, CardReviewedEventPublisher, EmbeddedKafka 통합 테스트), Spring Modulith OPEN 모듈 설정 |
 | 2026-05-19 | 단위 테스트 완료 — Step2~4 전체 34개 테스트 작성 및 통과 (Sm2Calculator, ReviewService, ReviewSessionService, ReviewSessionController, CardService, DeckService) |
-| 2026-05-19 | Step4 Done — 복습 세션 관리 구�
+| 2026-05-19 | Step4 Done — 복습 세션 관리 구현 (4개 엔드포인트, V14~V15 마이그레이션, Swagger 검증) W2 Step4 완료 |
+| 2026-06-02 | Step9 Done — 복습 E2E 테스트 (FlashCardJpaRepository 쿼리 2건 수정, 전체 테스트 통과) W4 Step9 완료 |
+| 2026-06-05 | Step10 Done — Kafka 안정화 (security.protocol 배선, KAFKA_ENABLED 게이트, DLQ 설정, 전체 테스트 74개 BUILD SUCCESSFUL) W4 전체 완료 🎉 |
+| 2026-06-05 | Polish — Kafka/Avro 규칙 정합성 보강(namespace `com.synapse.event.learning`, `timestamp-millis`, `{originalTopic}.dlq`) |
+| 2026-06-05 | Polish — PostgreSQL Testcontainers stats E2E 추가(`/stats/overview`, `/stats/heatmap`) |
+| 2026-06-05 | Polish — 카드 일괄 생성 API 추가(`POST /decks/{deckId}/cards/batch`, 최대 100장) |
+| 2026-06-05 | Polish — Stats 리텐션 커브 API 추가(`GET /stats/retention`, 최근 30일 일별 정답률 커브) |
+| 2026-06-05 | Polish — 복습 제출 카드 소유자 검증 보강 및 streak fallback 의도 명시 |
+| 2026-06-08 | W5 Day1 — KafkaEventFlowE2ETest (Avro 역직렬화 필드 검증), AiCardGenerationE2ETest (AI 카드 저장 E2E), docker-compose Kafka 스택 추가, H2 공유 컨텍스트 DROP 버그 수정 |
+| 2026-06-09 | W5 Day2 — KafkaLiveContainerE2ETest (Testcontainers 실제 Kafka 컨테이너, 2 tests passed), V999__demo_seed_data.sql + application-demo.yml, docs/demo/DEMO_SCENARIO.md, TC 2.0.2 소켓 경로 수정 — W5 전체 완료 🎉 |

@@ -103,10 +103,11 @@ class ReviewSessionControllerTest {
                 ReviewSessionResponse response = new ReviewSessionResponse(
                                 SESSION_ID, DECK_ID, "completed", 5, 5, Instant.now(), Instant.now());
 
-                given(reviewSessionUseCase.completeSession(any(), eq(SESSION_ID))).willReturn(response);
+                given(reviewSessionUseCase.completeSession(any(), any(), eq(SESSION_ID))).willReturn(response);
 
                 mockMvc.perform(put("/reviews/sessions/{sessionId}/complete", SESSION_ID)
                                 .with(jwt())
+                                .header("X-User-Id", USER_ID)
                                 .header("X-Tenant-Id", TENANT_ID))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.data.status").value("completed"));

@@ -29,15 +29,15 @@ class KafkaDlqPublisherTest {
     }
 
     @Test
-    @DisplayName("publish 호출 시 DLQ 토픽으로 메시지가 전송된다")
-    void publish_sendsToDlqTopic() {
+    @DisplayName("publish 호출 시 원본 토픽 기반 DLQ 토픽으로 메시지가 전송된다")
+    void publish_originalTopic_shouldSendToOriginalTopicDlq() {
         when(dlqKafkaTemplate.send(anyString(), anyString(), anyString()))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
         publisher.publish("learning.card.review-completed-v1", "tenant-001", "{\"error\":\"test\"}");
 
         verify(dlqKafkaTemplate).send(
-                eq(KafkaDlqPublisher.DLQ_TOPIC),
+                eq("learning.card.review-completed-v1.dlq"),
                 eq("tenant-001"),
                 anyString()
         );

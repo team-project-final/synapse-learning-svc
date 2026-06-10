@@ -64,6 +64,9 @@ dependencies {
 
     // Test - Kafka
     testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.4")
+    testImplementation("org.testcontainers:postgresql:1.21.4")
+    testImplementation("org.testcontainers:kafka:1.21.4")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -84,4 +87,3 @@ dependencyManagement {
         mavenBom("org.springframework.modulith:spring-modulith-bom:1.3.0")
     }
 }
- 

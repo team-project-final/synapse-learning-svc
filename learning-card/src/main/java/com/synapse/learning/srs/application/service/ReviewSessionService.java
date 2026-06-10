@@ -79,9 +79,9 @@ public class ReviewSessionService implements ReviewSessionUseCase {
             UUID sessionId, ReviewSessionSubmitRequest request) {
         ReviewSession session = reviewSessionPort
                 .findByIdAndTenantId(sessionId, UUID.fromString(tenantId))
-                .orElseThrow(() -> new IllegalArgumentException("Session not found: " + sessionId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.SESSION_NOT_FOUND));
         if (!session.getUserId().equals(UUID.fromString(userId))) {
-            throw new BusinessException(ErrorCode.DECK_ACCESS_DENIED);
+            throw new BusinessException(ErrorCode.SESSION_ACCESS_DENIED);
         }
 
         ReviewSubmitRequest submitRequest = new ReviewSubmitRequest(
@@ -96,10 +96,13 @@ public class ReviewSessionService implements ReviewSessionUseCase {
 
     @Override
     @Transactional
-    public ReviewSessionResponse completeSession(String tenantId, UUID sessionId) {
+    public ReviewSessionResponse completeSession(String tenantId, String userId, UUID sessionId) {
         ReviewSession session = reviewSessionPort
                 .findByIdAndTenantId(sessionId, UUID.fromString(tenantId))
-                .orElseThrow(() -> new IllegalArgumentException("Session not found: " + sessionId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.SESSION_NOT_FOUND));
+        if (!session.getUserId().equals(UUID.fromString(userId))) {
+            throw new BusinessException(ErrorCode.SESSION_ACCESS_DENIED);
+        }
 
         session.complete();
         return toResponse(session);

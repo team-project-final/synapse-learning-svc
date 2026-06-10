@@ -1,6 +1,7 @@
 package com.synapse.learning.srs.application.service;
 
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewStatsResponse;
+import com.synapse.learning.srs.adapter.in.web.dto.RetentionStatsResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.WeeklyStatsResponse;
 import com.synapse.learning.srs.application.port.out.ReviewStatsPort;
 import com.synapse.learning.srs.application.port.out.StreakPort;
@@ -124,5 +125,37 @@ class ReviewStatsServiceTest {
         var thisWeek = response.weekly().getLast();
         assertThat(thisWeek.reviewCount()).isEqualTo(20);
         assertThat(thisWeek.correctRate()).isEqualTo(75.0);
+    }
+
+    @Test
+    @DisplayName("getRetention returns 30 day curve with empty days filled")
+    void getRetention_returns30DayCurve_emptyFilledWithZero() {
+        given(reviewStatsPort.findDailyStats(any(), any(), any(), any()))
+                .willReturn(List.of());
+
+        RetentionStatsResponse response = reviewStatsService.getRetention(TENANT_ID, USER_ID);
+
+        assertThat(response.points()).hasSize(30);
+        assertThat(response.points().getFirst().daysAgo()).isEqualTo(29);
+        assertThat(response.points().getLast().daysAgo()).isEqualTo(0);
+        assertThat(response.points()).allMatch(p -> p.reviewCount() == 0 && p.retentionRate() == 0.0);
+    }
+
+    @Test
+    @DisplayName("getRetention calculates retention rate from daily correct reviews")
+    void getRetention_withData_calculatesRetentionRate() {
+        LocalDate today = LocalDate.now(KST);
+        ReviewStatsPort.DailyStat stat = new ReviewStatsPort.DailyStat(today, 4L, 3L);
+
+        given(reviewStatsPort.findDailyStats(any(), any(), any(), any()))
+                .willReturn(List.of(stat));
+
+        RetentionStatsResponse response = reviewStatsService.getRetention(TENANT_ID, USER_ID);
+
+        var todayPoint = response.points().getLast();
+        assertThat(todayPoint.date()).isEqualTo(today);
+        assertThat(todayPoint.daysAgo()).isEqualTo(0);
+        assertThat(todayPoint.reviewCount()).isEqualTo(4);
+        assertThat(todayPoint.retentionRate()).isEqualTo(75.0);
     }
 }

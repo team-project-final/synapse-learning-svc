@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.learning.ReviewCompleted;
+import com.synapse.event.learning.ReviewCompleted;
 import com.synapse.learning.srs.application.port.out.KafkaDlqPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class CardReviewedEventPublisherTest {
 
         var record = captor.getValue();
         assertThat(record.topic()).isEqualTo(CardReviewedEventPublisher.TOPIC);
-        assertThat(record.key()).isEqualTo(TENANT_ID);
+        assertThat(record.key()).isEqualTo(USER_ID);
         assertThat(record.value().getUserId()).isEqualTo(USER_ID);
         assertThat(record.value().getTenantId()).isEqualTo(TENANT_ID);
         assertThat(record.value().getCardId()).isEqualTo(CARD_ID);

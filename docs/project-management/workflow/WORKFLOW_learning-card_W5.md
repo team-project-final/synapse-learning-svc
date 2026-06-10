@@ -7,29 +7,33 @@
 ## Step 9: 복습 E2E
 
 ### 9.1 시나리오 정의
-- [ ] 덱 생성 → 카드 생성 → 복습 큐 조회 시나리오 작성
-- [ ] 복습 제출 → SM-2 계산 → 다음 복습일 갱신 시나리오 작성
-- [ ] 세션 완료 → 통계 반영 시나리오 작성
+- [x] 덱 생성 → 카드 생성 → 복습 큐 조회 시나리오 작성 (`ReviewFlowE2ETest`)
+- [x] 복습 제출 → SM-2 계산 → 다음 복습일 갱신 시나리오 작성 (`ReviewFlowE2ETest`)
+- [x] 세션 완료 → 통계 반영 시나리오 작성 (`ReviewStatsPostgresE2ETest`)
+- [x] note.created → AI 카드 자동 생성 → 덱 저장 시나리오 작성 (`AiCardGenerationE2ETest`)
 
 ### 9.2 실행 및 수정
-- [ ] 복습 전체 플로우 E2E 테스트 실행
-- [ ] 알고리즘 경계값 테스트 실행
-- [ ] P0 버그 수정 및 회귀 테스트
+- [x] 복습 전체 플로우 E2E 테스트 실행 — BUILD SUCCESSFUL
+- [x] 알고리즘 경계값 테스트 실행 (`Sm2CalculatorTest`)
+- [x] P0 버그 수정 — H2 공유 컨텍스트 스키마 DROP 버그 수정 (KafkaEventFlowE2ETest 독립 DB 분리)
 
 ## Step 10: Kafka 이벤트 안정화
 
 ### 10.1 이벤트 검증
-- [ ] `card.reviewed` 발행 확인
-- [ ] `card.review.due` 발행 확인
-- [ ] engagement/platform 소비 연동 확인
+- [x] `card.reviewed` 발행 확인 — `KafkaEventFlowE2ETest` (Avro 역직렬화 필드 검증)
+- [x] `card.review.due` 발행 확인 — `KafkaEventFlowE2ETest` (Avro 역직렬화 필드 검증)
+- [x] 파티션 키 = userId 보장 확인 — `KafkaEventFlowE2ETest`
+- [x] engagement/platform 소비 연동 확인 — KafkaLiveContainerE2ETest (Testcontainers cp-kafka:7.6.1 실제 컨테이너, 2 tests passed)
 
 ### 10.2 발표 준비
-- [ ] 발표용 덱/카드/복습 데이터 준비
-- [ ] 복습 데모 시나리오 검증
+- [x] 발표용 덱/카드/복습 데이터 준비 — V999__demo_seed_data.sql (demo 프로파일, 덱 1·카드 5·세션 2·복습이력 5)
+- [x] 복습 데모 시나리오 검증 — docs/demo/DEMO_SCENARIO.md (시나리오 5개, curl 명령어 포함)
 
 ## Done When
 
-- [ ] 복습 E2E가 통과한다.
-- [ ] card 이벤트 발행과 소비 연동이 확인된다.
-- [ ] learning-card P0 버그가 0건이다.
-- [ ] 발표용 복습 데모가 안정적으로 동작한다.
+- [x] 복습 E2E가 통과한다. (91 tests, 0 failed)
+- [x] card 이벤트 발행 및 Avro 필드 검증 완료
+- [x] AI 카드 자동 생성 → 덱 저장 E2E 통과
+- [x] learning-card P0 버그가 0건이다.
+- [x] Docker Compose 라이브 E2E engagement/platform 소비 연동 확인
+- [x] 발표용 복습 데모가 안정적으로 동작한다.

@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.application.service;
 
-import com.synapse.learning.card.adapter.out.persistence.FlashCardJpaRepository;
+import com.synapse.learning.card.application.port.out.FlashCardPort;
 import com.synapse.learning.srs.application.port.out.ReviewDueEventPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 class ReviewDueSchedulerTest {
 
     @Mock
-    private FlashCardJpaRepository flashCardJpaRepository;
+    private FlashCardPort flashCardPort;
 
     @Mock
     private ReviewDueEventPort reviewDueEventPort;
@@ -41,7 +41,7 @@ class ReviewDueSchedulerTest {
         List<Object[]> batch = List.of(
                 row("user-1", TENANT_ID, 5),
                 row("user-2", TENANT_ID, 3));
-        given(flashCardJpaRepository.findDueCardCountByUser(100, 0)).willReturn(batch);
+        given(flashCardPort.findDueCardCountByUser(100, 0)).willReturn(batch);
 
         scheduler.publishDueEvents();
 
@@ -53,7 +53,7 @@ class ReviewDueSchedulerTest {
     @Test
     @DisplayName("복습 대상 사용자가 없으면 이벤트를 발행하지 않는다")
     void publishDueEvents_whenNoUsers_doesNotPublish() {
-        given(flashCardJpaRepository.findDueCardCountByUser(anyInt(), anyInt()))
+        given(flashCardPort.findDueCardCountByUser(anyInt(), anyInt()))
                 .willReturn(Collections.emptyList());
 
         scheduler.publishDueEvents();
@@ -67,7 +67,7 @@ class ReviewDueSchedulerTest {
         List<Object[]> batch = List.of(
                 row("user-1", TENANT_ID, 5),
                 row("user-2", TENANT_ID, 3));
-        given(flashCardJpaRepository.findDueCardCountByUser(100, 0)).willReturn(batch);
+        given(flashCardPort.findDueCardCountByUser(100, 0)).willReturn(batch);
 
         doThrow(new RuntimeException("Kafka 연결 실패"))
                 .when(reviewDueEventPort).publish(eq("user-1"), anyString(), anyInt(), anyString());
@@ -81,13 +81,13 @@ class ReviewDueSchedulerTest {
     @DisplayName("배치 크기만큼 결과가 있으면 다음 페이지를 조회한다")
     void publishDueEvents_whenFullBatch_fetchesNextPage() {
         List<Object[]> fullBatch = Collections.nCopies(100, row("user-x", TENANT_ID, 1));
-        given(flashCardJpaRepository.findDueCardCountByUser(100, 0)).willReturn(fullBatch);
-        given(flashCardJpaRepository.findDueCardCountByUser(100, 100)).willReturn(Collections.emptyList());
+        given(flashCardPort.findDueCardCountByUser(100, 0)).willReturn(fullBatch);
+        given(flashCardPort.findDueCardCountByUser(100, 100)).willReturn(Collections.emptyList());
 
         scheduler.publishDueEvents();
 
-        verify(flashCardJpaRepository, times(1)).findDueCardCountByUser(100, 0);
-        verify(flashCardJpaRepository, times(1)).findDueCardCountByUser(100, 100);
+        verify(flashCardPort, times(1)).findDueCardCountByUser(100, 0);
+        verify(flashCardPort, times(1)).findDueCardCountByUser(100, 100);
         verify(reviewDueEventPort, times(100)).publish(anyString(), anyString(), anyInt(), anyString());
     }
 }

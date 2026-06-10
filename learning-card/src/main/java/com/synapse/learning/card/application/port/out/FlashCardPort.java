@@ -13,11 +13,17 @@ public interface FlashCardPort {
 
     FlashCard save(FlashCard card);
 
+    List<FlashCard> saveAll(List<FlashCard> cards);
+
     FlashCard saveAndFlush(FlashCard card);
 
     Optional<FlashCard> findByIdAndDeletedAtIsNull(UUID id);
 
+    boolean existsActiveCardOwnedBy(UUID cardId, UUID userId, UUID tenantId);
+
     Page<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId, Pageable pageable);
 
     List<FlashCard> findDueCards(UUID tenantId, UUID deckId, Instant now, Pageable pageable);
+
+    List<Object[]> findDueCardCountByUser(int limit, int offset);
 }

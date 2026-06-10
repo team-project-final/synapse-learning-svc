@@ -2,6 +2,8 @@ package com.synapse.learning.srs.adapter.in.web;
 
 import com.synapse.learning.srs.adapter.in.web.dto.DailyReviewStatResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewStatsResponse;
+import com.synapse.learning.srs.adapter.in.web.dto.RetentionPointResponse;
+import com.synapse.learning.srs.adapter.in.web.dto.RetentionStatsResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.WeeklyReviewStatResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.WeeklyStatsResponse;
 import com.synapse.learning.srs.application.port.in.ReviewStatsUseCase;
@@ -24,7 +26,8 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
@@ -50,7 +53,7 @@ class ReviewStatsControllerTest {
         }
 
         @Test
-        @DisplayName("GET /stats/overview — 일별 통계 200 반환")
+        @DisplayName("GET /stats/overview returns 200")
         void getOverview_returns200() throws Exception {
                 List<DailyReviewStatResponse> daily = List.of(
                                 new DailyReviewStatResponse(LocalDate.now(), 10L, 80.0));
@@ -68,7 +71,7 @@ class ReviewStatsControllerTest {
         }
 
         @Test
-        @DisplayName("GET /stats/heatmap — 주별 통계 200 반환")
+        @DisplayName("GET /stats/heatmap returns 200")
         void getHeatmap_returns200() throws Exception {
                 List<WeeklyReviewStatResponse> weekly = List.of(
                                 new WeeklyReviewStatResponse(LocalDate.now().with(java.time.DayOfWeek.MONDAY), 20L,
@@ -86,7 +89,25 @@ class ReviewStatsControllerTest {
         }
 
         @Test
-        @DisplayName("GET /stats/overview — JWT 없으면 401")
+        @DisplayName("GET /stats/retention returns 200")
+        void getRetention_returns200() throws Exception {
+                List<RetentionPointResponse> points = List.of(
+                                new RetentionPointResponse(LocalDate.now(), 0, 4L, 75.0));
+                given(reviewStatsUseCase.getRetention(any(), any()))
+                                .willReturn(new RetentionStatsResponse(points));
+
+                mockMvc.perform(get("/stats/retention")
+                                .with(jwt())
+                                .header("X-Tenant-Id", TENANT_ID)
+                                .header("X-User-Id", USER_ID))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.data.points[0].daysAgo").value(0))
+                                .andExpect(jsonPath("$.data.points[0].reviewCount").value(4))
+                                .andExpect(jsonPath("$.data.points[0].retentionRate").value(75.0));
+        }
+
+        @Test
+        @DisplayName("GET /stats/overview returns 401 without JWT")
         void getOverview_noJwt_returns401() throws Exception {
                 mockMvc.perform(get("/stats/overview")
                                 .header("X-Tenant-Id", TENANT_ID)
@@ -95,7 +116,7 @@ class ReviewStatsControllerTest {
         }
 
         @Test
-        @DisplayName("GET /stats/overview — X-User-Id 헤더 없으면 400")
+        @DisplayName("GET /stats/overview returns 400 without X-User-Id")
         void getOverview_missingHeader_returns400() throws Exception {
                 mockMvc.perform(get("/stats/overview")
                                 .with(jwt())

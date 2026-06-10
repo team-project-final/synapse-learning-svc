@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import json
 import logging
+from collections import OrderedDict
 from collections.abc import Callable
 from typing import Any, Protocol
 
@@ -31,6 +32,9 @@ def _make_avro_deserializer(topic: str) -> Callable[[bytes], Any]:
     return lambda raw: avro_deser(raw, ctx)
 
 
+_DEDUP_MAX = 10_000
+
+
 class AiCardKafkaConsumer:
     def __init__(
         self,
@@ -41,7 +45,7 @@ class AiCardKafkaConsumer:
         self._value_deserializer = value_deserializer
         self._consumer: AIOKafkaConsumer | None = None
         self._producer: AIOKafkaProducer | None = None
-        self._processed: set[str] = set()
+        self._processed: OrderedDict[str, None] = OrderedDict()
         self._task: asyncio.Task[None] | None = None
 
     async def start(self) -> None:
@@ -115,7 +119,9 @@ class AiCardKafkaConsumer:
 
         try:
             await asyncio.wait_for(self._process_with_retry(event), timeout=60.0)
-            self._processed.add(event.event_id)
+            self._processed[event.event_id] = None
+            if len(self._processed) > _DEDUP_MAX:
+                self._processed.popitem(last=False)
             logger.info("Processed event_id=%s note_id=%s", event.event_id, event.note_id)
         except Exception:
             logger.exception("Event %s failed after retries → DLQ", event.event_id)

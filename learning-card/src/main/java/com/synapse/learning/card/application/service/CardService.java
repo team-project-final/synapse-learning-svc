@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -36,17 +37,37 @@ public class CardService implements CardUseCase {
         CardDeck deck = findActiveDeck(deckId);
         validateDeckOwner(deck, userId, tenantId);
 
-        FlashCard card = FlashCard.builder()
+        return createCard(deckId, tenantId, request);
+    }
+
+    @Override
+    @Transactional
+    public List<CardResponse> createCards(String userId, String tenantId, String deckId, List<CardCreateRequest> requests) {
+        CardDeck deck = findActiveDeck(deckId);
+        validateDeckOwner(deck, userId, tenantId);
+
+        List<FlashCard> cards = requests.stream()
+                .map(request -> buildCard(deckId, tenantId, request))
+                .toList();
+        return flashCardPort.saveAll(cards).stream()
+                .map(cardMapper::toResponse)
+                .toList();
+    }
+
+    private CardResponse createCard(String deckId, String tenantId, CardCreateRequest request) {
+        return cardMapper.toResponse(flashCardPort.save(buildCard(deckId, tenantId, request)));
+    }
+
+    private FlashCard buildCard(String deckId, String tenantId, CardCreateRequest request) {
+        return FlashCard.builder()
                 .deckId(UUID.fromString(deckId))
                 .tenantId(UUID.fromString(tenantId))
-                .cardType(request.cardType())
+                .cardType(CardTypeNormalizer.normalize(request.cardType()))
                 .frontContent(request.frontContent())
                 .backContent(request.backContent())
                 .sourceId(request.sourceId() != null ? UUID.fromString(request.sourceId()) : null)
                 .bloomLevel(request.bloomLevel())
                 .build();
-
-        return cardMapper.toResponse(flashCardPort.save(card));
     }
 
     @Override
@@ -75,7 +96,9 @@ public class CardService implements CardUseCase {
         validateDeckOwner(deck, userId, tenantId);
         FlashCard card = findActiveCard(cardId);
         validateCardInDeck(card, deckId);
-        card.update(request.frontContent(), request.backContent(), request.cardType());
+        String normalizedType = request.cardType() != null
+                ? CardTypeNormalizer.normalize(request.cardType()) : null;
+        card.update(request.frontContent(), request.backContent(), normalizedType);
         FlashCard saved = flashCardPort.saveAndFlush(card);
         return cardMapper.toResponse(saved);
     }

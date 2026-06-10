@@ -52,9 +52,10 @@ public class ReviewSessionController {
 
     @PutMapping("/sessions/{sessionId}/complete")
     public ResponseEntity<ApiResponse<ReviewSessionResponse>> completeSession(
+            @RequestHeader("X-User-Id") String userId,
             @RequestHeader("X-Tenant-Id") String tenantId,
             @PathVariable UUID sessionId) {
         return ResponseEntity.ok(ApiResponse.success(
-                reviewSessionUseCase.completeSession(tenantId, sessionId)));
+                reviewSessionUseCase.completeSession(tenantId, userId, sessionId)));
     }
 }

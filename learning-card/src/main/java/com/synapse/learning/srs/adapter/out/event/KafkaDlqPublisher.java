@@ -13,18 +13,23 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "synapse.kafka", name = "enabled", havingValue = "true")
 public class KafkaDlqPublisher implements KafkaDlqPort {
 
-    static final String DLQ_TOPIC = "learning.card.dlq";
+    static String dlqTopic(String originalTopic) {
+        return originalTopic + ".dlq";
+    }
 
     private final KafkaTemplate<String, String> dlqKafkaTemplate;
 
     @Override
     public void publish(String originalTopic, String partitionKey, String payload) {
-        dlqKafkaTemplate.send(DLQ_TOPIC, partitionKey, payload)
+        String dlqTopic = dlqTopic(originalTopic);
+        dlqKafkaTemplate.send(dlqTopic, partitionKey, payload)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
-                        log.error("[DLQ] DLQ 발행 실패 — originalTopic={}, error={}", originalTopic, ex.getMessage());
+                        log.error("[DLQ] DLQ 발행 실패 — originalTopic={}, dlqTopic={}, error={}",
+                                originalTopic, dlqTopic, ex.getMessage());
                     } else {
-                        log.warn("[DLQ] {} 실패 이벤트 보관 완료 — key={}", originalTopic, partitionKey);
+                        log.warn("[DLQ] {} 실패 이벤트 보관 완료 — dlqTopic={}, key={}",
+                                originalTopic, dlqTopic, partitionKey);
                     }
                 });
     }

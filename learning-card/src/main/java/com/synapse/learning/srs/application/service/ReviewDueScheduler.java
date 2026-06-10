@@ -1,6 +1,6 @@
 package com.synapse.learning.srs.application.service;
 
-import com.synapse.learning.card.adapter.out.persistence.FlashCardJpaRepository;
+import com.synapse.learning.card.application.port.out.FlashCardPort;
 import com.synapse.learning.srs.application.port.out.ReviewDueEventPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ public class ReviewDueScheduler {
     private static final int BATCH_SIZE = 100;
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
-    private final FlashCardJpaRepository flashCardJpaRepository;
+    private final FlashCardPort flashCardPort;
     private final ReviewDueEventPort reviewDueEventPort;
 
     /**
@@ -36,7 +36,7 @@ public class ReviewDueScheduler {
         int totalPublished = 0;
 
         while (true) {
-            List<Object[]> batch = flashCardJpaRepository
+            List<Object[]> batch = flashCardPort
                     .findDueCardCountByUser(BATCH_SIZE, offset);
 
             if (batch.isEmpty())

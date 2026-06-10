@@ -2,6 +2,7 @@ package com.synapse.learning.srs.adapter.in.web;
 
 import com.synapse.learning.global.ApiResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.ReviewStatsResponse;
+import com.synapse.learning.srs.adapter.in.web.dto.RetentionStatsResponse;
 import com.synapse.learning.srs.adapter.in.web.dto.WeeklyStatsResponse;
 import com.synapse.learning.srs.application.port.in.ReviewStatsUseCase;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +30,13 @@ public class ReviewStatsController {
             @RequestHeader("X-User-Id") String userId) {
         return ResponseEntity.ok(ApiResponse.success(
                 reviewStatsUseCase.getHeatmap(tenantId, userId)));
+    }
+
+    @GetMapping("/retention")
+    public ResponseEntity<ApiResponse<RetentionStatsResponse>> getRetention(
+            @RequestHeader("X-Tenant-Id") String tenantId,
+            @RequestHeader("X-User-Id") String userId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                reviewStatsUseCase.getRetention(tenantId, userId)));
     }
 }
