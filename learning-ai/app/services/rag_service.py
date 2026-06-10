@@ -93,13 +93,22 @@ class RagService:
         ]
 
         collected: list[str] = []
-        async for text_chunk in self._ai.claude.stream_qa(context=context, question=question):
-            collected.append(text_chunk)
-            yield f"data: {json.dumps({'text': text_chunk})}\n\n"
+        try:
+            async for text_chunk in self._ai.claude.stream_qa(context=context, question=question):
+                collected.append(text_chunk)
+                yield f"data: {json.dumps({'text': text_chunk})}\n\n"
+        except Exception as e:
+            logger.error("Stream interrupted for tenant=%s: %s", tenant_id, e)
+            yield f"data: {json.dumps({'error': 'Stream interrupted'})}\n\n"
+            yield "data: [DONE]\n\n"
+            return
 
         full_answer = "".join(collected)
         response = QaResponse(answer=full_answer, sources=sources, from_cache=False)
-        await self._save_cache(cache_key, query_vector, response)
+        try:
+            await self._save_cache(cache_key, query_vector, response)
+        except Exception as e:
+            logger.warning("Cache save failed for tenant=%s: %s", tenant_id, e)
 
         sources_payload = [s.model_dump(mode="json") for s in sources]
         yield f"data: {json.dumps({'sources': sources_payload, 'done': True})}\n\n"

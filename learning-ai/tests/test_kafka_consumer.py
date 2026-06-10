@@ -59,7 +59,7 @@ async def test_handle_message_duplicate_skipped(
     mock_pipeline_fn: AsyncMock,
 ) -> None:
     """이미 처리한 event_id는 파이프라인 호출 없이 스킵."""
-    consumer._processed.add("evt-0001")
+    consumer._processed["evt-0001"] = None
 
     await consumer._handle_message(MockMsg(value=VALID_EVENT))
 
