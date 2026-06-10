@@ -24,18 +24,27 @@ class CardApiClient:
         saved_ids: list[str] = []
         async with httpx.AsyncClient(base_url=self._base_url, timeout=30.0) as client:
             for card in cards:
-                resp = await client.post(
-                    f"/decks/{deck_id}/cards",
-                    json={
-                        "frontContent": card.front,
-                        "backContent": card.back,
-                        "cardType": "AI_GENERATED",
-                        "sourceId": source_note_id,
-                        "bloomLevel": None,
-                    },
-                    headers={"X-User-Id": user_id, "X-Tenant-Id": tenant_id},
-                )
-                resp.raise_for_status()
-                saved_ids.append(resp.json()["data"]["id"])
-                logger.info("Saved card %s to deck %s", saved_ids[-1], deck_id)
+                try:
+                    resp = await client.post(
+                        f"/decks/{deck_id}/cards",
+                        json={
+                            "frontContent": card.front,
+                            "backContent": card.back,
+                            "cardType": "AI_GENERATED",
+                            "sourceId": source_note_id,
+                            "bloomLevel": None,
+                        },
+                        headers={"X-User-Id": user_id, "X-Tenant-Id": tenant_id},
+                    )
+                    resp.raise_for_status()
+                    card_id = resp.json().get("data", {}).get("id")
+                    if card_id is None:
+                        logger.warning("Unexpected response structure for deck %s: %s", deck_id, resp.text)
+                        continue
+                    saved_ids.append(card_id)
+                    logger.info("Saved card %s to deck %s", card_id, deck_id)
+                except httpx.HTTPStatusError as e:
+                    logger.error("Failed to save card to deck %s (HTTP %s): %s", deck_id, e.response.status_code, e)
+                except Exception as e:
+                    logger.error("Unexpected error saving card to deck %s: %s", deck_id, e)
         return saved_ids
