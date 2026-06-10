@@ -13,6 +13,12 @@
   - `PRD`: 완료된 기능 요구사항(FR) 항목에 ✅ 표시, 성공 기준 체크리스트 `[x]` 처리
   - `SCOPE`: 성공 기준 항목 `[x]` 처리
 
+## 브랜치 전략
+
+- **기능 개발 완료 이후(현재):** fix/hotfix 브랜치는 `main`에서 직접 생성한다. `git checkout -b fix/<name> main`
+- **PR 대상:** `fix/*` → `main` (dev 경유 금지). dev↔main 간 diverge 누적을 방지하기 위함.
+- **로컬 main 동기화:** 작업 시작 전 항상 `git pull origin main`으로 최신 상태 확인.
+
 ## 설정 관리
 
 - 모든 환경 변수 및 애플리케이션 설정에는 `pydantic-settings`를 사용합니다.
