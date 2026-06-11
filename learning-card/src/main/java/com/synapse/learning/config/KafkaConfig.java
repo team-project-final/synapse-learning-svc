@@ -1,7 +1,7 @@
 package com.synapse.learning.config;
 
 import com.synapse.event.learning.CardReviewDue;
-import com.synapse.event.learning.ReviewCompleted;
+import com.synapse.learning.ReviewCompleted;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
