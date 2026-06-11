@@ -2,7 +2,7 @@ import asyncio
 import contextlib
 import json
 import logging
-import ssl
+from collections import OrderedDict
 from collections.abc import Callable
 from typing import Any, Protocol
 
@@ -14,6 +14,7 @@ from tenacity import AsyncRetrying, stop_after_attempt, wait_exponential
 
 from app.core.config import settings
 from app.kafka.schemas import NoteCreatedEvent
+from app.kafka.ssl_support import kafka_ssl_context
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,9 @@ def _make_avro_deserializer(topic: str) -> Callable[[bytes], Any]:
     return lambda raw: avro_deser(raw, ctx)
 
 
+_DEDUP_MAX = 10_000
+
+
 class AiCardKafkaConsumer:
     def __init__(
         self,
@@ -41,7 +45,7 @@ class AiCardKafkaConsumer:
         self._value_deserializer = value_deserializer
         self._consumer: AIOKafkaConsumer | None = None
         self._producer: AIOKafkaProducer | None = None
-        self._processed: set[str] = set()
+        self._processed: OrderedDict[str, None] = OrderedDict()
         self._task: asyncio.Task[None] | None = None
 
     async def start(self) -> None:
@@ -58,13 +62,13 @@ class AiCardKafkaConsumer:
             value_deserializer=deser,
             enable_auto_commit=False,
             security_protocol=settings.kafka_security_protocol,
-            ssl_context=ssl_context,
+            ssl_context=kafka_ssl_context(),
         )
         self._producer = AIOKafkaProducer(
             bootstrap_servers=settings.kafka_bootstrap_servers,
             value_serializer=lambda v: json.dumps(v).encode("utf-8"),
             security_protocol=settings.kafka_security_protocol,
-            ssl_context=ssl_context,
+            ssl_context=kafka_ssl_context(),
         )
         await self._consumer.start()
         await self._producer.start()
@@ -118,7 +122,9 @@ class AiCardKafkaConsumer:
 
         try:
             await asyncio.wait_for(self._process_with_retry(event), timeout=60.0)
-            self._processed.add(event.event_id)
+            self._processed[event.event_id] = None
+            if len(self._processed) > _DEDUP_MAX:
+                self._processed.popitem(last=False)
             logger.info("Processed event_id=%s note_id=%s", event.event_id, event.note_id)
         except Exception:
             logger.exception("Event %s failed after retries → DLQ", event.event_id)

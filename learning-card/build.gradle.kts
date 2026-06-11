@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
+    jacoco
 }
 
 group = "com.synapse"
@@ -53,7 +54,11 @@ dependencies {
     // Kafka + Avro
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.apache.avro:avro:1.12.0")
-    implementation("io.confluent:kafka-avro-serializer:7.7.0")
+    implementation("io.confluent:kafka-avro-serializer:7.7.0") {
+        exclude(group = "io.swagger.core.v3", module = "swagger-annotations")
+        exclude(group = "io.swagger.core.v3", module = "swagger-core")
+        exclude(group = "io.swagger.core.v3", module = "swagger-models")
+    }
 
     // ShedLock — 스케줄러 중복 실행 방지
     implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
@@ -80,6 +85,37 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
     systemProperty("spring.profiles.active", "test")
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.withType<Test>())
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it) {
+            exclude(
+                "**/LearningCardApplication*",
+                "**/*Request*",
+                "**/*Response*",
+                "**/*JpaRepository*",
+                "**/*MapperImpl*",
+                "**/package-info*"
+            )
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.80".toBigDecimal()
+            }
+        }
+    }
 }
 
 dependencyManagement {
