@@ -1,8 +1,12 @@
 package com.synapse.learning.card.adapter.in.web;
 
+import com.synapse.learning.card.adapter.in.web.dto.DeckCopyRequest;
+import com.synapse.learning.card.adapter.in.web.dto.DeckCopyResponse;
 import com.synapse.learning.card.adapter.in.web.dto.DeckCreateRequest;
 import com.synapse.learning.card.adapter.in.web.dto.DeckResponse;
+import com.synapse.learning.card.adapter.in.web.dto.DeckShareableResponse;
 import com.synapse.learning.card.adapter.in.web.dto.DeckUpdateRequest;
+import com.synapse.learning.card.adapter.in.web.dto.SharedDeckDetailResponse;
 import com.synapse.learning.card.application.port.in.DeckUseCase;
 import com.synapse.learning.global.ApiResponse;
 import com.synapse.learning.global.PageResponse;
@@ -63,5 +67,34 @@ public class DeckController {
             @PathVariable String deckId) {
         deckUseCase.deleteDeck(userId, deckId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{deckId}/shared-detail")
+    public ResponseEntity<ApiResponse<SharedDeckDetailResponse>> getSharedDeckDetail(
+            @RequestHeader("X-User-Id") String userId,
+            @PathVariable String deckId,
+            @RequestParam(required = false) String sharedContentId,
+            @RequestParam(required = false) String shareToken) {
+        return ResponseEntity.ok(ApiResponse.success(
+                deckUseCase.getSharedDeckDetail(userId, deckId, sharedContentId, shareToken)));
+    }
+
+    @PostMapping("/{deckId}/copy-from-share")
+    public ResponseEntity<ApiResponse<DeckCopyResponse>> copyFromShare(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-Tenant-Id") String tenantId,
+            @PathVariable String deckId,
+            @RequestBody DeckCopyRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
+                deckUseCase.copyFromShare(userId, tenantId, deckId, request)));
+    }
+
+    @GetMapping("/{deckId}/shareable")
+    public ResponseEntity<ApiResponse<DeckShareableResponse>> checkShareable(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-Tenant-Id") String tenantId,
+            @PathVariable String deckId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                deckUseCase.checkShareable(userId, tenantId, deckId)));
     }
 }

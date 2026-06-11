@@ -16,6 +16,8 @@ public interface FlashCardJpaRepository extends JpaRepository<FlashCard, UUID> {
 
     Page<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId, Pageable pageable);
 
+    List<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId);
+
     Optional<FlashCard> findByIdAndDeletedAtIsNull(UUID id);
 
     @Query("""
