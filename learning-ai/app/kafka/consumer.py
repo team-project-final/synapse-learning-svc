@@ -52,9 +52,6 @@ class AiCardKafkaConsumer:
         deser = self._value_deserializer or _make_avro_deserializer(
             settings.kafka_note_created_topic
         )
-        ssl_context = (
-            ssl.create_default_context() if settings.kafka_security_protocol == "SSL" else None
-        )
         self._consumer = AIOKafkaConsumer(
             settings.kafka_note_created_topic,
             bootstrap_servers=settings.kafka_bootstrap_servers,
