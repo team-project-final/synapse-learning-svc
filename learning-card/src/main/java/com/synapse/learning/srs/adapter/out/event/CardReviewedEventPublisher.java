@@ -1,7 +1,7 @@
 package com.synapse.learning.srs.adapter.out.event;
 
-import com.synapse.event.learning.Rating;
-import com.synapse.event.learning.ReviewCompleted;
+import com.synapse.learning.Rating;
+import com.synapse.learning.ReviewCompleted;
 import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
 import com.synapse.learning.srs.application.port.out.KafkaDlqPort;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +37,8 @@ public class CardReviewedEventPublisher implements CardReviewedEventPort {
                 .setCardId(cardId)
                 .setRating(toRating(rating))
                 .setNextReviewAt(nextReviewAt)
-                .setReviewedAt(now)
-                .setOccurredAt(now)
+                .setReviewedAt(now.toString())
+                .setOccurredAt(now.toEpochMilli())
                 .build();
 
         ProducerRecord<String, ReviewCompleted> record =

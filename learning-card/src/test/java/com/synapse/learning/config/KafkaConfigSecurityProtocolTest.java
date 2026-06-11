@@ -1,7 +1,7 @@
 package com.synapse.learning.config;
 
 import com.synapse.event.learning.CardReviewDue;
-import com.synapse.event.learning.ReviewCompleted;
+import com.synapse.learning.ReviewCompleted;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
