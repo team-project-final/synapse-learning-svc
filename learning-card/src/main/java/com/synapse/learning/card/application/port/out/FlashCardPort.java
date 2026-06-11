@@ -23,6 +23,8 @@ public interface FlashCardPort {
 
     Page<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId, Pageable pageable);
 
+    List<FlashCard> findAllByDeckIdAndDeletedAtIsNull(UUID deckId);
+
     List<FlashCard> findDueCards(UUID tenantId, UUID deckId, Instant now, Pageable pageable);
 
     List<Object[]> findDueCardCountByUser(int limit, int offset);

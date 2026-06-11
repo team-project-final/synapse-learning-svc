@@ -1,8 +1,8 @@
 package com.synapse.learning.e2e;
 
 import com.synapse.event.learning.CardReviewDue;
-import com.synapse.event.learning.Rating;
-import com.synapse.event.learning.ReviewCompleted;
+import com.synapse.learning.Rating;
+import com.synapse.learning.ReviewCompleted;
 import com.synapse.learning.srs.adapter.out.event.CardReviewedEventPublisher;
 import com.synapse.learning.srs.adapter.out.event.ReviewDueEventPublisher;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
