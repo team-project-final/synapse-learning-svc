@@ -1,3 +1,4 @@
+from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,6 +12,17 @@ class Settings(BaseSettings):
     # API Keys
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
+    anthropic_model: str = "claude-sonnet-4-6"
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def ai_enabled(self) -> bool:
+        return bool(self.anthropic_api_key)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def openai_enabled(self) -> bool:
+        return bool(self.openai_api_key)
 
     # CORS
     backend_cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]

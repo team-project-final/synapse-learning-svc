@@ -1,3 +1,35 @@
+# 작업 보고서: 이슈 #73·#77·#78 수정 (2026-06-12)
+
+## 2026-06-12 — AI 키 Graceful Gate + 모델 ID 교체 + Kafka 파이프라인 계약 수정
+
+### 배경
+W5 E2E 라이브에서 발견된 3개 이슈 해결.
+
+### 변경 파일
+- `app/core/config.py`: `anthropic_model` 설정 필드 + `ai_enabled`/`openai_enabled` computed property 추가
+- `app/api/deps.py`: 키 미설정 시 HTTP 503 반환 (기존: 빈 문자열로 클라이언트 생성 → 호출 시점 인증 실패)
+- `app/services/claude_service.py`: 하드코딩 `"claude-3-5-sonnet-20240620"` → `settings.anthropic_model` (3곳) + `settings` import 추가
+- `app/kafka/consumer.py`: `EventHandlerFn` Protocol에 `content: str | None` 추가 + pipeline_fn 호출에 `content=event.content` 전달
+- `app/main.py`: `or ""` 제거, 키 없으면 WARN 로그 + consumer 미기동. `NoteApiClient` 호출 제거 — Kafka 이벤트 `content` 필드 직접 사용
+- `.env.example`: `LEARNING_AI_ANTHROPIC_MODEL=claude-sonnet-4-6` 추가
+
+### 이슈별 근거
+
+**#73 (AI 키 Graceful Gate)**
+- 이전: `settings.anthropic_api_key or ""`로 빈 키 클라이언트 생성 → 기동 정상이나 AI 호출 시 모호한 인증 에러
+- 이후: 키 없으면 REST 엔드포인트 503, Kafka consumer 미기동, 기동 시 WARN 로그
+
+**#77 (모델 ID 폐기)**
+- 이전: `claude-3-5-sonnet-20240620` 하드코딩 → Anthropic 404 `not_found_error`
+- 이후: `settings.anthropic_model` 변수 참조 (기본값 `claude-sonnet-4-6`), `LEARNING_AI_ANTHROPIC_MODEL` env로 외부화
+
+**#78 (note 본문 fetch 계약 불일치)**
+- 원인 재분석: `NoteCreatedEvent.content`(Kafka 이벤트 본문)가 존재하나 `pipeline_fn`에 전달되지 않아 불필요한 HTTP 호출 발생
+- 이전: `NoteApiClient.get_note_content()` HTTP 호출 → knowledge-svc `/notes/{uuid}` 경로·ID타입·JWT 3중 불일치로 100% 500 → DLQ
+- 이후: Kafka 이벤트 `content` 필드 직접 사용. knowledge-svc 코드 변경 없음
+
+---
+
 # 작업 보고서: 컨테이너 비-root 실행 (2026-06-03)
 
 ## 2026-06-03 — 컨테이너 비-root 실행
