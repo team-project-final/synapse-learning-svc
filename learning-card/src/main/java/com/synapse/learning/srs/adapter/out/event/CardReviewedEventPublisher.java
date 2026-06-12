@@ -2,6 +2,7 @@ package com.synapse.learning.srs.adapter.out.event;
 
 import com.synapse.learning.Rating;
 import com.synapse.learning.ReviewCompleted;
+import com.synapse.learning.config.KafkaTopicProperties;
 import com.synapse.learning.srs.application.port.out.CardReviewedEventPort;
 import com.synapse.learning.srs.application.port.out.KafkaDlqPort;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +23,15 @@ import java.util.concurrent.CompletableFuture;
 @ConditionalOnProperty(prefix = "synapse.kafka", name = "enabled", havingValue = "true")
 public class CardReviewedEventPublisher implements CardReviewedEventPort {
 
-    static final String TOPIC = "learning.card.review-completed-v1";
+    static final String TOPIC_BASE = "learning.card.review-completed-v1";
 
     private final KafkaTemplate<String, ReviewCompleted> reviewCompletedKafkaTemplate;
     private final KafkaDlqPort kafkaDlqPort;
+    private final KafkaTopicProperties topicProperties;
 
     @Override
     public void publish(String userId, String tenantId, String cardId, int rating, String nextReviewAt) {
+        String topic = topicProperties.resolve(TOPIC_BASE);
         Instant now = Instant.now();
         ReviewCompleted event = ReviewCompleted.newBuilder()
                 .setEventId(UUID.randomUUID().toString())
@@ -42,7 +45,7 @@ public class CardReviewedEventPublisher implements CardReviewedEventPort {
                 .build();
 
         ProducerRecord<String, ReviewCompleted> record =
-                new ProducerRecord<>(TOPIC, userId, event);
+                new ProducerRecord<>(topic, userId, event);
 
         CompletableFuture<SendResult<String, ReviewCompleted>> future =
                 reviewCompletedKafkaTemplate.send(record);
@@ -50,14 +53,14 @@ public class CardReviewedEventPublisher implements CardReviewedEventPort {
         future.whenComplete((result, ex) -> {
             if (ex != null) {
                 log.error("[Kafka] {} 발행 실패 — userId={}, cardId={}, error={}",
-                        TOPIC, userId, cardId, ex.getMessage(), ex);
+                        topic, userId, cardId, ex.getMessage(), ex);
                 String payload = String.format(
                         "{\"topic\":\"%s\",\"userId\":\"%s\",\"cardId\":\"%s\",\"rating\":%d,\"error\":\"%s\"}",
-                        TOPIC, userId, cardId, rating, ex.getMessage());
-                kafkaDlqPort.publish(TOPIC, tenantId, payload);
+                        topic, userId, cardId, rating, ex.getMessage());
+                kafkaDlqPort.publish(topic, tenantId, payload);
             } else {
                 log.debug("[Kafka] {} 발행 성공 — userId={}, cardId={}, offset={}",
-                        TOPIC, userId, cardId,
+                        topic, userId, cardId,
                         result.getRecordMetadata().offset());
             }
         });

@@ -1,6 +1,7 @@
 package com.synapse.learning.srs.adapter.out.event;
 
 import com.synapse.event.learning.CardReviewDue;
+import com.synapse.learning.config.KafkaTopicProperties;
 import com.synapse.learning.srs.application.port.out.KafkaDlqPort;
 import com.synapse.learning.srs.application.port.out.ReviewDueEventPort;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +22,15 @@ import java.util.concurrent.CompletableFuture;
 @ConditionalOnProperty(prefix = "synapse.kafka", name = "enabled", havingValue = "true")
 public class ReviewDueEventPublisher implements ReviewDueEventPort {
 
-    static final String TOPIC = "learning.card.review-due-v1";
+    static final String TOPIC_BASE = "learning.card.review-due-v1";
 
     private final KafkaTemplate<String, CardReviewDue> reviewDueKafkaTemplate;
     private final KafkaDlqPort kafkaDlqPort;
+    private final KafkaTopicProperties topicProperties;
 
     @Override
     public void publish(String userId, String tenantId, int dueCardCount, String dueDate) {
+        String topic = topicProperties.resolve(TOPIC_BASE);
         Instant now = Instant.now();
         CardReviewDue event = CardReviewDue.newBuilder()
                 .setEventId(UUID.randomUUID().toString())
@@ -39,7 +42,7 @@ public class ReviewDueEventPublisher implements ReviewDueEventPort {
                 .build();
 
         ProducerRecord<String, CardReviewDue> record =
-                new ProducerRecord<>(TOPIC, userId, event);
+                new ProducerRecord<>(topic, userId, event);
 
         CompletableFuture<SendResult<String, CardReviewDue>> future =
                 reviewDueKafkaTemplate.send(record);
@@ -47,14 +50,14 @@ public class ReviewDueEventPublisher implements ReviewDueEventPort {
         future.whenComplete((result, ex) -> {
             if (ex != null) {
                 log.error("[Kafka] {} 발행 실패 — userId={}, dueCardCount={}, error={}",
-                        TOPIC, userId, dueCardCount, ex.getMessage(), ex);
+                        topic, userId, dueCardCount, ex.getMessage(), ex);
                 String payload = String.format(
                         "{\"topic\":\"%s\",\"userId\":\"%s\",\"dueCardCount\":%d,\"dueDate\":\"%s\",\"error\":\"%s\"}",
-                        TOPIC, userId, dueCardCount, dueDate, ex.getMessage());
-                kafkaDlqPort.publish(TOPIC, tenantId, payload);
+                        topic, userId, dueCardCount, dueDate, ex.getMessage());
+                kafkaDlqPort.publish(topic, tenantId, payload);
             } else {
                 log.debug("[Kafka] {} 발행 성공 — userId={}, dueDate={}, offset={}",
-                        TOPIC, userId, dueDate,
+                        topic, userId, dueDate,
                         result.getRecordMetadata().offset());
             }
         });
