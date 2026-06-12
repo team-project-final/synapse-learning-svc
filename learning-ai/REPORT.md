@@ -1,3 +1,21 @@
+# 작업 보고서: 이슈 #85 — learning-ai Prometheus 메트릭 엔드포인트 추가 (2026-06-12)
+
+## 2026-06-12 — `/metrics` 엔드포인트 노출
+
+### 배경
+EKS ServiceMonitor 스크랩 시 learning-ai `/actuator/prometheus` 404 → `TargetDown` false-positive.
+Python 서비스는 Spring actuator 없음. `prometheus-fastapi-instrumentator`로 `/metrics` 노출.
+
+### 변경 파일
+- `pyproject.toml`: `prometheus-fastapi-instrumentator>=7.0.0` 의존성 추가 + mypy override 추가
+- `app/main.py`: `Instrumentator().instrument(app).expose(app, endpoint="/metrics")` 한 줄 추가
+
+### 이전 vs 이후
+- 이전: `GET /actuator/prometheus` → 404 (Python 서비스에 Spring actuator 없음)
+- 이후: `GET /metrics` → 200 + Prometheus 텍스트 포맷 (요청수·레이턴시·상태코드 자동 계측)
+
+---
+
 # 작업 보고서: 이슈 #73·#77·#78 수정 (2026-06-12)
 
 ## 2026-06-12 — AI 키 Graceful Gate + 모델 ID 교체 + Kafka 파이프라인 계약 수정
