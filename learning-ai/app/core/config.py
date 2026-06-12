@@ -1,4 +1,4 @@
-from pydantic import computed_field
+from pydantic import computed_field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -35,9 +35,18 @@ class Settings(BaseSettings):
     kafka_bootstrap_servers: str = "localhost:9092"
     kafka_security_protocol: str = "PLAINTEXT"
     kafka_consumer_group_id: str = "learning-ai-svc-group"
+    kafka_topic_prefix: str = ""  # env: LEARNING_AI_KAFKA_TOPIC_PREFIX (미설정 시 빈 문자열 폴백)
     kafka_note_created_topic: str = "knowledge.note.note-created-v1"
     kafka_dlq_topic: str = "note.created.dlq"
     kafka_notification_topic: str = "platform.notification.notification-send-v1"
+
+    @model_validator(mode='after')
+    def _apply_topic_prefix(self) -> 'Settings':
+        if self.kafka_topic_prefix:
+            self.kafka_note_created_topic = self.kafka_topic_prefix + self.kafka_note_created_topic
+            self.kafka_notification_topic = self.kafka_topic_prefix + self.kafka_notification_topic
+            self.kafka_dlq_topic = self.kafka_topic_prefix + self.kafka_dlq_topic
+        return self
 
     # Schema Registry
     schema_registry_url: str = "http://localhost:8086"
