@@ -54,6 +54,10 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+kafka:
+  topic:
+    prefix: ${KAFKA_TOPIC_PREFIX:}
+
 synapse:
   kafka:
     enabled: ${KAFKA_ENABLED:false}
