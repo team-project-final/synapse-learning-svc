@@ -21,7 +21,13 @@ logger = logging.getLogger(__name__)
 
 class EventHandlerFn(Protocol):
     async def __call__(
-        self, *, note_id: str, user_id: str, tenant_id: str, deck_id: str
+        self,
+        *,
+        note_id: str,
+        user_id: str,
+        tenant_id: str,
+        deck_id: str,
+        content: str | None,
     ) -> list[str]: ...
 
 
@@ -142,6 +148,7 @@ class AiCardKafkaConsumer:
                     user_id=event.user_id,
                     tenant_id=event.tenant_id,
                     deck_id=event.deck_id,
+                    content=event.content,
                 )
 
     async def _send_to_dlq(self, raw: dict[str, Any]) -> None:

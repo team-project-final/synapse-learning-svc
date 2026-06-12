@@ -97,7 +97,7 @@ async def test_happy_path(kafka_bootstrap: str, monkeypatch: pytest.MonkeyPatch)
     processed = asyncio.Event()
 
     async def pipeline_fn(
-        *, note_id: str, user_id: str, tenant_id: str, deck_id: str
+        *, note_id: str, user_id: str, tenant_id: str, deck_id: str, content: str | None
     ) -> list[str]:
         assert note_id == event["note_id"]
         assert user_id == event["user_id"]
@@ -129,7 +129,7 @@ async def test_dlq_on_persistent_failure(
     _patch_kafka(monkeypatch, kafka_bootstrap, uid[:8])
 
     async def always_fail(
-        *, note_id: str, user_id: str, tenant_id: str, deck_id: str
+        *, note_id: str, user_id: str, tenant_id: str, deck_id: str, content: str | None
     ) -> list[str]:
         raise RuntimeError("LLM unavailable")
 
@@ -162,7 +162,7 @@ async def test_performance(kafka_bootstrap: str, monkeypatch: pytest.MonkeyPatch
     processed = asyncio.Event()
 
     async def pipeline_fn(
-        *, note_id: str, user_id: str, tenant_id: str, deck_id: str
+        *, note_id: str, user_id: str, tenant_id: str, deck_id: str, content: str | None
     ) -> list[str]:
         pipeline_called_at.append(time.monotonic())
         processed.set()

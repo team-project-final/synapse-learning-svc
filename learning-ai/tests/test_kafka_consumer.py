@@ -48,6 +48,7 @@ async def test_handle_message_happy_path(
         user_id="user-2222",
         tenant_id="tenant-3333",
         deck_id="deck-4444",
+        content=None,
     )
     assert "evt-0001" in consumer._processed
     consumer._consumer.commit.assert_awaited_once()
