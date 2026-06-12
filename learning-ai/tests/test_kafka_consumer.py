@@ -118,3 +118,46 @@ async def test_handle_message_pipeline_failure_sends_to_dlq(
         settings.kafka_dlq_topic, value=VALID_EVENT
     )
     consumer._consumer.commit.assert_awaited_once()
+
+
+async def test_handle_message_no_deck_id_ingest_called_pipeline_skipped(
+    mock_pipeline_fn: AsyncMock,
+) -> None:
+    """deck_id 없는 이벤트: ingest는 실행, 카드 생성 파이프라인은 스킵."""
+    mock_ingest_fn = AsyncMock()
+    c = AiCardKafkaConsumer(pipeline_fn=mock_pipeline_fn, ingest_fn=mock_ingest_fn)
+    c._consumer = MagicMock()
+    c._consumer.commit = AsyncMock()
+    c._producer = MagicMock()
+    c._producer.send_and_wait = AsyncMock()
+
+    event_no_deck = {**VALID_EVENT, "event_id": "evt-0010", "deck_id": None}
+    await c._handle_message(MockMsg(value=event_no_deck))
+
+    mock_ingest_fn.assert_awaited_once_with(
+        note_id="note-1111",
+        tenant_id="tenant-3333",
+        content="학습 내용입니다.",
+    )
+    mock_pipeline_fn.assert_not_awaited()
+    assert "evt-0010" in c._processed
+    c._consumer.commit.assert_awaited_once()
+
+
+async def test_handle_message_ingest_failure_does_not_block_pipeline(
+    mock_pipeline_fn: AsyncMock,
+) -> None:
+    """ingest 실패 시 에러 로그만 남기고 카드 생성 파이프라인은 계속 실행."""
+    mock_ingest_fn = AsyncMock(side_effect=RuntimeError("embedding API error"))
+    c = AiCardKafkaConsumer(pipeline_fn=mock_pipeline_fn, ingest_fn=mock_ingest_fn)
+    c._consumer = MagicMock()
+    c._consumer.commit = AsyncMock()
+    c._producer = MagicMock()
+    c._producer.send_and_wait = AsyncMock()
+
+    await c._handle_message(MockMsg(value=VALID_EVENT))
+
+    mock_ingest_fn.assert_awaited_once()
+    mock_pipeline_fn.assert_awaited_once()
+    assert "evt-0001" in c._processed
+    c._producer.send_and_wait.assert_not_awaited()

@@ -31,6 +31,10 @@ class EventHandlerFn(Protocol):
     ) -> list[str]: ...
 
 
+class IngestFn(Protocol):
+    async def __call__(self, *, note_id: str, tenant_id: str, content: str) -> None: ...
+
+
 def _make_avro_deserializer(topic: str) -> Callable[[bytes], Any]:
     sr = SchemaRegistryClient({"url": settings.schema_registry_url})
     avro_deser = AvroDeserializer(schema_registry_client=sr)
@@ -45,9 +49,11 @@ class AiCardKafkaConsumer:
     def __init__(
         self,
         pipeline_fn: EventHandlerFn,
+        ingest_fn: IngestFn | None = None,
         value_deserializer: Callable[[bytes], Any] | None = None,
     ) -> None:
         self._pipeline_fn = pipeline_fn
+        self._ingest_fn = ingest_fn
         self._value_deserializer = value_deserializer
         self._consumer: AIOKafkaConsumer | None = None
         self._producer: AIOKafkaProducer | None = None
@@ -118,13 +124,30 @@ class AiCardKafkaConsumer:
             await self._consumer.commit()  # type: ignore[union-attr]
             return
 
-        if event.deck_id is None:
-            logger.warning("event_id=%s has no deck_id, skipping card generation", event.event_id)
-            await self._consumer.commit()  # type: ignore[union-attr]
-            return
-
         try:
-            await asyncio.wait_for(self._process_with_retry(event), timeout=60.0)
+            # 1. Semantic ingest — deck_id 유무 관계없이 항상 실행
+            if self._ingest_fn is not None:
+                if event.content:
+                    try:
+                        await asyncio.wait_for(
+                            self._ingest_fn(
+                                note_id=event.note_id,
+                                tenant_id=event.tenant_id,
+                                content=event.content,
+                            ),
+                            timeout=60.0,
+                        )
+                    except Exception:
+                        logger.exception("Semantic ingest failed for note_id=%s", event.note_id)
+                else:
+                    logger.warning("note_id=%s has no content, skipping ingest", event.note_id)
+
+            # 2. 카드 생성 — deck_id 있을 때만 실행
+            if event.deck_id is not None:
+                await asyncio.wait_for(self._process_with_retry(event), timeout=60.0)
+            else:
+                logger.info("event_id=%s has no deck_id, skipping card generation", event.event_id)
+
             self._processed[event.event_id] = None
             if len(self._processed) > _DEDUP_MAX:
                 self._processed.popitem(last=False)
@@ -136,7 +159,7 @@ class AiCardKafkaConsumer:
             await self._consumer.commit()  # type: ignore[union-attr]
 
     async def _process_with_retry(self, event: NoteCreatedEvent) -> None:
-        assert event.deck_id is not None
+        assert event.deck_id is not None  # noqa: S101 — caller ensures this
         async for attempt in AsyncRetrying(
             stop=stop_after_attempt(3),
             wait=wait_exponential(multiplier=2, max=8),
