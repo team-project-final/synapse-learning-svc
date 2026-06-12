@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from fastapi import Depends, Header
+from fastapi import Depends, Header, HTTPException
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 from app.core.config import settings
 from app.db.session import get_db
@@ -22,12 +23,22 @@ async def get_current_user(x_user_id: Annotated[str | None, Header()] = None) ->
 
 def get_claude_service() -> ClaudeService:
     """Dependency for getting a ClaudeService instance."""
-    return ClaudeService(api_key=settings.anthropic_api_key or "")
+    if not settings.anthropic_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI disabled: Anthropic API key not configured",
+        )
+    return ClaudeService(api_key=settings.anthropic_api_key)
 
 
 def get_embedding_service() -> OpenAIEmbeddingService:
     """Dependency for getting an OpenAIEmbeddingService instance."""
-    return OpenAIEmbeddingService(api_key=settings.openai_api_key or "")
+    if not settings.openai_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI disabled: OpenAI API key not configured",
+        )
+    return OpenAIEmbeddingService(api_key=settings.openai_api_key)
 
 
 def get_note_chunk_repository(session: AsyncSession = Depends(get_db)) -> NoteChunkRepository:  # noqa: B008

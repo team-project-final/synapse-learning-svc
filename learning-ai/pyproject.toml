@@ -21,6 +21,7 @@ dependencies = [
     "aiokafka>=0.11.0",
     "confluent-kafka[avro]>=2.5.0",
     "redis[hiredis]>=5.0.0",
+    "prometheus-fastapi-instrumentator>=7.0.0",
 ]
 
 [project.optional-dependencies]
@@ -83,6 +84,10 @@ ignore_missing_imports = true
 module = "numpy.*"
 ignore_missing_imports = true
 ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "prometheus_fastapi_instrumentator.*"
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "tests.test_semantic_search_accuracy"

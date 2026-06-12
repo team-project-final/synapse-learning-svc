@@ -1,16 +1,17 @@
 """Learning AI FastAPI application entry point."""
 
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.ai import router as ai_router
 from app.api.health import router as health_router
 from app.clients.card_client import CardApiClient
-from app.clients.note_client import NoteApiClient
 from app.core.config import settings
 from app.core.exceptions import (
     global_exception_handler,
@@ -26,27 +27,33 @@ from app.services.card_pipeline_service import AiCardPipelineService
 from app.services.claude_service import ClaudeService
 from app.services.openai_service import OpenAIEmbeddingService
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    note_client = NoteApiClient(base_url=settings.note_service_url)
     card_client = CardApiClient(base_url=settings.learning_card_service_url)
-    claude = ClaudeService(api_key=settings.anthropic_api_key or "")
-    openai_svc = OpenAIEmbeddingService(api_key=settings.openai_api_key or "")
+
+    if not settings.ai_enabled:
+        logger.warning("ANTHROPIC_API_KEY not set — AI card generation disabled")
+    if not settings.openai_enabled:
+        logger.warning("OPENAI_API_KEY not set — embeddings/semantic search disabled")
 
     notification: NotificationProducer | None = None
     consumer: AiCardKafkaConsumer | None = None
 
-    if settings.kafka_enabled:
+    if settings.kafka_enabled and settings.ai_enabled and settings.openai_enabled:
+        claude = ClaudeService(api_key=settings.anthropic_api_key)  # type: ignore[arg-type]
+        openai_svc = OpenAIEmbeddingService(api_key=settings.openai_api_key)  # type: ignore[arg-type]
         notification = NotificationProducer()
         await notification.start()
 
         async def pipeline_fn(
-            *, note_id: str, user_id: str, tenant_id: str, deck_id: str
+            *, note_id: str, user_id: str, tenant_id: str, deck_id: str, content: str | None
         ) -> list[str]:
-            note_content = await note_client.get_note_content(
-                note_id=note_id, user_id=user_id, tenant_id=tenant_id
-            )
+            if not content:
+                logger.warning("note_id=%s has no content in event, skipping", note_id)
+                return []
             async with SessionLocal() as session:
                 repo = NoteChunkRepository(session)
                 ai_svc = AIService(claude=claude, openai=openai_svc, repo=repo)
@@ -56,7 +63,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                     notification=notification,
                 )
                 return await pipeline.generate_and_save(
-                    note_content=note_content,
+                    note_content=content,
                     deck_id=deck_id,
                     user_id=user_id,
                     tenant_id=tenant_id,
@@ -65,6 +72,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
         consumer = AiCardKafkaConsumer(pipeline_fn=pipeline_fn)
         await consumer.start()
+    elif settings.kafka_enabled:
+        logger.warning("Kafka enabled but AI keys missing — consumer not started")
 
     yield
 
@@ -80,6 +89,8 @@ app = FastAPI(
     version=settings.version,
     lifespan=lifespan,
 )
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 # CORS Setting - Only active in development
 if settings.environment == "development" or settings.environment == "local":

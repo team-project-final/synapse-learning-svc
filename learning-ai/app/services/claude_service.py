@@ -11,6 +11,7 @@ from tenacity import (
     wait_exponential,
 )
 
+from app.core.config import settings
 from app.core.logging import track_tokens
 from app.core.prompts import load_system_prompt, render_user_prompt
 from app.schemas.ai import GenerateRequest, GenerateResponse, UsageInfo
@@ -50,7 +51,7 @@ class ClaudeService(BaseAIService):
         user_message = render_user_prompt(request.task, prompt=request.prompt)
 
         message = await self.client.messages.create(
-            model="claude-3-5-sonnet-20240620",
+            model=settings.anthropic_model,
             max_tokens=request.max_tokens,
             temperature=request.temperature,
             system=system_prompt,
@@ -80,7 +81,7 @@ class ClaudeService(BaseAIService):
         system_prompt = load_system_prompt("qa")
         user_message = render_user_prompt("qa", context=context, question=question)
         message = await self.client.messages.create(
-            model="claude-3-5-sonnet-20240620",
+            model=settings.anthropic_model,
             max_tokens=1024,
             system=system_prompt,
             messages=[{"role": "user", "content": user_message}],
@@ -110,7 +111,7 @@ class ClaudeService(BaseAIService):
         system_prompt = load_system_prompt("qa")
         user_message = render_user_prompt("qa", context=context, question=question)
         async with self.client.messages.stream(
-            model="claude-3-5-sonnet-20240620",
+            model=settings.anthropic_model,
             max_tokens=1024,
             system=system_prompt,
             messages=[{"role": "user", "content": user_message}],
