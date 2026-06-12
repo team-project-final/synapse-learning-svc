@@ -25,6 +25,7 @@ from app.repositories.note_chunk_repository import NoteChunkRepository
 from app.services.ai_service import AIService
 from app.services.card_pipeline_service import AiCardPipelineService
 from app.services.claude_service import ClaudeService
+from app.services.note_ingest_service import NoteIngestService
 from app.services.openai_service import OpenAIEmbeddingService
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         notification = NotificationProducer()
         await notification.start()
 
+        async def ingest_fn(*, note_id: str, tenant_id: str, content: str) -> None:
+            async with SessionLocal() as session:
+                repo = NoteChunkRepository(session)
+                ingest_svc = NoteIngestService(openai=openai_svc, repo=repo)
+                await ingest_svc.ingest(note_id=note_id, tenant_id=tenant_id, content=content)
+
         async def pipeline_fn(
             *, note_id: str, user_id: str, tenant_id: str, deck_id: str, content: str | None
         ) -> list[str]:
@@ -70,7 +77,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                     note_id=note_id,
                 )
 
-        consumer = AiCardKafkaConsumer(pipeline_fn=pipeline_fn)
+        consumer = AiCardKafkaConsumer(pipeline_fn=pipeline_fn, ingest_fn=ingest_fn)
         await consumer.start()
     elif settings.kafka_enabled:
         logger.warning("Kafka enabled but AI keys missing — consumer not started")
