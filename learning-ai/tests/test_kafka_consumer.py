@@ -12,6 +12,7 @@ VALID_EVENT: dict[str, Any] = {
     "user_id": "user-2222",
     "tenant_id": "tenant-3333",
     "deck_id": "deck-4444",
+    "content": "학습 내용입니다.",
 }
 
 
@@ -48,11 +49,30 @@ async def test_handle_message_happy_path(
         user_id="user-2222",
         tenant_id="tenant-3333",
         deck_id="deck-4444",
-        content=None,
+        content="학습 내용입니다.",
     )
     assert "evt-0001" in consumer._processed
     consumer._consumer.commit.assert_awaited_once()
     consumer._producer.send_and_wait.assert_not_awaited()
+
+
+async def test_handle_message_no_content_passes_none(
+    consumer: AiCardKafkaConsumer,
+    mock_pipeline_fn: AsyncMock,
+) -> None:
+    """content 필드 없는 이벤트는 content=None으로 파이프라인에 전달."""
+    event_without_content = {**VALID_EVENT, "event_id": "evt-0002"}
+    del event_without_content["content"]
+
+    await consumer._handle_message(MockMsg(value=event_without_content))
+
+    mock_pipeline_fn.assert_awaited_once_with(
+        note_id="note-1111",
+        user_id="user-2222",
+        tenant_id="tenant-3333",
+        deck_id="deck-4444",
+        content=None,
+    )
 
 
 async def test_handle_message_duplicate_skipped(
