@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@EmbeddedKafka(partitions = 1, topics = { ReviewDueEventPublisher.TOPIC })
+@EmbeddedKafka(partitions = 1, topics = { ReviewDueEventPublisher.TOPIC_BASE })
 @TestPropertySource(properties = {
         "synapse.kafka.enabled=true",
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
@@ -81,7 +81,7 @@ class ReviewDueEventPublisherIntegrationTest {
 
         Consumer<String, byte[]> consumer = new DefaultKafkaConsumerFactory<String, byte[]>(consumerProps)
                 .createConsumer();
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, ReviewDueEventPublisher.TOPIC);
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, ReviewDueEventPublisher.TOPIC_BASE);
 
         String userId = UUID.randomUUID().toString();
         String tenantId = UUID.randomUUID().toString();
@@ -94,7 +94,7 @@ class ReviewDueEventPublisherIntegrationTest {
         assertThat(records.count()).isGreaterThan(0);
 
         ConsumerRecord<String, byte[]> record = records.iterator().next();
-        assertThat(record.topic()).isEqualTo(ReviewDueEventPublisher.TOPIC);
+        assertThat(record.topic()).isEqualTo(ReviewDueEventPublisher.TOPIC_BASE);
         assertThat(record.key()).isEqualTo(userId);  // 파티션 키 = userId
     }
 }

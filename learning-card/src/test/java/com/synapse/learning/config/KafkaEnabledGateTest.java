@@ -20,7 +20,7 @@ class KafkaEnabledGateTest {
     class WhenEnabled {
 
         final ApplicationContextRunner runner = new ApplicationContextRunner()
-                .withUserConfiguration(KafkaConfig.class, KafkaDlqPublisher.class, CardReviewedEventPublisher.class, ReviewDueEventPublisher.class)
+                .withUserConfiguration(KafkaTopicProperties.class, KafkaConfig.class, KafkaDlqPublisher.class, CardReviewedEventPublisher.class, ReviewDueEventPublisher.class)
                 .withPropertyValues(
                         "synapse.kafka.enabled=true",
                         "spring.kafka.bootstrap-servers=localhost:9092",
