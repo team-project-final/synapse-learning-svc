@@ -17,9 +17,15 @@ VALID_EVENT: dict[str, Any] = {
 
 
 class MockMsg:
-    def __init__(self, value: dict[str, Any], offset: int = 0) -> None:
+    def __init__(
+        self,
+        value: dict[str, Any],
+        offset: int = 0,
+        topic: str = settings.kafka_note_created_topic,
+    ) -> None:
         self.value = value
         self.offset = offset
+        self.topic = topic
 
 
 @pytest.fixture
@@ -141,6 +147,110 @@ async def test_handle_message_no_deck_id_ingest_called_pipeline_skipped(
     )
     mock_pipeline_fn.assert_not_awaited()
     assert "evt-0010" in c._processed
+    c._consumer.commit.assert_awaited_once()
+
+
+VALID_DELETE_EVENT: dict[str, Any] = {
+    "event_id": "del-evt-0001",
+    "note_id": "550e8400-e29b-41d4-a716-446655440000",
+    "user_id": "user-2222",
+    "tenant_id": "a8098c1a-f86e-11da-bd1a-00112444be1e",
+    "deleted_at": 1718000000,
+    "occurred_at": 1718000000,
+}
+
+
+@pytest.fixture
+def mock_delete_fn() -> AsyncMock:
+    return AsyncMock()
+
+
+@pytest.fixture
+def delete_consumer(mock_delete_fn: AsyncMock) -> AiCardKafkaConsumer:
+    c = AiCardKafkaConsumer(delete_fn=mock_delete_fn)
+    c._consumer = MagicMock()
+    c._consumer.commit = AsyncMock()
+    c._producer = MagicMock()
+    c._producer.send_and_wait = AsyncMock()
+    return c
+
+
+async def test_delete_happy_path(
+    delete_consumer: AiCardKafkaConsumer,
+    mock_delete_fn: AsyncMock,
+) -> None:
+    """유효한 삭제 이벤트 수신 시 delete_fn 호출 후 오프셋 커밋."""
+    msg = MockMsg(value=VALID_DELETE_EVENT, topic=settings.kafka_note_deleted_topic)
+    await delete_consumer._handle_message(msg)
+
+    mock_delete_fn.assert_awaited_once_with(
+        note_id="550e8400-e29b-41d4-a716-446655440000",
+        tenant_id="a8098c1a-f86e-11da-bd1a-00112444be1e",
+    )
+    assert "del-evt-0001" in delete_consumer._processed
+    delete_consumer._consumer.commit.assert_awaited_once()
+    delete_consumer._producer.send_and_wait.assert_not_awaited()
+
+
+async def test_delete_duplicate_skipped(
+    delete_consumer: AiCardKafkaConsumer,
+    mock_delete_fn: AsyncMock,
+) -> None:
+    """이미 처리한 delete event_id는 delete_fn 호출 없이 스킵."""
+    delete_consumer._processed["del-evt-0001"] = None
+    msg = MockMsg(value=VALID_DELETE_EVENT, topic=settings.kafka_note_deleted_topic)
+
+    await delete_consumer._handle_message(msg)
+
+    mock_delete_fn.assert_not_awaited()
+    delete_consumer._consumer.commit.assert_awaited_once()
+    delete_consumer._producer.send_and_wait.assert_not_awaited()
+
+
+async def test_delete_invalid_schema_sends_to_dlq(
+    delete_consumer: AiCardKafkaConsumer,
+) -> None:
+    """스키마 검증 실패 시 note_deleted_dlq로 전송 후 오프셋 커밋."""
+    invalid_event: dict[str, Any] = {"bad_field": "no_good"}
+    msg = MockMsg(value=invalid_event, topic=settings.kafka_note_deleted_topic)
+
+    await delete_consumer._handle_message(msg)
+
+    delete_consumer._producer.send_and_wait.assert_awaited_once_with(
+        settings.kafka_note_deleted_dlq_topic, value=invalid_event
+    )
+    delete_consumer._consumer.commit.assert_awaited_once()
+
+
+async def test_delete_fn_failure_sends_to_dlq(
+    delete_consumer: AiCardKafkaConsumer,
+    mock_delete_fn: AsyncMock,
+) -> None:
+    """delete_fn 재시도 후에도 실패하면 note_deleted_dlq 전송 후 오프셋 커밋."""
+    mock_delete_fn.side_effect = RuntimeError("DB unavailable")
+    msg = MockMsg(value=VALID_DELETE_EVENT, topic=settings.kafka_note_deleted_topic)
+
+    await delete_consumer._handle_message(msg)
+
+    assert "del-evt-0001" not in delete_consumer._processed
+    delete_consumer._producer.send_and_wait.assert_awaited_once_with(
+        settings.kafka_note_deleted_dlq_topic, value=VALID_DELETE_EVENT
+    )
+    delete_consumer._consumer.commit.assert_awaited_once()
+
+
+async def test_no_delete_fn_is_noop(mock_pipeline_fn: AsyncMock) -> None:
+    """delete_fn 미설정 consumer는 삭제 이벤트를 no-op으로 처리 후 커밋."""
+    c = AiCardKafkaConsumer(pipeline_fn=mock_pipeline_fn)
+    c._consumer = MagicMock()
+    c._consumer.commit = AsyncMock()
+    c._producer = MagicMock()
+    c._producer.send_and_wait = AsyncMock()
+
+    msg = MockMsg(value=VALID_DELETE_EVENT, topic=settings.kafka_note_deleted_topic)
+    await c._handle_message(msg)
+
+    c._producer.send_and_wait.assert_not_awaited()
     c._consumer.commit.assert_awaited_once()
 
 
