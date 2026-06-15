@@ -49,7 +49,9 @@ class Settings(BaseSettings):
             self.kafka_note_deleted_topic = self.kafka_topic_prefix + self.kafka_note_deleted_topic
             self.kafka_notification_topic = self.kafka_topic_prefix + self.kafka_notification_topic
             self.kafka_dlq_topic = self.kafka_topic_prefix + self.kafka_dlq_topic
-            self.kafka_note_deleted_dlq_topic = self.kafka_topic_prefix + self.kafka_note_deleted_dlq_topic
+            self.kafka_note_deleted_dlq_topic = (
+                self.kafka_topic_prefix + self.kafka_note_deleted_dlq_topic
+            )
         return self
 
     # Schema Registry
