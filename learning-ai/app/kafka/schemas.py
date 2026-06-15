@@ -1,6 +1,19 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class NoteDeletedEvent(BaseModel):
+    """knowledge.note.note-deleted-v1 Avro 스키마 매핑 (camelCase alias 지원)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    event_id: str = Field(alias="eventId", default="")
+    note_id: str = Field(alias="noteId")
+    user_id: str = Field(alias="userId")
+    tenant_id: str = Field(alias="tenantId")
+    deleted_at: int = Field(alias="deletedAt", default=0)
+    occurred_at: int = Field(alias="occurredAt", default=0)
+
+
 class NoteCreatedEvent(BaseModel):
     """knowledge.note.note-created-v1 Avro 스키마 매핑 (camelCase alias 지원)."""
 
