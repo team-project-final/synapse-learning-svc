@@ -161,7 +161,10 @@ class AiCardKafkaConsumer:
                 if self._pipeline_fn is not None:
                     await asyncio.wait_for(self._process_with_retry(event), timeout=60.0)
                 else:
-                    logger.info("pipeline_fn not configured, skipping card generation for event_id=%s", event.event_id)
+                    logger.info(
+                        "pipeline_fn not configured, skipping card gen event_id=%s",
+                        event.event_id,
+                    )
             else:
                 logger.info("event_id=%s has no deck_id, skipping card generation", event.event_id)
 
@@ -190,7 +193,10 @@ class AiCardKafkaConsumer:
             return
 
         if self._delete_fn is None:
-            logger.warning("delete_fn not configured, skipping chunk deletion for event_id=%s", event.event_id)
+            logger.warning(
+                "delete_fn not configured, skipping chunk deletion event_id=%s",
+                event.event_id,
+            )
             await self._consumer.commit()  # type: ignore[union-attr]
             return
 
